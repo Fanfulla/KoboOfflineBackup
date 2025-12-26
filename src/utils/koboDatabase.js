@@ -3,7 +3,6 @@
  * Reads KoboReader.sqlite and extracts books, annotations, and reading progress
  */
 
-import initSqlJs from 'sql.js';
 import { DatabaseError, ERROR_CODES } from './errors.js';
 
 /**
@@ -26,6 +25,9 @@ export class KoboDatabase {
    */
   async initialize() {
     try {
+      // Dynamically import sql.js
+      const initSqlJs = (await import('sql.js')).default;
+
       const SQL = await initSqlJs({
         // Load sql-wasm.wasm from CDN
         locateFile: file => `https://sql.js.org/dist/${file}`
