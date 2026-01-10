@@ -141,19 +141,35 @@ export async function saveFile(blob, options = {}) {
   try {
     const { fileName = 'download.zip', extensions = ['.zip'] } = options;
 
-    await fileSave(blob, {
-      fileName,
-      extensions,
-    });
+    console.log('[FS] Saving file via download link:', { fileName, size: blob.size });
 
+    // Use direct download link instead of showSaveFilePicker
+    // This avoids SecurityError when called after async operations
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.style.display = 'none';
+
+    document.body.appendChild(a);
+    a.click();
+
+    // Cleanup
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+
+    console.log('[FS] Download triggered successfully');
     return {
       filename: fileName,
       size: blob.size,
     };
   } catch (error) {
-    if (error.name === 'AbortError') {
-      return null; // User cancelled
-    }
+    console.error('[FS ERROR] saveFile failed:', error);
+    console.error('[FS ERROR] Error name:', error.name);
+    console.error('[FS ERROR] Error message:', error.message);
+
     throw new FileSystemError(
       'Failed to save file',
       ERROR_CODES.FS_WRITE_ERROR,

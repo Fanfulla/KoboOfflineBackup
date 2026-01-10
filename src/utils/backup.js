@@ -164,11 +164,17 @@ export async function createBackup(koboData, options = {}) {
  */
 export async function saveBackup(blob, filename) {
   try {
-    return await saveFile(blob, {
+    console.log('[BACKUP] Attempting to save backup:', { filename, size: blob.size });
+    const result = await saveFile(blob, {
       fileName: filename,
       extensions: ['.zip'],
     });
+    console.log('[BACKUP] Save successful:', result);
+    return result;
   } catch (error) {
+    console.error('[BACKUP ERROR] Failed to save backup:', error);
+    console.error('[BACKUP ERROR] Error message:', error.message);
+    console.error('[BACKUP ERROR] Error name:', error.name);
     throw new BackupError(
       'Failed to save backup file',
       ERROR_CODES.BACKUP_FAILED,
