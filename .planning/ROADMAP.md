@@ -54,10 +54,12 @@ Plans:
 **Goal**: Redesign all reusable UI components (Button, Card, Modal, ProgressBar, etc.) with clean, minimal styling
 **Depends on**: Phase 3
 **Research**: Unlikely (internal UI work using established design system)
-**Plans**: TBD
+**Plans**: 3 total
 
 Plans:
-- [ ] 04-01: TBD
+- [x] 04-01: Button and Card Redesign (completed)
+- [x] 04-02: Progress Indicators and Status Badges (completed)
+- [ ] 04-03: Modal, Checkbox, Icon (pending)
 
 ### Phase 5: Wizard Redesign
 **Goal**: Rebuild backup and restore wizard flows with professional, spacious layouts
@@ -84,6 +86,6 @@ Plans:
 | 1. Database Connection Fix | 2/2 | ✅ Complete | 2026-01-10 |
 | 2. Test Coverage | 0/0 | Not started | - |
 | 3. Design System | 1/1 | ✅ Complete | 2026-01-10 |
-| 4. Core Components | 0/0 | Not started | - |
+| 4. Core Components | 2/3 | 🔄 In progress | - |
 | 5. Wizard Redesign | 0/0 | Not started | - |
 | 6. Polish & Verify | 0/0 | Not started | - |
