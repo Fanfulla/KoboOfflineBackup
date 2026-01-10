@@ -14,8 +14,8 @@ export function Card({
   const baseStyles = 'rounded-2xl p-6 relative overflow-hidden';
 
   const variants = {
-    elevated: 'bg-white card-elevated',
-    glass: 'glass',
+    elevated: 'bg-white shadow-elevated',
+    glass: 'bg-kobo-glass backdrop-blur-sm',
     flat: 'bg-kobo-cream-dark',
   };
 
