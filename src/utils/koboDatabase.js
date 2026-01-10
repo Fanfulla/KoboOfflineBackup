@@ -75,44 +75,8 @@ export class KoboDatabase {
     await this.ready;
 
     try {
-      // DIAGNOSTIC: Check database schema and structure
-      console.log('[DB DEBUG] ==================== DATABASE DIAGNOSTICS ====================');
 
-      // Test 1: Check if content table exists
-      const tablesQuery = `SELECT name FROM sqlite_master WHERE type='table' AND name='content'`;
-      const tablesResult = this.db.exec(tablesQuery);
-      console.log('[DB DEBUG] Content table exists:', tablesResult.length > 0);
-
-      // Test 2: Get table schema
-      const schemaQuery = `PRAGMA table_info(content)`;
-      const schemaResult = this.db.exec(schemaQuery);
-      console.log('[DB DEBUG] Content table schema:', this.parseResults(schemaResult));
-
-      // Test 3: Count total rows in content
-      const countQuery = `SELECT COUNT(*) as total FROM content`;
-      const countResult = this.db.exec(countQuery);
-      console.log('[DB DEBUG] Total content rows:', this.parseResults(countResult));
-
-      // Test 4: Try simple query without WHERE clause
-      const simpleQuery = `SELECT ContentID, Title, ContentType, BookTitle, IsDownloaded, ContentPath FROM content LIMIT 10`;
-      const simpleResult = this.db.exec(simpleQuery);
-      console.log('[DB DEBUG] Sample content:', this.parseResults(simpleResult));
-
-      // Test 5: Count rows matching each WHERE condition separately
-      const contentTypeCount = `SELECT COUNT(*) as total FROM content WHERE ContentType = 6`;
-      console.log('[DB DEBUG] ContentType = 6 count:', this.parseResults(this.db.exec(contentTypeCount)));
-
-      const downloadedCount = `SELECT COUNT(*) as total FROM content WHERE ContentType = 6 AND IsDownloaded = 'true'`;
-      console.log('[DB DEBUG] ContentType = 6 AND IsDownloaded count:', this.parseResults(this.db.exec(downloadedCount)));
-
-      const bookTitleNullCount = `SELECT COUNT(*) as total FROM content WHERE ContentType = 6 AND IsDownloaded = 'true' AND BookTitle IS NULL`;
-      console.log('[DB DEBUG] + BookTitle IS NULL count:', this.parseResults(this.db.exec(bookTitleNullCount)));
-
-      const filePathCount = `SELECT COUNT(*) as total FROM content WHERE ContentType = 6 AND IsDownloaded = 'true' AND BookTitle IS NULL AND ContentPath LIKE 'file://%'`;
-      console.log('[DB DEBUG] + ContentPath LIKE file:// count:', this.parseResults(this.db.exec(filePathCount)));
-
-      console.log('[DB DEBUG] ==================== ATTEMPTING MAIN QUERY ====================');
-
+      // Use ContentID as FilePath - it contains the full file:// path
       const query = `
         SELECT
           ContentID,
@@ -128,7 +92,7 @@ export class KoboDatabase {
           ReadStatus,
           DateCreated,
           DateLastRead,
-          ContentPath as FilePath,
+          ContentID as FilePath,
           ImageId as CoverId,
           TimeSpentReading,
           MimeType
@@ -136,14 +100,12 @@ export class KoboDatabase {
         WHERE ContentType = 6
           AND IsDownloaded = 'true'
           AND BookTitle IS NULL
-          AND ContentPath LIKE 'file://%'
+          AND ContentID LIKE 'file://%'
         ORDER BY DateLastRead DESC
       `;
 
       const result = this.db.exec(query);
       const books = this.parseResults(result);
-
-      console.log('[DB DEBUG] Main query returned:', books.length, 'books');
 
       // Parse and clean the data
       return books.map(book => ({
@@ -156,9 +118,7 @@ export class KoboDatabase {
         FilePath: book.FilePath ? book.FilePath.replace('file://', '') : null,
       }));
     } catch (error) {
-      console.error('[DB ERROR] Query failed:', error);
-      console.error('[DB ERROR] Error message:', error.message);
-      console.error('[DB ERROR] Error stack:', error.stack);
+      console.error('[DB ERROR] getBooks failed:', error.message);
       throw new DatabaseError(
         'Failed to fetch books from database',
         ERROR_CODES.DB_QUERY_FAILED,
@@ -209,6 +169,8 @@ export class KoboDatabase {
         Author: annotation.Author || 'Unknown Author',
       }));
     } catch (error) {
+      console.error('[DB ERROR] getAnnotations failed:', error);
+      console.error('[DB ERROR] Error message:', error.message);
       throw new DatabaseError(
         'Failed to fetch annotations from database',
         ERROR_CODES.DB_QUERY_FAILED,
@@ -238,7 +200,7 @@ export class KoboDatabase {
         WHERE ContentType = 6
           AND BookTitle IS NULL
           AND IsDownloaded = 'true'
-          AND ContentPath LIKE 'file://%'
+          AND ContentID LIKE 'file://%'
       `;
 
       const result = this.db.exec(query);
@@ -254,6 +216,8 @@ export class KoboDatabase {
         uniqueAuthors: stats.UniqueAuthors || 0,
       };
     } catch (error) {
+      console.error('[DB ERROR] getReadingStats failed:', error);
+      console.error('[DB ERROR] Error message:', error.message);
       throw new DatabaseError(
         'Failed to fetch reading statistics',
         ERROR_CODES.DB_QUERY_FAILED,
