@@ -5,33 +5,34 @@
 See: .planning/PROJECT.md (updated 2026-01-10)
 
 **Core value:** Make it actually work and look professional
-**Current focus:** Phase 2 — Test Coverage (Phase 1 complete!)
+**Current focus:** Phase 4 — Core Components (Phase 1 & 3 complete!)
 
 ## Current Position
 
-Phase: 2 of 6 (Test Coverage)
-Plan: Phase 1 complete (2/2 plans), Phase 2 ready to plan
-Status: Phase 1 fully working - backup/restore data flow complete
-Last activity: 2026-01-10 — Phase 1 complete, SQL queries fixed, backup tested successfully
+Phase: 4 of 6 (Core Components)
+Plan: Phase 1 complete (2/2 plans), Phase 3 complete (1/1 plans), Phase 4 ready to plan
+Status: Database working, design system foundation complete
+Last activity: 2026-01-10 — Phase 3 complete, Oswald font installed, typography/spacing fixed
 
-Progress: ██░░░░░░░░ 17% (2 of 12 total plans)
+Progress: ███░░░░░░░ 25% (3 of 12 total plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: 67.5 min
-- Total execution time: 2.25 hours
+- Total plans completed: 3
+- Average duration: 55 min
+- Total execution time: 2.75 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 - Database Connection Fix | 2 | 135 min | 67.5 min |
+| 3 - Design System | 1 | 30 min | 30 min |
 
 **Recent Trend:**
-- Last 5 plans: 45 min, 90 min
-- Trend: Phase 1 complete, good velocity
+- Last 5 plans: 45 min, 90 min, 30 min
+- Trend: Good velocity, quick turnaround on Phase 3
 
 ## Accumulated Context
 
@@ -46,6 +47,12 @@ Recent decisions affecting current work:
 - File save: Direct download link instead of showSaveFilePicker (SecurityError workaround)
 - Backup tested successfully: 518 books, 654 MB, complete metadata
 
+**Phase 3 Complete (2026-01-10):**
+- Typography: Changed from Inter to Oswald font (per user spec)
+- Base font size: Upgraded from 13px to 16px (web standard, readable)
+- Spacing: Removed custom spacing scale, restored Tailwind defaults (4px-based)
+- Rationale: Previous 10-13px text was unreadable, custom spacing caused oversized buttons
+
 ### Deferred Issues
 
 **Schema Variation Handling:**
@@ -59,6 +66,13 @@ Recent decisions affecting current work:
 - Deferred to later phase (not part of Phase 1 scope)
 - Priority: Medium (needed for complete product)
 
+**Component Spacing Adjustments:**
+- Typography scale change: text-sm now 14px (was 10px), text-base now 16px (was 13px)
+- Spacing scale change: p-3 now 12px (was 24px), p-4 now 16px (was 32px)
+- All components using these classes may need padding/margin review
+- Deferred to Phase 4 (Core Components redesign)
+- Priority: High (visual consistency)
+
 ### Blockers/Concerns
 
 None.
@@ -66,5 +80,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-10
-Stopped at: Phase 1 complete (2/2 plans), ready for Phase 2 or UI restyle (Phase 3)
-Resume context: Database connection and backup fully working, tested with 518 books successfully
+Stopped at: Phase 3 complete (1/1 plans), ready for Phase 4 (Core Components)
+Resume context: Design system foundation complete - Oswald font active, 16px base typography, Tailwind default spacing. Components now need redesign to use new design tokens.
