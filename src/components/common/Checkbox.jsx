@@ -14,18 +14,18 @@ export function Checkbox({
   ...props
 }) {
   return (
-    <label className={`flex items-start gap-3 cursor-pointer group ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}>
+    <label className={`flex items-start gap-2 cursor-pointer group ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}>
       <div className="relative flex items-center justify-center mt-1">
         <input
           type="checkbox"
           checked={checked}
           onChange={(e) => !disabled && onChange && onChange(e.target.checked)}
           disabled={disabled}
-          className="sr-only"
+          className="sr-only peer"
           {...props}
         />
         <div
-          className={`w-6 h-6 rounded-md border-2 transition-all ${
+          className={`w-5 h-5 rounded border-2 transition-all peer-focus-visible:ring-2 peer-focus-visible:ring-kobo-accent peer-focus-visible:ring-offset-2 ${
             checked
               ? 'bg-kobo-accent border-kobo-accent'
               : 'bg-white border-kobo-gray-light group-hover:border-kobo-accent'
@@ -52,7 +52,7 @@ export function Checkbox({
       {(label || sublabel) && (
         <div className="flex-1">
           {label && (
-            <div className="font-medium text-kobo-dark">
+            <div className="text-base font-medium text-kobo-dark">
               {label}
             </div>
           )}

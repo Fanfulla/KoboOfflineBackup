@@ -226,7 +226,7 @@ const icons = {
 
 export function Icon({
   type,
-  size = 24,
+  size = 'md',
   className = '',
   ...props
 }) {
@@ -237,14 +237,20 @@ export function Icon({
     return null;
   }
 
+  const sizeClasses = {
+    sm: 'w-4 h-4',
+    md: 'w-5 h-5',
+    lg: 'w-6 h-6',
+  };
+
+  const sizeClass = sizeClasses[size] || sizeClasses.md;
+
   return (
     <svg
-      width={size}
-      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      className={className}
+      className={`${sizeClass} ${className}`}
       {...props}
     >
       {iconPath}
@@ -254,6 +260,6 @@ export function Icon({
 
 Icon.propTypes = {
   type: PropTypes.oneOf(Object.keys(icons)).isRequired,
-  size: PropTypes.number,
+  size: PropTypes.oneOf(['sm', 'md', 'lg']),
   className: PropTypes.string,
 };

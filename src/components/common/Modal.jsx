@@ -1,10 +1,9 @@
 /**
- * Modal component with glass morphism design
+ * Modal component with clean professional design
  */
 
 import { useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Card } from './Card.jsx';
 
 export function Modal({
   isOpen,
@@ -60,36 +59,34 @@ export function Modal({
 
       {/* Modal content */}
       <div
-        className={`relative w-full ${sizeClass} ${className} animate-scale-in`}
+        className={`relative w-full ${sizeClass} ${className} bg-white rounded-2xl shadow-elevated-hover p-8`}
         onClick={(e) => e.stopPropagation()}
       >
-        <Card variant="glass" className="shadow-2xl">
-          {title && (
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-3xl font-bold text-kobo-dark">{title}</h2>
-              <button
-                onClick={onClose}
-                className="p-2 hover:bg-kobo-gray-light/20 rounded-lg transition-colors"
-                aria-label="Close modal"
+        {title && (
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-xl font-bold text-kobo-dark">{title}</h2>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-kobo-gray-light/20 rounded-lg transition-colors"
+              aria-label="Close modal"
+            >
+              <svg
+                className="w-6 h-6 text-kobo-gray"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                <svg
-                  className="w-6 h-6 text-kobo-gray"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-          )}
-          {children}
-        </Card>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+        )}
+        {children}
       </div>
     </div>
   );
