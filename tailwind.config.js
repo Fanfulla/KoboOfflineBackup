@@ -26,31 +26,21 @@ export default {
         'kobo-glass': 'rgba(245, 241, 232, 0.8)',
       },
       fontFamily: {
-        'display': ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        'body': ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        'display': ['Oswald', 'system-ui', 'sans-serif'],
+        'body': ['Oswald', 'system-ui', 'sans-serif'],
       },
       fontSize: {
-        // Type scale (1.250 - Major Third)
-        '6xl': ['3.815rem', { lineHeight: '1.1' }],   // 61px
-        '5xl': ['3.052rem', { lineHeight: '1.2' }],   // 49px
-        '4xl': ['2.441rem', { lineHeight: '1.2' }],   // 39px
-        '3xl': ['1.953rem', { lineHeight: '1.3' }],   // 31px
-        '2xl': ['1.563rem', { lineHeight: '1.4' }],   // 25px
-        'xl': ['1.25rem', { lineHeight: '1.5' }],     // 20px
-        'lg': ['1rem', { lineHeight: '1.6' }],        // 16px
-        'base': ['0.8rem', { lineHeight: '1.6' }],    // 13px
-        'sm': ['0.64rem', { lineHeight: '1.5' }],     // 10px
-      },
-      spacing: {
-        // 8px grid system
-        '1': '0.5rem',   // 8px
-        '2': '1rem',     // 16px
-        '3': '1.5rem',   // 24px
-        '4': '2rem',     // 32px
-        '5': '3rem',     // 48px
-        '6': '4rem',     // 64px
-        '7': '6rem',     // 96px
-        '8': '8rem',     // 128px
+        // Professional type scale - readable sizes
+        '6xl': ['4rem', { lineHeight: '1' }],           // 64px - hero titles
+        '5xl': ['3rem', { lineHeight: '1' }],           // 48px - page titles
+        '4xl': ['2.25rem', { lineHeight: '1.1' }],      // 36px - section headers
+        '3xl': ['1.875rem', { lineHeight: '1.2' }],     // 30px - subsection headers
+        '2xl': ['1.5rem', { lineHeight: '1.3' }],       // 24px - card titles
+        'xl': ['1.25rem', { lineHeight: '1.4' }],       // 20px - large text
+        'lg': ['1.125rem', { lineHeight: '1.5' }],      // 18px - emphasis
+        'base': ['1rem', { lineHeight: '1.5' }],        // 16px - body text (DEFAULT)
+        'sm': ['0.875rem', { lineHeight: '1.5' }],      // 14px - small text
+        'xs': ['0.75rem', { lineHeight: '1.5' }],       // 12px - captions only
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-out',
