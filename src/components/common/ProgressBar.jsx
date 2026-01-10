@@ -9,7 +9,6 @@ export function ProgressBar({
   percent = 0,
   showLabel = false,
   label = null,
-  animated = true,
   className = '',
 }) {
   const normalizedPercent = Math.min(100, Math.max(0, percent));
@@ -26,15 +25,11 @@ export function ProgressBar({
           </span>
         </div>
       )}
-      <div className="h-3 bg-kobo-cream-dark rounded-full overflow-hidden">
+      <div className="h-2 bg-kobo-gray-light/30 rounded-full overflow-hidden">
         <div
-          className={`h-full bg-gradient-to-r from-kobo-accent to-kobo-accent-dark rounded-full transition-all duration-500 ease-out relative ${animated ? 'progress-shimmer' : ''}`}
+          className="h-full bg-kobo-accent rounded-full transition-all duration-300 ease-out"
           style={{ width: `${normalizedPercent}%` }}
-        >
-          {animated && normalizedPercent < 100 && (
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
-          )}
-        </div>
+        />
       </div>
     </div>
   );

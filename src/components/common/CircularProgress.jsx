@@ -26,7 +26,7 @@ export function CircularProgress({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="var(--kobo-cream-dark)"
+          className="stroke-kobo-gray-light/30"
           strokeWidth={strokeWidth}
         />
 
@@ -36,21 +36,13 @@ export function CircularProgress({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="url(#progressGradient)"
+          className="stroke-kobo-accent"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
-          className="transition-all duration-500 ease-out"
+          style={{ transition: 'stroke-dashoffset 0.3s ease-out' }}
         />
-
-        {/* Gradient definition */}
-        <defs>
-          <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="var(--kobo-accent)" />
-            <stop offset="100%" stopColor="var(--kobo-accent-dark)" />
-          </linearGradient>
-        </defs>
       </svg>
 
       {showLabel && (
