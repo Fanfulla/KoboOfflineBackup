@@ -4,80 +4,63 @@
 
 See: .planning/PROJECT.md (updated 2026-01-10)
 
-**Core value:** Make it actually work and look professional
-**Current focus:** Phase 4 — Core Components (Phase 1 & 3 complete!)
+**Core value:** Make it work and look professional
+**Current focus:** Phase 4 complete! Next: Phase 5 (Wizard Redesign)
 
 ## Current Position
 
-Phase: 4 of 6 (Core Components)
-Plan: 2 of 3 in current phase
-Status: In progress
-Last activity: 2026-01-10 — Completed 04-02-PLAN.md (Progress indicators and status badges)
+Phase: 4 of 6 ✓ Complete
+Plans: 3 of 3 complete
+Status: Ready for Phase 5
+Last activity: 2026-01-11 — Phase 4 complete + legal/SEO pages added
 
-Progress: █████░░░░░ 42% (5 of 12 total plans)
+Progress: ██████░░░░ 50% (6 of 12 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: 37 min
-- Total execution time: 3.08 hours
+- Total plans: 6 complete
+- Avg: 32 min/plan
+- Total time: 3.25 hrs
 
 **By Phase:**
 
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 1 - Database Connection Fix | 2 | 135 min | 67.5 min |
-| 3 - Design System | 1 | 30 min | 30 min |
-| 4 - Core Components | 2 | 20 min | 10 min |
+| Phase | Plans | Total | Avg |
+|-------|-------|-------|-----|
+| 1 - DB Fix | 2 | 135m | 67m |
+| 3 - Design | 1 | 30m | 30m |
+| 4 - Components | 3 | 30m | 10m |
 
-**Recent Trend:**
-- Last 5 plans: 45 min, 90 min, 30 min, 15 min, 5 min
-- Trend: Excellent acceleration - Phase 4 plans executing quickly
+**Trend:** Strong acceleration (Phase 4: 10m avg)
 
 ## Accumulated Context
 
 ### Decisions
 
-Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
+**Phase 4 Complete (2026-01-11):**
+- All 8 core components redesigned: Button, Card, ProgressBar, CircularProgress, StatusBadge, Modal, Checkbox, Icon
+- Modal: Clean white bg, removed glass effect, 32px padding
+- Checkbox: 20px size, focus ring, readable labels
+- Icon: Size variants (sm/md/lg) using Tailwind classes
 
-**Phase 1 Complete (2026-01-10):**
-- Root cause: Kobo database schema doesn't have `ContentPath` or `BookmarkType` columns
-- Solution: Use `ContentID` for file paths, remove `BookmarkType` from queries
-- File save: Direct download link instead of showSaveFilePicker (SecurityError workaround)
-- Backup tested successfully: 518 books, 654 MB, complete metadata
+**Legal & Analytics (2026-01-11):**
+- Added: User Guide, FAQ (SEO+schema), Privacy Policy (GDPR)
+- Analytics disclosed: GA4 & ContentSquare for service improvement only
+- Footer updated: Removed "no tracking" claim (transparent about analytics)
+- robots.txt: Allow AI crawlers (GPTBot, Claude, Perplexity, etc.)
+- Code remains 100% open source on GitHub
 
-**Phase 3 Complete (2026-01-10):**
-- Typography: Changed from Inter to Oswald font (per user spec)
-- Base font size: Upgraded from 13px to 16px (web standard, readable)
-- Spacing: Removed custom spacing scale, restored Tailwind defaults (4px-based)
-- Rationale: Previous 10-13px text was unreadable, custom spacing caused oversized buttons
+**Phase 3 Complete:**
+- Oswald font, 16px base, Tailwind spacing
 
-**Phase 4 In Progress (2026-01-10):**
-- Plan 04-01: Button and Card redesigned with clean, professional styling
-- Plan 04-02: Progress indicators (ProgressBar, CircularProgress) and StatusBadge redesigned
-- Component pattern: Minimal styling, design system colors, consistent spacing
+**Phase 1 Complete:**
+- Fixed DB queries, backup tested (518 books, 654 MB)
 
 ### Deferred Issues
 
-**Schema Variation Handling:**
-- Different Kobo firmware versions may have different database schemas
-- Current implementation works for tested device (schema v3.49.1)
-- Future: Add schema detection and query adaptation
-- Priority: Low (defer to Phase 2 or later)
+**Schema Variation:** Different Kobo firmware versions may vary. Current works for v3.49.1. Priority: Low
 
-**Restore Functionality:**
-- Restore wizard UI exists but backend not implemented
-- Deferred to later phase (not part of Phase 1 scope)
-- Priority: Medium (needed for complete product)
-
-**Component Spacing Adjustments:**
-- Typography scale change: text-sm now 14px (was 10px), text-base now 16px (was 13px)
-- Spacing scale change: p-3 now 12px (was 24px), p-4 now 16px (was 32px)
-- All components using these classes may need padding/margin review
-- Deferred to Phase 4 (Core Components redesign)
-- Priority: High (visual consistency)
+**Restore Backend:** UI exists, backend not implemented. Priority: Medium
 
 ### Blockers/Concerns
 
@@ -85,6 +68,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-01-10
-Stopped at: Completed 04-02-PLAN.md (2/3 plans in Phase 4)
-Resume context: Progress and status components redesigned. 1 plan remains in Phase 4: 04-03 (Modal, Checkbox, Icon).
+Last session: 2026-01-11
+Stopped at: Phase 4 complete, legal pages added, all changes committed
+Resume context: Ready for Phase 5 (Wizard Redesign). All core components now follow design system.
