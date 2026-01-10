@@ -135,6 +135,7 @@ export class KoboDatabase {
     await this.ready;
 
     try {
+      // Remove BookmarkType - column doesn't exist in this schema
       const query = `
         SELECT
           b.BookmarkID,
@@ -147,7 +148,6 @@ export class KoboDatabase {
           b.StartOffset,
           b.EndContainerPath,
           b.EndOffset,
-          b.BookmarkType,
           c.Title as BookTitle,
           c.Attribution as Author
         FROM Bookmark b
