@@ -145,6 +145,9 @@ export async function createBackup(koboData, options = {}) {
       metadata,
     };
   } catch (error) {
+    console.error('[BACKUP ERROR] Failed to create backup:', error);
+    console.error('[BACKUP ERROR] Error message:', error.message);
+    console.error('[BACKUP ERROR] Error stack:', error.stack);
     throw new BackupError(
       'Failed to create backup',
       ERROR_CODES.BACKUP_FAILED,

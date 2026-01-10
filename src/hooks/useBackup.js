@@ -88,8 +88,8 @@ export function useBackup() {
           setProgress({
             stage: progressData.stage,
             percent: progressData.percent,
-            filesProcessed: progressData.filesProcessed || backupFileBlobs.length,
-            totalFiles: backupFileBlobs.length,
+            filesProcessed: progressData.filesProcessed || bookFileBlobs.length,
+            totalFiles: bookFileBlobs.length,
             speed: calculateSpeed(bookFileBlobs.reduce((sum, f) => sum + f.size, 0), elapsed),
             eta: formatTimeRemaining(remaining),
           });
