@@ -24,10 +24,11 @@ None
 **Depends on**: Nothing (first phase)
 **Research**: Likely (browser API behavior, device file structure)
 **Research topics**: File System Access API directory handling patterns, Kobo device directory structure (.kobo location), Chrome-specific file access debugging
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: TBD (to be determined during planning)
+- [x] 01-01: Database Connection Discovery (45 min) - Root cause identified: SQL query failure, not file access
+- [ ] 01-02: Database Query Fix (pending revision based on DISCOVERY.md findings)
 
 ### Phase 2: Test Coverage
 **Goal**: Add test coverage for database parsing, backup/restore operations, and file system access to prevent future regressions
@@ -78,7 +79,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Database Connection Fix | 0/0 | Not started | - |
+| 1. Database Connection Fix | 1/2 | In progress | - |
 | 2. Test Coverage | 0/0 | Not started | - |
 | 3. Design System | 0/0 | Not started | - |
 | 4. Core Components | 0/0 | Not started | - |
