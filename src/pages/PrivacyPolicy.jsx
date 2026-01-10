@@ -25,30 +25,41 @@ export function PrivacyPolicy({ onNavigate }) {
       <section className="mb-12">
         <h2 className="text-2xl font-bold text-kobo-dark mb-4">Introduction</h2>
         <p className="text-kobo-gray mb-4">
-          Kobo Backup Manager ("we," "our," or "the Service") is committed to protecting your privacy.
-          This Privacy Policy explains how we collect, use, and safeguard your information when you use
-          our web application.
+          Kobo Backup Manager is a <strong>free, non-commercial, open-source</strong> web application
+          created by the community to help Kobo e-reader users backup their libraries. This Privacy Policy
+          explains how data is processed when you use this tool.
         </p>
-        <p className="text-kobo-gray">
-          This Service is designed with privacy as a core principle. All backup and restore operations
-          occur entirely within your browser, and your Kobo library data never leaves your device.
+        <p className="text-kobo-gray mb-4">
+          <strong>Key principles:</strong>
         </p>
+        <ul className="list-disc list-inside text-kobo-gray ml-4 space-y-1 mb-4">
+          <li>No commercial purpose - this is a free community tool</li>
+          <li>No account required - no registration or login</li>
+          <li>Privacy-first architecture - all backup operations happen in your browser</li>
+          <li>Your Kobo library data never leaves your device</li>
+          <li>Open source - full code available on GitHub for security audit</li>
+        </ul>
       </section>
 
-      {/* Data Controller */}
+      {/* About This Project */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-kobo-dark mb-4">Data Controller</h2>
+        <h2 className="text-2xl font-bold text-kobo-dark mb-4">About This Open Source Project</h2>
         <p className="text-kobo-gray mb-4">
-          For the purposes of the General Data Protection Regulation (GDPR) and other applicable data
-          protection laws, the data controller is:
+          This project has <strong>no commercial entity</strong> behind it. It is maintained by volunteers
+          and provided free of charge to the community. The complete source code is available on GitHub,
+          where you can:
         </p>
-        <div className="bg-kobo-cream p-4 rounded-lg">
-          <p className="text-kobo-gray">
-            Kobo Backup Manager<br />
-            Website: [Your Website URL]<br />
-            Email: [Your Contact Email]
-          </p>
-        </div>
+        <ul className="list-disc list-inside text-kobo-gray ml-4 space-y-1 mb-4">
+          <li>Review the code to verify privacy claims</li>
+          <li>Report issues or suggest improvements</li>
+          <li>Contribute to the project</li>
+          <li>Fork and modify for your own use</li>
+        </ul>
+        <p className="text-kobo-gray mb-4">
+          <strong>GDPR Compliance:</strong> While this is a non-commercial project, we still comply with
+          the General Data Protection Regulation (GDPR) to protect EU residents' privacy rights. The use
+          of limited analytics (described below) is for service improvement only, never for commercial gain.
+        </p>
       </section>
 
       {/* Information We Collect */}
@@ -191,18 +202,34 @@ export function PrivacyPolicy({ onNavigate }) {
           If you are located in the European Economic Area (EEA), you have the following rights:
         </p>
         <ul className="list-disc list-inside text-kobo-gray ml-4 space-y-2">
-          <li><strong>Right to Access:</strong> Request access to your personal data</li>
-          <li><strong>Right to Rectification:</strong> Request correction of inaccurate data</li>
-          <li><strong>Right to Erasure:</strong> Request deletion of your data ("right to be forgotten")</li>
-          <li><strong>Right to Restrict Processing:</strong> Request limitation of data processing</li>
-          <li><strong>Right to Data Portability:</strong> Receive your data in a portable format</li>
-          <li><strong>Right to Object:</strong> Object to processing based on legitimate interests</li>
-          <li><strong>Right to Withdraw Consent:</strong> Withdraw analytics consent at any time</li>
-          <li><strong>Right to Lodge a Complaint:</strong> File a complaint with your supervisory authority</li>
+          <li><strong>Right to Access:</strong> All data is stored locally in your browser - you have full access</li>
+          <li><strong>Right to Erasure:</strong> Clear your browser's local storage to delete all app data ("right to be forgotten")</li>
+          <li><strong>Right to Data Portability:</strong> Your backup files are already portable ZIP files under your control</li>
+          <li><strong>Right to Object:</strong> Opt out of analytics via browser cookie settings</li>
+          <li><strong>Right to Withdraw Consent:</strong> Disable analytics cookies at any time through browser settings</li>
+          <li><strong>Right to Lodge a Complaint:</strong> Contact your local data protection supervisory authority</li>
         </ul>
+
+        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mt-4">
+          <p className="font-medium text-blue-800 mb-2">
+            ✓ Managing Your Data (No Contact Needed):
+          </p>
+          <ul className="list-disc list-inside text-blue-800 ml-4 space-y-1 text-sm">
+            <li><strong>Local Storage:</strong> Clear via browser settings (e.g., Chrome → Settings → Privacy → Clear browsing data)</li>
+            <li><strong>Analytics:</strong> Block via browser settings or use Do Not Track headers</li>
+            <li><strong>Backups:</strong> You control the files - delete from your computer as needed</li>
+          </ul>
+        </div>
+
         <p className="text-kobo-gray mt-4">
-          To exercise these rights, contact us at [Your Contact Email] or use your browser's privacy
-          settings to manage cookies and clear local storage.
+          Since this is a non-commercial open-source project with no central data controller, there is
+          no email or entity to contact for data requests. All personal data is either stored locally on
+          your device (under your control) or anonymized analytics sent to third parties (Google, ContentSquare).
+        </p>
+
+        <p className="text-kobo-gray mt-4">
+          <strong>For analytics data requests:</strong> Contact Google or ContentSquare directly through
+          their privacy portals. For questions about the app itself, use the GitHub repository to open an issue.
         </p>
       </section>
 
@@ -258,16 +285,25 @@ export function PrivacyPolicy({ onNavigate }) {
         </p>
       </section>
 
-      {/* Open Source Commitment */}
+      {/* Open Source & Community */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-kobo-dark mb-4">Open Source Commitment</h2>
+        <h2 className="text-2xl font-bold text-kobo-dark mb-4">Open Source & Community</h2>
         <p className="text-kobo-gray mb-4">
-          The complete source code of Kobo Backup Manager is available on GitHub under an open-source license.
-          You can review, audit, and verify exactly what the application does:
+          The complete source code is available on GitHub under an open-source license. This transparency
+          allows you to:
         </p>
+        <ul className="list-disc list-inside text-kobo-gray ml-4 space-y-1 mb-4">
+          <li>Audit the code to verify privacy and security claims</li>
+          <li>Understand exactly what data is collected and how it's used</li>
+          <li>Self-host your own version without analytics</li>
+          <li>Contribute improvements or report issues</li>
+        </ul>
         <div className="bg-kobo-cream p-4 rounded-lg">
-          <p className="text-kobo-gray">
-            GitHub Repository: <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-kobo-accent hover:underline">github.com/[your-repo]</a>
+          <p className="text-kobo-gray mb-2">
+            <strong>GitHub Repository:</strong> <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-kobo-accent hover:underline">github.com/[your-repo-name]</a>
+          </p>
+          <p className="text-kobo-gray text-sm">
+            All questions, bug reports, and feature requests should be submitted via GitHub Issues.
           </p>
         </div>
       </section>
@@ -282,22 +318,41 @@ export function PrivacyPolicy({ onNavigate }) {
         </p>
       </section>
 
-      {/* Contact Information */}
+      {/* Contact & Support */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-kobo-dark mb-4">Contact Us</h2>
+        <h2 className="text-2xl font-bold text-kobo-dark mb-4">Questions & Support</h2>
+
         <p className="text-kobo-gray mb-4">
-          If you have questions about this Privacy Policy or wish to exercise your GDPR rights, please contact us:
+          <strong>For questions about this Privacy Policy or the application:</strong>
         </p>
-        <div className="bg-kobo-cream p-4 rounded-lg">
-          <p className="text-kobo-gray">
-            Email: [Your Contact Email]<br />
-            Website: [Your Website URL]<br />
-            GitHub Issues: [Your GitHub Issues URL]
+        <div className="bg-kobo-cream p-4 rounded-lg mb-4">
+          <p className="text-kobo-gray mb-2">
+            <strong>GitHub Issues:</strong> <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-kobo-accent hover:underline">github.com/[your-repo]/issues</a>
+          </p>
+          <p className="text-kobo-gray text-sm">
+            Open an issue on GitHub for questions, bug reports, or privacy concerns.
           </p>
         </div>
-        <p className="text-kobo-gray mt-4">
-          For GDPR-related complaints, you may also contact your local data protection supervisory authority.
+
+        <p className="text-kobo-gray mb-4">
+          <strong>For GDPR data requests related to analytics:</strong>
         </p>
+        <ul className="list-disc list-inside text-kobo-gray ml-4 space-y-1 mb-4">
+          <li>Google Analytics: <a href="https://support.google.com/analytics/answer/6004245" target="_blank" rel="noopener noreferrer" className="text-kobo-accent hover:underline">Google Privacy Controls</a></li>
+          <li>ContentSquare: <a href="https://contentsquare.com/privacy-center/" target="_blank" rel="noopener noreferrer" className="text-kobo-accent hover:underline">ContentSquare Privacy Center</a></li>
+        </ul>
+
+        <p className="text-kobo-gray">
+          <strong>For GDPR complaints:</strong> Contact your local EU data protection supervisory authority.
+        </p>
+
+        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 mt-4">
+          <p className="font-medium text-yellow-800">
+            ℹ️ Note: This is a volunteer-maintained open-source project with no commercial entity or formal
+            data controller. There is no customer support email or helpdesk. Community support is provided
+            via GitHub.
+          </p>
+        </div>
       </section>
 
       <div className="text-center mt-12">
