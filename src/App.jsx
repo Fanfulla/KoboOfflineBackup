@@ -15,6 +15,9 @@ import { Home } from './pages/Home.jsx'
 import { Backup } from './pages/Backup.jsx'
 import { Restore } from './pages/Restore.jsx'
 import { History } from './pages/History.jsx'
+import { UserGuide } from './pages/UserGuide.jsx'
+import { FAQ } from './pages/FAQ.jsx'
+import { PrivacyPolicy } from './pages/PrivacyPolicy.jsx'
 
 function App() {
   const features = useFeatureDetection()
@@ -58,6 +61,12 @@ function App() {
         return <Restore onComplete={() => handleNavigate('home')} />
       case 'history':
         return <History onNavigate={handleNavigate} />
+      case 'guide':
+        return <UserGuide onNavigate={handleNavigate} />
+      case 'faq':
+        return <FAQ onNavigate={handleNavigate} />
+      case 'privacy':
+        return <PrivacyPolicy onNavigate={handleNavigate} />
       default:
         return <Home onNavigate={handleNavigate} />
     }
@@ -77,7 +86,7 @@ function App() {
       </main>
 
       {/* Footer */}
-      <Footer />
+      <Footer onNavigate={handleNavigate} />
     </div>
   )
 }

@@ -2,7 +2,9 @@
  * App footer with links and privacy info
  */
 
-export function Footer() {
+import PropTypes from 'prop-types';
+
+export function Footer({ onNavigate }) {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -23,28 +25,28 @@ export function Footer() {
             <h3 className="text-lg font-bold mb-3">Resources</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <a
-                  href="#"
+                <button
+                  onClick={() => onNavigate('guide')}
                   className="text-kobo-gray-light hover:text-kobo-accent transition-colors"
                 >
                   User Guide
-                </a>
+                </button>
               </li>
               <li>
-                <a
-                  href="#"
+                <button
+                  onClick={() => onNavigate('faq')}
                   className="text-kobo-gray-light hover:text-kobo-accent transition-colors"
                 >
                   FAQ
-                </a>
+                </button>
               </li>
               <li>
-                <a
-                  href="#"
+                <button
+                  onClick={() => onNavigate('privacy')}
                   className="text-kobo-gray-light hover:text-kobo-accent transition-colors"
                 >
                   Privacy Policy
-                </a>
+                </button>
               </li>
               <li>
                 <a
@@ -76,12 +78,6 @@ export function Footer() {
                 <svg className="w-5 h-5 text-kobo-success flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span>No tracking or analytics</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <svg className="w-5 h-5 text-kobo-success flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
                 <span>No account required</span>
               </div>
               <div className="flex items-start gap-2">
@@ -106,3 +102,7 @@ export function Footer() {
     </footer>
   );
 }
+
+Footer.propTypes = {
+  onNavigate: PropTypes.func.isRequired,
+};

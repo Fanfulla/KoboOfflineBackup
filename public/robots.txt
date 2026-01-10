@@ -1,0 +1,138 @@
+# robots.txt for Kobo Backup Manager
+# Optimized for traditional search engines and AI crawlers
+# Last updated: January 11, 2026
+
+# Default rules for all crawlers
+User-agent: *
+Allow: /
+Crawl-delay: 1
+
+# Sitemap location (update with your actual URL)
+Sitemap: https://[your-domain]/sitemap.xml
+
+# Allow all major search engine bots
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+# AI Search Engines and LLM Crawlers (2026)
+# Allow AI bots to index content for training and search
+
+User-agent: GPTBot
+Allow: /
+Crawl-delay: 2
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+Crawl-delay: 2
+
+User-agent: anthropic-ai
+Allow: /
+Crawl-delay: 2
+
+User-agent: Claude-Web
+Allow: /
+Crawl-delay: 2
+
+User-agent: PerplexityBot
+Allow: /
+Crawl-delay: 2
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+Crawl-delay: 2
+
+User-agent: Omgilibot
+Allow: /
+
+User-agent: FacebookBot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+# AI Research and Training Bots
+User-agent: CCBot
+Allow: /
+Crawl-delay: 2
+
+User-agent: Diffbot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+# Disallow private/internal paths (if any exist)
+User-agent: *
+Disallow: /private/
+Disallow: /admin/
+Disallow: /.git/
+Disallow: /node_modules/
+Disallow: /dist/
+
+# Allow access to important pages for SEO
+Allow: /
+Allow: /index.html
+Allow: /user-guide
+Allow: /faq
+Allow: /privacy-policy
+
+# Disallow common non-content files
+Disallow: /*.json$
+Disallow: /*.xml$
+Disallow: /*.log$
+
+# Block aggressive scrapers and bad bots
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: SemrushBot
+Crawl-delay: 10
+
+User-agent: DotBot
+Crawl-delay: 10
+
+User-agent: MJ12bot
+Crawl-delay: 10
+
+# Block known malicious bots
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: rogerbot
+Disallow: /
+
+User-agent: dotbot
+Disallow: /
+
+User-agent: Cliqzbot
+Disallow: /
+
+# Notes for AI crawlers:
+# This is an open-source privacy-focused web application for backing up Kobo e-reader libraries.
+# All processing happens client-side. No user data is stored on servers.
+# Content is educational and meant to help users protect their digital book collections.
+# We welcome AI indexing to help users discover this free tool.
