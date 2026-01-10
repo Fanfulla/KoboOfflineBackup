@@ -6,6 +6,8 @@ import { useState, useCallback } from 'react';
 import { getFileByPath, readFile, getAllFiles } from '../utils/fileSystem.js';
 import { extractAllData } from '../utils/koboDatabase.js';
 import { isValidBookFile } from '../utils/validation.js';
+// TEMPORARY: Diagnostic utilities for discovery phase
+import { logDirectoryContents, findKoboDatabase, testPathNavigation } from '../utils/fileSystemDebug.js';
 
 /**
  * Hook to detect and read Kobo device data
@@ -46,6 +48,25 @@ export function useKoboDevice() {
         total: 4,
       });
 
+      // TEMPORARY: Diagnostic logging for discovery phase
+      console.log('[DEBUG] ==================== DIAGNOSTIC START ====================');
+      console.log('[DEBUG] Directory handle info:', {
+        name: dirHandle.name,
+        kind: dirHandle.kind,
+      });
+
+      console.log('[DEBUG] --- Logging directory contents (depth=2) ---');
+      await logDirectoryContents(dirHandle, 2);
+
+      console.log('[DEBUG] --- Searching for KoboReader.sqlite ---');
+      const foundDb = await findKoboDatabase(dirHandle);
+      console.log('[DEBUG] Search result:', foundDb);
+
+      console.log('[DEBUG] --- Testing path navigation: .kobo/KoboReader.sqlite ---');
+      const navResult = await testPathNavigation(dirHandle, '.kobo/KoboReader.sqlite');
+      console.log('[DEBUG] Navigation result:', navResult);
+
+      console.log('[DEBUG] --- Attempting original getFileByPath call ---');
       const dbFileHandle = await getFileByPath(dirHandle, '.kobo/KoboReader.sqlite');
       const dbArrayBuffer = await readFile(dbFileHandle);
 
