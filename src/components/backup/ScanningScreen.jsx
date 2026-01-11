@@ -41,27 +41,22 @@ export function ScanningScreen({ scanProgress }) {
         {/* Status Details */}
         <div className="space-y-3">
           <StatusItem
-            icon="check"
             text="Device connected"
             status="completed"
           />
           <StatusItem
-            icon={current >= 1 ? "check" : "loading"}
             text="Reading database"
             status={current >= 1 ? "completed" : current === 0 ? "pending" : "active"}
           />
           <StatusItem
-            icon={current >= 2 ? "check" : "loading"}
             text="Analyzing books"
             status={current >= 2 ? "completed" : current < 1 ? "pending" : "active"}
           />
           <StatusItem
-            icon={current >= 3 ? "check" : "loading"}
             text="Finding book files"
             status={current >= 3 ? "completed" : current < 2 ? "pending" : "active"}
           />
           <StatusItem
-            icon={current >= 4 ? "check" : "loading"}
             text="Scan complete"
             status={current >= 4 ? "completed" : "pending"}
           />
@@ -80,23 +75,20 @@ export function ScanningScreen({ scanProgress }) {
 
 function StatusItem({ icon, text, status }) {
   const statusColors = {
-    completed: 'text-kobo-success',
-    active: 'text-kobo-accent',
-    pending: 'text-kobo-gray-light',
+    completed: 'bg-kobo-success',
+    active: 'bg-kobo-accent',
+    pending: 'bg-kobo-gray-light',
   };
 
-  const statusIcons = {
-    completed: 'check',
-    active: 'loading',
-    pending: 'loading',
-  };
-
-  const iconType = statusIcons[status] || icon;
   const colorClass = statusColors[status] || statusColors.pending;
 
   return (
     <div className={`flex items-center gap-3 ${status === 'pending' ? 'opacity-50' : ''}`}>
-      <Icon type={iconType} size={20} className={colorClass} />
+      {status === 'completed' ? (
+        <Icon type="check" size={20} className="text-kobo-success" />
+      ) : (
+        <div className={`w-5 h-5 rounded-full ${colorClass} ${status === 'active' ? 'animate-pulse' : ''}`} />
+      )}
       <span className="font-body text-kobo-dark">{text}</span>
     </div>
   );

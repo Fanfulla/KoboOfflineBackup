@@ -17,7 +17,7 @@ export function BrowserWarning({ features }) {
     <div className="bg-kobo-warning/10 border-b-2 border-kobo-warning/30 py-4 animate-slide-down">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-start gap-4">
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 mt-0.5">
             <svg
               className="w-6 h-6 text-kobo-warning"
               fill="none"
@@ -34,7 +34,7 @@ export function BrowserWarning({ features }) {
           </div>
 
           <div className="flex-1">
-            <h3 className="font-semibold text-kobo-dark mb-2">
+            <h3 className="font-display font-semibold text-kobo-dark mb-2">
               Limited Browser Support
             </h3>
             <p className="text-sm text-kobo-gray mb-3">
