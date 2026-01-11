@@ -84,11 +84,12 @@ export function FileUploader({ onFileSelect, error }) {
             id="file-input"
           />
 
-          <label htmlFor="file-input">
-            <Button variant="secondary" size="lg" as="span">
-              <Icon type="folder" size={20} />
-              Browse Files
-            </Button>
+          <label
+            htmlFor="file-input"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 text-lg font-semibold rounded-lg bg-kobo-cream-dark hover:bg-kobo-gray-light/10 text-kobo-dark border-2 border-kobo-gray-light transition-colors cursor-pointer"
+          >
+            <Icon type="folder" size={20} />
+            Browse Files
           </label>
 
           <p className="text-sm font-body text-kobo-gray mt-4">
