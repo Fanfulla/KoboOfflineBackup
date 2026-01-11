@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-10)
 ## Current Position
 
 Phase: 5 of 6 (Wizard Redesign)
-Plans: 2 of 3 in current phase
-Status: In progress
-Last activity: 2026-01-11 — Completed 05-02-PLAN.md
+Plans: 3 of 3 in current phase
+Status: ✅ Complete
+Last activity: 2026-01-11 — Completed 05-03-PLAN.md
 
-Progress: ████████░░ 67% (8 of 12 plans)
+Progress: █████████░ 75% (9 of 12 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans: 8 complete
-- Avg: 25 min/plan
-- Total time: 3.37 hrs
+- Total plans: 9 complete
+- Avg: 22 min/plan
+- Total time: 3.40 hrs
 
 **By Phase:**
 
@@ -30,17 +30,17 @@ Progress: ████████░░ 67% (8 of 12 plans)
 | 1 - DB Fix | 2 | 135m | 67m |
 | 3 - Design | 1 | 30m | 30m |
 | 4 - Components | 3 | 30m | 10m |
-| 5 - Wizard | 2 | 7m | 3.5m |
+| 5 - Wizard | 3 | 10m | 3.3m |
 
-**Trend:** Accelerating (Phase 5: 3.5m avg)
+**Trend:** Accelerating (Phase 5: 3.3m avg)
 
 ## Accumulated Context
 
 ### Decisions
 
-**Phase 5 Started (2026-01-11):**
-- Typography: Oswald for headings, Poppins for body text (improved readability)
-- Font hierarchy: font-display class for h1-h6, font-body for all UI text
+**Phase 5 Complete (2026-01-11):**
+- Typography: Oswald headings, Poppins body (15 wizard components)
+- Browser warning: Chrome/Edge required for restore (File System API)
 
 **Phase 4 Complete (2026-01-11):**
 - All 8 core components redesigned: Button, Card, ProgressBar, CircularProgress, StatusBadge, Modal, Checkbox, Icon
@@ -63,9 +63,13 @@ Progress: ████████░░ 67% (8 of 12 plans)
 
 ### Deferred Issues
 
-**Schema Variation:** Different Kobo firmware versions may vary. Current works for v3.49.1. Priority: Low
+**Schema Variation:** Kobo firmware differences may affect queries. Tested: v3.49.1. Priority: Low
 
-**Restore Backend:** UI exists, backend not implemented. Priority: Medium
+**Restore Limitations:**
+- Selective restore (annotations/progress toggles) non-functional - always restores full database
+- No device info extraction - compatibility check never runs
+- Chrome/Edge only (File System API)
+Priority: Medium
 
 ### Blockers/Concerns
 
@@ -74,5 +78,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-11
-Stopped at: Completed 05-02-PLAN.md - Backup completion and restore start flow redesigned
+Stopped at: Completed Phase 5 - All wizard components redesigned, browser warning added
 Resume file: None
