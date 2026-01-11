@@ -12,7 +12,7 @@ export function RestoreProgress({ progress }) {
   return (
     <div className="max-w-2xl mx-auto">
       <Card className="text-center">
-        <h2 className="text-3xl font-bold text-kobo-dark mb-8">
+        <h2 className="text-3xl font-display text-kobo-dark mb-8">
           Restoring Your Library
         </h2>
 
@@ -22,15 +22,15 @@ export function RestoreProgress({ progress }) {
         </div>
 
         {/* Current Stage */}
-        <p className="text-xl font-semibold text-kobo-dark mb-8">
+        <p className="text-xl font-body text-kobo-dark mb-8">
           {stage || 'Preparing...'}
         </p>
 
         {/* Files Progress */}
         {filesProcessed !== undefined && totalFiles > 0 && (
           <div className="mb-8">
-            <p className="text-kobo-gray mb-2">Files Copied</p>
-            <p className="text-2xl font-bold text-kobo-dark">
+            <p className="font-body text-kobo-gray mb-2">Files Copied</p>
+            <p className="text-2xl font-display text-kobo-dark">
               {filesProcessed} / {totalFiles}
             </p>
           </div>
@@ -64,7 +64,7 @@ export function RestoreProgress({ progress }) {
         <div className="p-4 bg-kobo-error/10 border-2 border-kobo-error/30 rounded-lg">
           <div className="flex items-center gap-3">
             <Icon type="alert" className="text-kobo-error flex-shrink-0" />
-            <p className="text-sm font-semibold text-kobo-error text-left">
+            <p className="text-sm font-semibold font-body text-kobo-error text-left">
               DO NOT disconnect your Kobo until complete!
             </p>
           </div>
@@ -82,7 +82,7 @@ function StageItem({ text, status }) {
         <div className="w-5 h-5 border-2 border-kobo-accent border-t-transparent rounded-full animate-spin" />
       )}
       {status === 'pending' && <div className="w-5 h-5 border-2 border-kobo-gray-light rounded-full opacity-30" />}
-      <span className="text-kobo-dark">{text}</span>
+      <span className="font-body text-kobo-dark">{text}</span>
     </div>
   );
 }

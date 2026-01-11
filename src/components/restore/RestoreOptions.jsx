@@ -22,10 +22,10 @@ export function RestoreOptions({
   return (
     <div className="max-w-2xl mx-auto">
       <Card>
-        <h2 className="text-3xl font-bold text-kobo-dark mb-2 text-center">
+        <h2 className="text-3xl font-display text-kobo-dark mb-2 text-center">
           Restore Options
         </h2>
-        <p className="text-lg text-kobo-gray mb-8 text-center">
+        <p className="text-lg font-body text-kobo-gray mb-8 text-center">
           Choose what to restore to your Kobo
         </p>
 
@@ -58,15 +58,15 @@ export function RestoreOptions({
           <div className="flex items-start gap-3">
             <Icon type="alert" className="text-kobo-error flex-shrink-0 mt-1" />
             <div>
-              <h4 className="font-semibold text-kobo-error mb-2">
+              <h4 className="font-semibold font-body text-kobo-error mb-2">
                 Warning: This Will Erase Current Device Content
               </h4>
-              <p className="text-sm text-kobo-gray mb-3">
+              <p className="text-sm font-body text-kobo-gray mb-3">
                 Restoring this backup will replace all current content on your Kobo
                 device. Make sure you have a backup of any important data before
                 proceeding.
               </p>
-              <ul className="text-sm text-kobo-gray space-y-1 list-disc list-inside">
+              <ul className="text-sm font-body text-kobo-gray space-y-1 list-disc list-inside">
                 <li>Current sideloaded books will be replaced</li>
                 <li>Reading progress will be overwritten</li>
                 <li>Annotations will be replaced</li>

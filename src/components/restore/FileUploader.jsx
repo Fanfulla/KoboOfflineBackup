@@ -49,6 +49,21 @@ export function FileUploader({ onFileSelect, error }) {
           Choose your Kobo backup ZIP file to restore
         </p>
 
+        {/* Browser Compatibility Warning */}
+        <div className="mb-6 p-4 bg-kobo-info/10 border border-kobo-info/20 rounded-lg">
+          <div className="flex items-start gap-3">
+            <Icon type="info" className="text-kobo-info flex-shrink-0 mt-1" />
+            <div className="text-left">
+              <p className="text-sm font-semibold font-body text-kobo-dark mb-1">
+                Browser Compatibility
+              </p>
+              <p className="text-sm font-body text-kobo-gray">
+                Restore requires Chrome or Edge desktop browser. Not supported in Firefox, Safari, or mobile browsers.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Drop Zone */}
         <div
           onDragOver={handleDragOver}

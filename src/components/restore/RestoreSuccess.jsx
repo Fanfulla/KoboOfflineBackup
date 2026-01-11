@@ -15,11 +15,11 @@ export function RestoreSuccess({ result, onDone }) {
           <Icon type="check" size={48} className="text-kobo-success" />
         </div>
 
-        <h2 className="text-4xl font-bold text-kobo-dark mb-4">
+        <h2 className="text-4xl font-display text-kobo-dark mb-4">
           Restore Complete!
         </h2>
 
-        <p className="text-lg text-kobo-gray mb-8">
+        <p className="text-lg font-body text-kobo-gray mb-8">
           Your library has been successfully restored to your Kobo
         </p>
 
@@ -44,7 +44,7 @@ export function RestoreSuccess({ result, onDone }) {
 
         {/* Next Steps */}
         <div className="text-left p-6 bg-kobo-cream-dark rounded-lg mb-8">
-          <h3 className="font-bold text-kobo-dark mb-4 flex items-center gap-2">
+          <h3 className="font-bold font-body text-kobo-dark mb-4 flex items-center gap-2">
             <Icon type="info" size={20} />
             What's Next?
           </h3>
@@ -54,8 +54,8 @@ export function RestoreSuccess({ result, onDone }) {
                 <span className="text-kobo-accent font-bold">1</span>
               </div>
               <div>
-                <p className="font-medium text-kobo-dark">Safely eject your Kobo</p>
-                <p className="text-sm text-kobo-gray">
+                <p className="font-medium font-body text-kobo-dark">Safely eject your Kobo</p>
+                <p className="text-sm font-body text-kobo-gray">
                   Use your operating system's "Eject" or "Safely Remove Hardware" option
                 </p>
               </div>
@@ -66,8 +66,8 @@ export function RestoreSuccess({ result, onDone }) {
                 <span className="text-kobo-accent font-bold">2</span>
               </div>
               <div>
-                <p className="font-medium text-kobo-dark">Disconnect USB cable</p>
-                <p className="text-sm text-kobo-gray">
+                <p className="font-medium font-body text-kobo-dark">Disconnect USB cable</p>
+                <p className="text-sm font-body text-kobo-gray">
                   Unplug the USB cable from your Kobo device
                 </p>
               </div>
@@ -78,8 +78,8 @@ export function RestoreSuccess({ result, onDone }) {
                 <span className="text-kobo-accent font-bold">3</span>
               </div>
               <div>
-                <p className="font-medium text-kobo-dark">Your books are ready!</p>
-                <p className="text-sm text-kobo-gray">
+                <p className="font-medium font-body text-kobo-dark">Your books are ready!</p>
+                <p className="text-sm font-body text-kobo-gray">
                   Open your Kobo and start reading from where you left off
                 </p>
               </div>
@@ -89,7 +89,7 @@ export function RestoreSuccess({ result, onDone }) {
 
         {/* Success Message */}
         <div className="p-4 bg-kobo-success/10 border border-kobo-success/20 rounded-lg mb-8">
-          <p className="text-kobo-dark">
+          <p className="font-body text-kobo-dark">
             <Icon type="check" size={16} className="inline text-kobo-success mr-2" />
             All your books, annotations, and reading progress have been restored
           </p>
@@ -113,8 +113,8 @@ function SummaryCard({ icon, value, label }) {
   return (
     <div className="p-4 bg-white rounded-lg border-2 border-kobo-cream-dark">
       <Icon type={icon} size={24} className="text-kobo-accent mx-auto mb-2" />
-      <p className="text-2xl font-bold text-kobo-dark mb-1">{value}</p>
-      <p className="text-sm text-kobo-gray">{label}</p>
+      <p className="text-2xl font-display text-kobo-dark mb-1">{value}</p>
+      <p className="text-sm font-body text-kobo-gray">{label}</p>
     </div>
   );
 }
