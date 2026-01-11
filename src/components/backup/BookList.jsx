@@ -56,7 +56,7 @@ export function BookList({ books, maxDisplay = 6, showSearch = false }) {
         <div className="w-24 h-24 bg-kobo-gray-light/20 rounded-full flex items-center justify-center mx-auto mb-4">
           <Icon type="book" size={48} className="text-kobo-gray-light" />
         </div>
-        <p className="text-kobo-gray">No books found</p>
+        <p className="font-body text-kobo-gray">No books found</p>
       </div>
     );
   }
@@ -129,7 +129,7 @@ export function BookList({ books, maxDisplay = 6, showSearch = false }) {
 
       {/* Results Count */}
       {filteredBooks.length > 0 && (
-        <p className="text-sm text-kobo-gray mb-4">
+        <p className="text-sm font-body text-kobo-gray mb-4">
           Showing {displayBooks.length} of {filteredBooks.length} book
           {filteredBooks.length !== 1 ? 's' : ''}
         </p>
@@ -138,7 +138,7 @@ export function BookList({ books, maxDisplay = 6, showSearch = false }) {
       {/* Books Grid */}
       {filteredBooks.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-kobo-gray">No books match your search</p>
+          <p className="font-body text-kobo-gray">No books match your search</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
@@ -194,7 +194,7 @@ function FilterButton({ active, onClick, children }) {
   return (
     <button
       onClick={onClick}
-      className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+      className={`px-4 py-2 rounded-lg font-medium font-body text-sm transition-colors ${
         active
           ? 'bg-kobo-accent text-white'
           : 'bg-white text-kobo-dark border-2 border-kobo-cream-dark hover:border-kobo-accent'

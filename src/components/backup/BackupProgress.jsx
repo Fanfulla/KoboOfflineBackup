@@ -12,7 +12,7 @@ export function BackupProgress({ progress }) {
   return (
     <div className="max-w-2xl mx-auto">
       <Card className="text-center">
-        <h2 className="text-3xl font-bold text-kobo-dark mb-8">
+        <h2 className="text-3xl font-display text-kobo-dark mb-8">
           Creating Backup
         </h2>
 
@@ -22,7 +22,7 @@ export function BackupProgress({ progress }) {
         </div>
 
         {/* Current Stage */}
-        <p className="text-xl font-semibold text-kobo-dark mb-2">
+        <p className="text-lg font-body text-kobo-dark mb-2">
           {stage || 'Processing...'}
         </p>
 
@@ -30,23 +30,23 @@ export function BackupProgress({ progress }) {
         {filesProcessed !== undefined && totalFiles > 0 && (
           <div className="grid grid-cols-3 gap-4 mb-8 text-center">
             <div>
-              <p className="text-sm text-kobo-gray mb-1">Files</p>
-              <p className="text-lg font-semibold text-kobo-dark">
+              <p className="text-sm font-body text-kobo-gray mb-1">Files</p>
+              <p className="text-lg font-body text-kobo-dark">
                 {filesProcessed} / {totalFiles}
               </p>
             </div>
             {speed && (
               <div>
-                <p className="text-sm text-kobo-gray mb-1">Speed</p>
-                <p className="text-lg font-semibold text-kobo-dark">
+                <p className="text-sm font-body text-kobo-gray mb-1">Speed</p>
+                <p className="text-lg font-body text-kobo-dark">
                   {speed}
                 </p>
               </div>
             )}
             {eta && (
               <div>
-                <p className="text-sm text-kobo-gray mb-1">Time Remaining</p>
-                <p className="text-lg font-semibold text-kobo-dark">
+                <p className="text-sm font-body text-kobo-gray mb-1">Time Remaining</p>
+                <p className="text-lg font-body text-kobo-dark">
                   {eta}
                 </p>
               </div>
@@ -82,7 +82,7 @@ export function BackupProgress({ progress }) {
         <div className="p-4 bg-kobo-warning/10 border border-kobo-warning/20 rounded-lg">
           <div className="flex items-center gap-3">
             <Icon type="alert" className="text-kobo-warning flex-shrink-0" />
-            <p className="text-sm text-kobo-gray text-left">
+            <p className="text-sm font-body text-kobo-gray text-left">
               Keep this window open until the backup is complete
             </p>
           </div>
@@ -112,7 +112,7 @@ function StageItem({ text, status }) {
         <div className="w-5 h-5 border-2 border-kobo-accent border-t-transparent rounded-full animate-spin" />
       )}
       {status === 'pending' && <div className="w-5 h-5 border-2 border-kobo-gray-light rounded-full opacity-30" />}
-      <span className="text-kobo-dark">{text}</span>
+      <span className="font-body text-base text-kobo-dark">{text}</span>
     </div>
   );
 }

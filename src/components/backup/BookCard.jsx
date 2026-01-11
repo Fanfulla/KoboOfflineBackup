@@ -23,16 +23,16 @@ export function BookCard({ book, variant = 'default' }) {
 
         {/* Book Info */}
         <div className="flex-1 min-w-0">
-          <h4 className="font-semibold text-kobo-dark text-sm truncate mb-0.5">
+          <h4 className="font-semibold font-body text-kobo-dark text-sm truncate mb-0.5">
             {title}
           </h4>
-          <p className="text-xs text-kobo-gray truncate mb-2">{author}</p>
+          <p className="text-xs font-body text-kobo-gray truncate mb-2">{author}</p>
 
           {/* Progress */}
           {progress > 0 && (
             <div className="flex items-center gap-2">
               <ProgressBar percent={progress} height={4} />
-              <span className="text-xs text-kobo-gray font-medium whitespace-nowrap">
+              <span className="text-xs font-body text-kobo-gray font-medium whitespace-nowrap">
                 {Math.round(progress)}%
               </span>
             </div>
@@ -59,17 +59,17 @@ export function BookCard({ book, variant = 'default' }) {
 
       {/* Book Info */}
       <div className="p-4">
-        <h3 className="font-bold text-kobo-dark mb-1 line-clamp-2 min-h-[2.5rem]">
+        <h3 className="text-lg font-body text-kobo-dark mb-1 line-clamp-2 min-h-[2.5rem]">
           {title}
         </h3>
-        <p className="text-sm text-kobo-gray mb-3 truncate">{author}</p>
+        <p className="text-sm font-body text-kobo-gray mb-3 truncate">{author}</p>
 
         {/* Progress Bar */}
         {progress > 0 && (
           <div>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-xs text-kobo-gray">Reading Progress</span>
-              <span className="text-xs font-semibold text-kobo-accent">
+              <span className="text-xs font-body text-kobo-gray">Reading Progress</span>
+              <span className="text-xs font-body font-semibold text-kobo-accent">
                 {Math.round(progress)}%
               </span>
             </div>
@@ -78,14 +78,14 @@ export function BookCard({ book, variant = 'default' }) {
         )}
 
         {progress === 0 && (
-          <div className="flex items-center gap-1 text-xs text-kobo-gray">
+          <div className="flex items-center gap-1 text-xs font-body text-kobo-gray">
             <Icon type="bookmark" size={14} />
             <span>Not started</span>
           </div>
         )}
 
         {progress === 100 && (
-          <div className="flex items-center gap-1 text-xs text-kobo-success font-medium">
+          <div className="flex items-center gap-1 text-xs font-body text-kobo-success font-medium">
             <Icon type="check" size={14} />
             <span>Finished</span>
           </div>
