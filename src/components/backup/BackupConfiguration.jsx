@@ -19,10 +19,10 @@ export function BackupConfiguration({
   return (
     <div className="max-w-2xl mx-auto">
       <Card>
-        <h2 className="text-3xl font-bold text-kobo-dark mb-2 text-center">
+        <h2 className="text-3xl font-display text-kobo-dark mb-2 text-center">
           Backup Configuration
         </h2>
-        <p className="text-lg text-kobo-gray mb-8 text-center">
+        <p className="text-lg font-body text-kobo-gray mb-8 text-center">
           Choose what to include in your backup
         </p>
 
@@ -61,10 +61,10 @@ export function BackupConfiguration({
           <div className="flex items-center gap-3">
             <Icon type="info" className="text-kobo-info flex-shrink-0" />
             <div>
-              <p className="font-semibold text-kobo-dark">
+              <p className="font-semibold font-body text-kobo-dark">
                 Estimated backup size: {formatBytes(estimatedSize)}
               </p>
-              <p className="text-sm text-kobo-gray">
+              <p className="text-sm font-body text-kobo-gray">
                 Make sure you have enough disk space available
               </p>
             </div>

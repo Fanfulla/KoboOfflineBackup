@@ -103,7 +103,7 @@ export function BackupWizard({ onComplete }) {
 
   return (
     <div className="min-h-screen py-12">
-      <Container>
+      <Container className="max-w-6xl">
         {step === 'select' && (
           <DeviceSelector
             onSelectDevice={handleSelectDevice}

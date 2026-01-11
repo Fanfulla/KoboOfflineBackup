@@ -11,10 +11,10 @@ export function LibraryOverview({ books, annotations, stats, estimatedSize, onCo
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-kobo-dark mb-2">
+        <h2 className="text-3xl font-display text-kobo-dark mb-2">
           Your Library
         </h2>
-        <p className="text-lg text-kobo-gray">
+        <p className="text-lg font-body text-kobo-gray">
           Here's what we found on your Kobo
         </p>
       </div>
@@ -50,25 +50,25 @@ export function LibraryOverview({ books, annotations, stats, estimatedSize, onCo
       {/* Reading Stats */}
       {stats && (
         <Card>
-          <h3 className="text-xl font-bold text-kobo-dark mb-4">
+          <h3 className="text-xl font-display text-kobo-dark mb-4">
             Reading Statistics
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div>
-              <p className="text-sm text-kobo-gray mb-1">Books Started</p>
-              <p className="text-2xl font-bold text-kobo-dark">
+              <p className="text-sm font-body text-kobo-gray mb-1">Books Started</p>
+              <p className="text-2xl font-display text-kobo-dark">
                 {stats.booksStarted}
               </p>
             </div>
             <div>
-              <p className="text-sm text-kobo-gray mb-1">Currently Reading</p>
-              <p className="text-2xl font-bold text-kobo-dark">
+              <p className="text-sm font-body text-kobo-gray mb-1">Currently Reading</p>
+              <p className="text-2xl font-display text-kobo-dark">
                 {stats.currentlyReading}
               </p>
             </div>
             <div>
-              <p className="text-sm text-kobo-gray mb-1">Time Spent Reading</p>
-              <p className="text-2xl font-bold text-kobo-dark">
+              <p className="text-sm font-body text-kobo-gray mb-1">Time Spent Reading</p>
+              <p className="text-2xl font-display text-kobo-dark">
                 {formatDuration(stats.totalMinutesRead)}
               </p>
             </div>
@@ -79,7 +79,7 @@ export function LibraryOverview({ books, annotations, stats, estimatedSize, onCo
       {/* Recently Read Books Preview */}
       {books && books.length > 0 && (
         <Card>
-          <h3 className="text-xl font-bold text-kobo-dark mb-4">
+          <h3 className="text-xl font-display text-kobo-dark mb-4">
             Recently Read Books
           </h3>
           <div className="space-y-3">
@@ -89,10 +89,10 @@ export function LibraryOverview({ books, annotations, stats, estimatedSize, onCo
                 className="flex items-center gap-4 p-3 bg-kobo-cream-dark rounded-lg"
               >
                 <div className="flex-1">
-                  <h4 className="font-semibold text-kobo-dark truncate">
+                  <h4 className="font-semibold font-body text-kobo-dark truncate">
                     {book.Title}
                   </h4>
-                  <p className="text-sm text-kobo-gray truncate">
+                  <p className="text-sm font-body text-kobo-gray truncate">
                     {book.Author}
                   </p>
                 </div>
@@ -105,7 +105,7 @@ export function LibraryOverview({ books, annotations, stats, estimatedSize, onCo
             ))}
           </div>
           {books.length > 5 && (
-            <p className="text-sm text-kobo-gray mt-3 text-center">
+            <p className="text-sm font-body text-kobo-gray mt-3 text-center">
               And {books.length - 5} more books...
             </p>
           )}
@@ -143,10 +143,10 @@ function StatCard({ icon, value, label, color }) {
       <div className={`w-12 h-12 ${colorClass} rounded-full flex items-center justify-center mx-auto mb-3`}>
         <Icon type={icon} size={24} />
       </div>
-      <div className="text-2xl font-bold text-kobo-dark mb-1">
+      <div className="text-2xl font-display text-kobo-dark mb-1">
         {value}
       </div>
-      <div className="text-sm text-kobo-gray">
+      <div className="text-sm font-body text-kobo-gray">
         {label}
       </div>
     </Card>

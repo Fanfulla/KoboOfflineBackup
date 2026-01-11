@@ -23,10 +23,10 @@ export function ScanningScreen({ scanProgress }) {
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold text-kobo-dark mb-2">
+          <h2 className="text-2xl font-display text-kobo-dark mb-2">
             Scanning Your Kobo
           </h2>
-          <p className="text-lg text-kobo-gray">
+          <p className="text-lg font-body text-kobo-gray">
             {stage || 'Preparing...'}
           </p>
         </div>
@@ -69,7 +69,7 @@ export function ScanningScreen({ scanProgress }) {
 
         {/* Info Message */}
         <div className="mt-8 p-4 bg-kobo-info/10 rounded-lg">
-          <p className="text-sm text-kobo-gray">
+          <p className="text-sm font-body text-kobo-gray">
             This may take a moment depending on your library size
           </p>
         </div>
@@ -97,7 +97,7 @@ function StatusItem({ icon, text, status }) {
   return (
     <div className={`flex items-center gap-3 ${status === 'pending' ? 'opacity-50' : ''}`}>
       <Icon type={iconType} size={20} className={colorClass} />
-      <span className="text-kobo-dark">{text}</span>
+      <span className="font-body text-kobo-dark">{text}</span>
     </div>
   );
 }
