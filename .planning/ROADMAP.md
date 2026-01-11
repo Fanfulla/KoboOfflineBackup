@@ -68,10 +68,12 @@ Plans:
 **Goal**: Rebuild backup and restore wizard flows with professional, spacious layouts
 **Depends on**: Phase 4
 **Research**: Unlikely (internal restructuring with redesigned components)
-**Plans**: TBD
+**Plans**: 3 created
 
 Plans:
-- [ ] 05-01: TBD
+- [x] 05-01: Typography + Backup Wizard Core (completed 2026-01-11, 4 min)
+- [ ] 05-02: Backup Display + Restore Core
+- [ ] 05-03: Restore Wizard Completion
 
 ### Phase 6: Polish & Verify
 **Goal**: Final visual consistency pass, cross-browser testing, and performance verification
@@ -90,5 +92,5 @@ Plans:
 | 2. Test Coverage | 0/0 | Not started | - |
 | 3. Design System | 1/1 | ✅ Complete | 2026-01-10 |
 | 4. Core Components | 3/3 | ✅ Complete | 2026-01-11 |
-| 5. Wizard Redesign | 0/0 | Not started | - |
+| 5. Wizard Redesign | 1/3 | In progress | - |
 | 6. Polish & Verify | 0/0 | Not started | - |
