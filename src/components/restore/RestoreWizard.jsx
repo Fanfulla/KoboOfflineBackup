@@ -103,7 +103,7 @@ export function RestoreWizard({ onComplete }) {
 
   return (
     <div className="min-h-screen py-12">
-      <Container>
+      <Container maxWidth="6xl">
         {step === 'upload' && (
           <FileUploader
             onFileSelect={handleFileSelect}

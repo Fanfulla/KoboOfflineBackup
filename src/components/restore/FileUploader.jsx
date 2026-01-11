@@ -42,10 +42,10 @@ export function FileUploader({ onFileSelect, error }) {
   return (
     <div className="max-w-2xl mx-auto">
       <Card>
-        <h2 className="text-3xl font-bold text-kobo-dark mb-2 text-center">
+        <h2 className="text-3xl font-display text-kobo-dark mb-2 text-center">
           Select Backup File
         </h2>
-        <p className="text-lg text-kobo-gray mb-8 text-center">
+        <p className="text-lg font-body text-kobo-gray mb-8 text-center">
           Choose your Kobo backup ZIP file to restore
         </p>
 
@@ -68,11 +68,11 @@ export function FileUploader({ onFileSelect, error }) {
             className={`mx-auto mb-4 ${isDragging ? 'text-kobo-accent' : 'text-kobo-gray-light'}`}
           />
 
-          <h3 className="text-xl font-bold text-kobo-dark mb-2">
+          <h3 className="text-xl font-body text-kobo-dark mb-2">
             {isDragging ? 'Drop your backup file here' : 'Drag & drop your backup file'}
           </h3>
 
-          <p className="text-kobo-gray mb-6">
+          <p className="font-body text-kobo-gray mb-6">
             or
           </p>
 
@@ -91,7 +91,7 @@ export function FileUploader({ onFileSelect, error }) {
             </Button>
           </label>
 
-          <p className="text-sm text-kobo-gray mt-4">
+          <p className="text-sm font-body text-kobo-gray mt-4">
             Looking for: kobo_backup_*.zip
           </p>
         </div>
@@ -102,10 +102,10 @@ export function FileUploader({ onFileSelect, error }) {
             <div className="flex items-start gap-3">
               <Icon type="alert" className="text-kobo-error flex-shrink-0" />
               <div className="text-left">
-                <h4 className="font-semibold text-kobo-error mb-1">
+                <h4 className="font-semibold font-body text-kobo-error mb-1">
                   {error.title}
                 </h4>
-                <p className="text-sm text-kobo-gray">
+                <p className="text-sm font-body text-kobo-gray">
                   {error.message}
                 </p>
               </div>
