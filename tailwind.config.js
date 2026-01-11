@@ -27,7 +27,7 @@ export default {
       },
       fontFamily: {
         'display': ['Oswald', 'system-ui', 'sans-serif'],
-        'body': ['Oswald', 'system-ui', 'sans-serif'],
+        'body': ['Poppins', 'system-ui', 'sans-serif'],
       },
       fontSize: {
         // Professional type scale - readable sizes
