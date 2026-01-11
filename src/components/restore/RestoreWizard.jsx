@@ -7,7 +7,7 @@ import { useFileSystem } from '../../hooks/useFileSystem.js';
 import { useRestore } from '../../hooks/useRestore.js';
 import { Container } from '../layout/Container.jsx';
 
-import { DeviceSelector } from '../backup/DeviceSelector.jsx';
+import { RestoreDeviceSelector } from './RestoreDeviceSelector.jsx';
 import { FileUploader } from './FileUploader.jsx';
 import { BackupPreview } from './BackupPreview.jsx';
 import { RestoreOptions } from './RestoreOptions.jsx';
@@ -112,7 +112,7 @@ export function RestoreWizard({ onComplete }) {
         )}
 
         {step === 'selectDevice' && (
-          <DeviceSelector
+          <RestoreDeviceSelector
             onSelectDevice={handleSelectDevice}
             isSelecting={fileSystem.isSelecting}
             error={fileSystem.error}
