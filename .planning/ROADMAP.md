@@ -72,7 +72,7 @@ Plans:
 
 Plans:
 - [x] 05-01: Typography + Backup Wizard Core (completed 2026-01-11, 4 min)
-- [ ] 05-02: Backup Display + Restore Core
+- [x] 05-02: Backup Display + Restore Core (completed 2026-01-11, 3 min)
 - [ ] 05-03: Restore Wizard Completion
 
 ### Phase 6: Polish & Verify
@@ -92,5 +92,5 @@ Plans:
 | 2. Test Coverage | 0/0 | Not started | - |
 | 3. Design System | 1/1 | ✅ Complete | 2026-01-10 |
 | 4. Core Components | 3/3 | ✅ Complete | 2026-01-11 |
-| 5. Wizard Redesign | 1/3 | In progress | - |
+| 5. Wizard Redesign | 2/3 | In progress | - |
 | 6. Polish & Verify | 0/0 | Not started | - |
