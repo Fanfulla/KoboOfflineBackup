@@ -48,7 +48,7 @@ export function UnsupportedBrowser({ missingFeatures = [] }) {
             </svg>
           </div>
 
-          <h1 className="text-4xl font-bold text-kobo-dark mb-4">
+          <h1 className="text-4xl font-display font-bold text-kobo-dark mb-4">
             Browser Not Supported
           </h1>
 

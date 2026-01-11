@@ -25,7 +25,7 @@ export function DeviceSelector({ onSelectDevice, isSelecting, error }) {
         {/* Connection Steps */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="p-4 bg-kobo-cream-dark rounded-lg">
-            <div className="w-12 h-12 bg-kobo-accent text-white rounded-full flex items-center justify-center mx-auto mb-3 font-bold text-xl">
+            <div className="w-12 h-12 bg-kobo-accent text-white rounded-full flex items-center justify-center mx-auto mb-3 font-body font-bold text-xl">
               1
             </div>
             <h3 className="font-semibold font-display text-kobo-dark mb-2">
@@ -37,7 +37,7 @@ export function DeviceSelector({ onSelectDevice, isSelecting, error }) {
           </div>
 
           <div className="p-4 bg-kobo-cream-dark rounded-lg">
-            <div className="w-12 h-12 bg-kobo-accent text-white rounded-full flex items-center justify-center mx-auto mb-3 font-bold text-xl">
+            <div className="w-12 h-12 bg-kobo-accent text-white rounded-full flex items-center justify-center mx-auto mb-3 font-body font-bold text-xl">
               2
             </div>
             <h3 className="font-semibold font-display text-kobo-dark mb-2">
@@ -49,7 +49,7 @@ export function DeviceSelector({ onSelectDevice, isSelecting, error }) {
           </div>
 
           <div className="p-4 bg-kobo-cream-dark rounded-lg">
-            <div className="w-12 h-12 bg-kobo-accent text-white rounded-full flex items-center justify-center mx-auto mb-3 font-bold text-xl">
+            <div className="w-12 h-12 bg-kobo-accent text-white rounded-full flex items-center justify-center mx-auto mb-3 font-body font-bold text-xl">
               3
             </div>
             <h3 className="font-semibold font-display text-kobo-dark mb-2">

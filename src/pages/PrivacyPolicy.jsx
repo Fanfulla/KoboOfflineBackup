@@ -16,14 +16,14 @@ export function PrivacyPolicy({ onNavigate }) {
         ← Back to Home
       </Button>
 
-      <h1 className="text-4xl font-bold text-kobo-dark mb-4">Privacy Policy</h1>
+      <h1 className="text-4xl font-display font-bold text-kobo-dark mb-4">Privacy Policy</h1>
       <p className="text-kobo-gray mb-8">
         <strong>Last Updated:</strong> January 11, 2026
       </p>
 
       {/* Introduction */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-kobo-dark mb-4">Introduction</h2>
+        <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Introduction</h2>
         <p className="text-kobo-gray mb-4">
           Kobo Backup Manager is a <strong>free, non-commercial, open-source</strong> web application
           created by the community to help Kobo e-reader users backup their libraries. This Privacy Policy
@@ -43,7 +43,7 @@ export function PrivacyPolicy({ onNavigate }) {
 
       {/* About This Project */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-kobo-dark mb-4">About This Open Source Project</h2>
+        <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">About This Open Source Project</h2>
         <p className="text-kobo-gray mb-4">
           This project has <strong>no commercial entity</strong> behind it. It is maintained by volunteers
           and provided free of charge to the community. The complete source code is available on GitHub,
@@ -64,9 +64,9 @@ export function PrivacyPolicy({ onNavigate }) {
 
       {/* Information We Collect */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-kobo-dark mb-4">Information We Collect</h2>
+        <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Information We Collect</h2>
 
-        <h3 className="text-xl font-bold text-kobo-dark mb-3 mt-6">1. Library Data (Processed Locally Only)</h3>
+        <h3 className="text-xl font-display font-bold text-kobo-dark mb-3 mt-6">1. Library Data (Processed Locally Only)</h3>
         <p className="text-kobo-gray mb-4">
           When you use the Service to create or restore backups, we process:
         </p>
@@ -82,7 +82,7 @@ export function PrivacyPolicy({ onNavigate }) {
           </p>
         </div>
 
-        <h3 className="text-xl font-bold text-kobo-dark mb-3 mt-6">2. Browser Storage (Local Storage)</h3>
+        <h3 className="text-xl font-display font-bold text-kobo-dark mb-3 mt-6">2. Browser Storage (Local Storage)</h3>
         <p className="text-kobo-gray mb-4">
           We store the following information in your browser's local storage:
         </p>
@@ -95,7 +95,7 @@ export function PrivacyPolicy({ onNavigate }) {
           This data remains on your device and can be deleted at any time by clearing your browser data.
         </p>
 
-        <h3 className="text-xl font-bold text-kobo-dark mb-3 mt-6">3. Analytics Data</h3>
+        <h3 className="text-xl font-display font-bold text-kobo-dark mb-3 mt-6">3. Analytics Data</h3>
         <p className="text-kobo-gray mb-4">
           We use Google Analytics 4 (GA4) and ContentSquare to collect anonymous usage statistics:
         </p>
@@ -116,7 +116,7 @@ export function PrivacyPolicy({ onNavigate }) {
 
       {/* How We Use Your Information */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-kobo-dark mb-4">How We Use Your Information</h2>
+        <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">How We Use Your Information</h2>
         <p className="text-kobo-gray mb-4">We use collected information for the following purposes:</p>
         <ul className="list-disc list-inside text-kobo-gray ml-4 space-y-2">
           <li><strong>Service Operation:</strong> To provide backup and restore functionality</li>
@@ -129,7 +129,7 @@ export function PrivacyPolicy({ onNavigate }) {
 
       {/* Legal Basis for Processing (GDPR) */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-kobo-dark mb-4">Legal Basis for Processing (GDPR)</h2>
+        <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Legal Basis for Processing (GDPR)</h2>
         <p className="text-kobo-gray mb-4">
           Under GDPR, we process your data based on the following legal grounds:
         </p>
@@ -144,14 +144,14 @@ export function PrivacyPolicy({ onNavigate }) {
 
       {/* Data Sharing and Third Parties */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-kobo-dark mb-4">Data Sharing and Third Parties</h2>
+        <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Data Sharing and Third Parties</h2>
         <p className="text-kobo-gray mb-4">
           We share analytics data with the following third-party processors:
         </p>
 
         <div className="space-y-4">
           <div className="bg-white p-4 rounded-lg border border-kobo-gray-light">
-            <h3 className="font-bold text-kobo-dark mb-2">Google Analytics 4</h3>
+            <h3 className="font-display font-bold text-kobo-dark mb-2">Google Analytics 4</h3>
             <p className="text-kobo-gray text-sm mb-2">
               Purpose: Website analytics and usage statistics
             </p>
@@ -164,7 +164,7 @@ export function PrivacyPolicy({ onNavigate }) {
           </div>
 
           <div className="bg-white p-4 rounded-lg border border-kobo-gray-light">
-            <h3 className="font-bold text-kobo-dark mb-2">ContentSquare</h3>
+            <h3 className="font-display font-bold text-kobo-dark mb-2">ContentSquare</h3>
             <p className="text-kobo-gray text-sm mb-2">
               Purpose: User experience analysis and interaction tracking
             </p>
@@ -187,7 +187,7 @@ export function PrivacyPolicy({ onNavigate }) {
 
       {/* Data Retention */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-kobo-dark mb-4">Data Retention</h2>
+        <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Data Retention</h2>
         <ul className="list-disc list-inside text-kobo-gray ml-4 space-y-2">
           <li><strong>Local Storage:</strong> Retained until you clear browser data or uninstall the app</li>
           <li><strong>Analytics Data:</strong> Google Analytics retains data for 14 months, ContentSquare for 13 months</li>
@@ -197,7 +197,7 @@ export function PrivacyPolicy({ onNavigate }) {
 
       {/* Your Rights (GDPR) */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-kobo-dark mb-4">Your Rights Under GDPR</h2>
+        <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Your Rights Under GDPR</h2>
         <p className="text-kobo-gray mb-4">
           If you are located in the European Economic Area (EEA), you have the following rights:
         </p>
@@ -235,7 +235,7 @@ export function PrivacyPolicy({ onNavigate }) {
 
       {/* International Data Transfers */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-kobo-dark mb-4">International Data Transfers</h2>
+        <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">International Data Transfers</h2>
         <p className="text-kobo-gray mb-4">
           Analytics data may be transferred to and processed in countries outside the EEA, including the
           United States. These transfers are protected by:
@@ -248,12 +248,12 @@ export function PrivacyPolicy({ onNavigate }) {
 
       {/* Cookies and Tracking Technologies */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-kobo-dark mb-4">Cookies and Tracking Technologies</h2>
+        <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Cookies and Tracking Technologies</h2>
         <p className="text-kobo-gray mb-4">We use the following types of cookies:</p>
 
         <div className="space-y-4">
           <div>
-            <h3 className="font-bold text-kobo-dark mb-2">Essential Cookies (No Consent Required)</h3>
+            <h3 className="font-display font-bold text-kobo-dark mb-2">Essential Cookies (No Consent Required)</h3>
             <p className="text-kobo-gray text-sm">
               Strictly necessary for the application to function. These store your preferences and backup
               history locally.
@@ -261,7 +261,7 @@ export function PrivacyPolicy({ onNavigate }) {
           </div>
 
           <div>
-            <h3 className="font-bold text-kobo-dark mb-2">Analytics Cookies (Consent Required)</h3>
+            <h3 className="font-display font-bold text-kobo-dark mb-2">Analytics Cookies (Consent Required)</h3>
             <p className="text-kobo-gray text-sm">
               Google Analytics and ContentSquare cookies track usage patterns to help us improve the service.
               You can opt-out via cookie settings.
@@ -277,7 +277,7 @@ export function PrivacyPolicy({ onNavigate }) {
 
       {/* Children's Privacy */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-kobo-dark mb-4">Children's Privacy</h2>
+        <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Children's Privacy</h2>
         <p className="text-kobo-gray">
           Our Service is not directed to individuals under the age of 16. We do not knowingly collect
           personal information from children. If you believe a child has provided us with personal information,
@@ -287,7 +287,7 @@ export function PrivacyPolicy({ onNavigate }) {
 
       {/* Open Source & Community */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-kobo-dark mb-4">Open Source & Community</h2>
+        <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Open Source & Community</h2>
         <p className="text-kobo-gray mb-4">
           The complete source code is available on GitHub under an open-source license. This transparency
           allows you to:
@@ -310,7 +310,7 @@ export function PrivacyPolicy({ onNavigate }) {
 
       {/* Changes to This Policy */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-kobo-dark mb-4">Changes to This Privacy Policy</h2>
+        <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Changes to This Privacy Policy</h2>
         <p className="text-kobo-gray">
           We may update this Privacy Policy periodically to reflect changes in our practices or legal requirements.
           The "Last Updated" date at the top of this page indicates when the policy was last revised. Continued
@@ -320,7 +320,7 @@ export function PrivacyPolicy({ onNavigate }) {
 
       {/* Contact & Support */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-kobo-dark mb-4">Questions & Support</h2>
+        <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Questions & Support</h2>
 
         <p className="text-kobo-gray mb-4">
           <strong>For questions about this Privacy Policy or the application:</strong>

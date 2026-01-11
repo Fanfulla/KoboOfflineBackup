@@ -51,7 +51,7 @@ export function RestoreSuccess({ result, onDone }) {
           <div className="space-y-4">
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 bg-kobo-accent/10 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-kobo-accent font-bold">1</span>
+                <span className="text-kobo-accent font-body font-bold">1</span>
               </div>
               <div>
                 <p className="font-medium font-body text-kobo-dark">Safely eject your Kobo</p>
@@ -63,7 +63,7 @@ export function RestoreSuccess({ result, onDone }) {
 
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 bg-kobo-accent/10 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-kobo-accent font-bold">2</span>
+                <span className="text-kobo-accent font-body font-bold">2</span>
               </div>
               <div>
                 <p className="font-medium font-body text-kobo-dark">Disconnect USB cable</p>
@@ -75,7 +75,7 @@ export function RestoreSuccess({ result, onDone }) {
 
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 bg-kobo-accent/10 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-kobo-accent font-bold">3</span>
+                <span className="text-kobo-accent font-body font-bold">3</span>
               </div>
               <div>
                 <p className="font-medium font-body text-kobo-dark">Your books are ready!</p>

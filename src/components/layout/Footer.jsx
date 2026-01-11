@@ -13,7 +13,7 @@ export function Footer({ onNavigate }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* About */}
           <div>
-            <h3 className="text-lg font-bold mb-3">Kobo Backup Manager</h3>
+            <h3 className="text-lg font-display font-bold mb-3">Kobo Backup Manager</h3>
             <p className="text-sm text-kobo-gray-light">
               A free, open-source tool to backup and restore your Kobo e-reader library.
               All processing happens in your browser - your data never leaves your device.
@@ -22,7 +22,7 @@ export function Footer({ onNavigate }) {
 
           {/* Links */}
           <div>
-            <h3 className="text-lg font-bold mb-3">Resources</h3>
+            <h3 className="text-lg font-display font-bold mb-3">Resources</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <button
@@ -66,7 +66,7 @@ export function Footer({ onNavigate }) {
 
           {/* Privacy Badge */}
           <div>
-            <h3 className="text-lg font-bold mb-3">Privacy First</h3>
+            <h3 className="text-lg font-display font-bold mb-3">Privacy First</h3>
             <div className="space-y-2 text-sm text-kobo-gray-light">
               <div className="flex items-start gap-2">
                 <svg className="w-5 h-5 text-kobo-success flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

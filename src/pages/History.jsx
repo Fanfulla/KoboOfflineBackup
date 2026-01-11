@@ -45,7 +45,7 @@ export function History({ onNavigate }) {
                 <Icon type="history" size={48} className="text-kobo-gray-light" />
               </div>
 
-              <h2 className="text-3xl font-bold text-kobo-dark mb-4">
+              <h2 className="text-3xl font-display font-bold text-kobo-dark mb-4">
                 No Backup History
               </h2>
 
@@ -73,7 +73,7 @@ export function History({ onNavigate }) {
       <Container>
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-kobo-dark mb-2">
+            <h1 className="text-4xl font-display font-bold text-kobo-dark mb-2">
               Backup History
             </h1>
             <p className="text-lg text-kobo-gray">
@@ -123,7 +123,7 @@ export function History({ onNavigate }) {
             <Icon type="alert" size={32} className="text-kobo-error" />
           </div>
 
-          <h3 className="text-2xl font-bold text-kobo-dark mb-2">
+          <h3 className="text-2xl font-display font-bold text-kobo-dark mb-2">
             Delete Backup?
           </h3>
 
@@ -169,7 +169,7 @@ function BackupCard({ backup, onDelete, onRestore }) {
 
         {/* Backup Info */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-bold text-kobo-dark mb-1 truncate">
+          <h3 className="text-lg font-display font-bold text-kobo-dark mb-1 truncate">
             {backup.filename}
           </h3>
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-kobo-gray">

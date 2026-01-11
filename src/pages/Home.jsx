@@ -14,7 +14,7 @@ export function Home({ onNavigate }) {
       <section className="bg-gradient-to-b from-kobo-cream to-white py-16 sm:py-24">
         <Container>
           <div className="text-center animate-fade-in">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-kobo-dark mb-6">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-display font-bold text-kobo-dark mb-6">
               Never Lose Your
               <br />
               <span className="text-kobo-accent">Kobo Library</span> Again
@@ -68,7 +68,7 @@ export function Home({ onNavigate }) {
       {/* Features Section */}
       <section className="py-16">
         <Container>
-          <h2 className="text-3xl sm:text-4xl font-bold text-kobo-dark text-center mb-12">
+          <h2 className="text-3xl sm:text-4xl font-display font-bold text-kobo-dark text-center mb-12">
             Why Use Kobo Backup Manager?
           </h2>
 
@@ -77,7 +77,7 @@ export function Home({ onNavigate }) {
               <div className="w-16 h-16 bg-kobo-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Icon type="device" size={32} className="text-kobo-accent" />
               </div>
-              <h3 className="text-xl font-bold text-kobo-dark mb-3">
+              <h3 className="text-xl font-display font-bold text-kobo-dark mb-3">
                 Complete Protection
               </h3>
               <p className="text-kobo-gray">
@@ -90,7 +90,7 @@ export function Home({ onNavigate }) {
               <div className="w-16 h-16 bg-kobo-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Icon type="check" size={32} className="text-kobo-success" />
               </div>
-              <h3 className="text-xl font-bold text-kobo-dark mb-3">
+              <h3 className="text-xl font-display font-bold text-kobo-dark mb-3">
                 Privacy First
               </h3>
               <p className="text-kobo-gray">
@@ -103,7 +103,7 @@ export function Home({ onNavigate }) {
               <div className="w-16 h-16 bg-kobo-info/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Icon type="restore" size={32} className="text-kobo-info" />
               </div>
-              <h3 className="text-xl font-bold text-kobo-dark mb-3">
+              <h3 className="text-xl font-display font-bold text-kobo-dark mb-3">
                 Easy Restore
               </h3>
               <p className="text-kobo-gray">
@@ -118,7 +118,7 @@ export function Home({ onNavigate }) {
       {/* How It Works */}
       <section className="py-16 bg-kobo-cream-dark/30">
         <Container>
-          <h2 className="text-3xl sm:text-4xl font-bold text-kobo-dark text-center mb-12">
+          <h2 className="text-3xl sm:text-4xl font-display font-bold text-kobo-dark text-center mb-12">
             How It Works
           </h2>
 
@@ -128,7 +128,7 @@ export function Home({ onNavigate }) {
                 1
               </div>
               <div>
-                <h3 className="text-xl font-bold text-kobo-dark mb-2">
+                <h3 className="text-xl font-display font-bold text-kobo-dark mb-2">
                   Connect Your Kobo
                 </h3>
                 <p className="text-kobo-gray">
@@ -143,7 +143,7 @@ export function Home({ onNavigate }) {
                 2
               </div>
               <div>
-                <h3 className="text-xl font-bold text-kobo-dark mb-2">
+                <h3 className="text-xl font-display font-bold text-kobo-dark mb-2">
                   Select Your Device
                 </h3>
                 <p className="text-kobo-gray">
@@ -158,7 +158,7 @@ export function Home({ onNavigate }) {
                 3
               </div>
               <div>
-                <h3 className="text-xl font-bold text-kobo-dark mb-2">
+                <h3 className="text-xl font-display font-bold text-kobo-dark mb-2">
                   Create Backup
                 </h3>
                 <p className="text-kobo-gray">
@@ -184,13 +184,13 @@ export function Home({ onNavigate }) {
       {/* FAQ Teaser */}
       <section className="py-16">
         <Container size="sm">
-          <h2 className="text-3xl sm:text-4xl font-bold text-kobo-dark text-center mb-8">
+          <h2 className="text-3xl sm:text-4xl font-display font-bold text-kobo-dark text-center mb-8">
             Frequently Asked Questions
           </h2>
 
           <div className="space-y-4">
             <Card>
-              <h3 className="font-bold text-kobo-dark mb-2">
+              <h3 className="font-display font-bold text-kobo-dark mb-2">
                 Is my data safe?
               </h3>
               <p className="text-kobo-gray">
@@ -201,7 +201,7 @@ export function Home({ onNavigate }) {
             </Card>
 
             <Card>
-              <h3 className="font-bold text-kobo-dark mb-2">
+              <h3 className="font-display font-bold text-kobo-dark mb-2">
                 Does this work with Kobo store books?
               </h3>
               <p className="text-kobo-gray">
@@ -211,7 +211,7 @@ export function Home({ onNavigate }) {
             </Card>
 
             <Card>
-              <h3 className="font-bold text-kobo-dark mb-2">
+              <h3 className="font-display font-bold text-kobo-dark mb-2">
                 Which browsers are supported?
               </h3>
               <p className="text-kobo-gray">

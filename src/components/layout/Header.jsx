@@ -40,7 +40,7 @@ export function Header({ currentPage = 'home', onNavigate }) {
               </svg>
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-xl font-bold text-kobo-dark">
+              <h1 className="text-xl font-display font-bold text-kobo-dark">
                 Kobo Backup Manager
               </h1>
               <p className="text-xs text-kobo-gray">

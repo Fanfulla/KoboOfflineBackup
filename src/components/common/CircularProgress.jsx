@@ -47,7 +47,7 @@ export function CircularProgress({
 
       {showLabel && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-5xl font-bold text-kobo-dark">
+          <span className="text-5xl font-display font-bold text-kobo-dark">
             {Math.round(normalizedPercent)}%
           </span>
         </div>

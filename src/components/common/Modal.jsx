@@ -64,7 +64,7 @@ export function Modal({
       >
         {title && (
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-kobo-dark">{title}</h2>
+            <h2 className="text-xl font-display font-bold text-kobo-dark">{title}</h2>
             <button
               onClick={onClose}
               className="p-2 hover:bg-kobo-gray-light/20 rounded-lg transition-colors"

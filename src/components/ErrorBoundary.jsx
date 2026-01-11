@@ -68,7 +68,7 @@ export class ErrorBoundary extends Component {
                 </div>
 
                 {/* Error Heading */}
-                <h1 className="text-4xl font-bold text-kobo-dark mb-4">
+                <h1 className="text-4xl font-display font-bold text-kobo-dark mb-4">
                   Oops! Something Went Wrong
                 </h1>
 

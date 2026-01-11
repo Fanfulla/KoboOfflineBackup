@@ -162,7 +162,7 @@ export function FAQ({ onNavigate }) {
       </Button>
 
       <header className="mb-12">
-        <h1 className="text-4xl font-bold text-kobo-dark mb-4">
+        <h1 className="text-4xl font-display font-bold text-kobo-dark mb-4">
           Frequently Asked Questions
         </h1>
         <p className="text-lg text-kobo-gray">
@@ -172,7 +172,7 @@ export function FAQ({ onNavigate }) {
 
       {faqs.map((category, categoryIndex) => (
         <section key={categoryIndex} className="mb-12">
-          <h2 className="text-2xl font-bold text-kobo-dark mb-6 border-b-2 border-kobo-accent pb-2">
+          <h2 className="text-2xl font-display font-bold text-kobo-dark mb-6 border-b-2 border-kobo-accent pb-2">
             {category.category}
           </h2>
           <div className="space-y-4">
@@ -188,7 +188,7 @@ export function FAQ({ onNavigate }) {
                     className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-kobo-cream/50 transition-colors"
                     aria-expanded={isOpen}
                   >
-                    <h3 className="text-lg font-bold text-kobo-dark pr-4">
+                    <h3 className="text-lg font-display font-bold text-kobo-dark pr-4">
                       {faq.question}
                     </h3>
                     <svg
@@ -222,7 +222,7 @@ export function FAQ({ onNavigate }) {
       ))}
 
       <section className="mt-16 bg-kobo-accent/10 rounded-xl p-8 text-center">
-        <h2 className="text-2xl font-bold text-kobo-dark mb-4">
+        <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">
           Still have questions?
         </h2>
         <p className="text-kobo-gray mb-6">
