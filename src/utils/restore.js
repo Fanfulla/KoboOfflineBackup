@@ -105,6 +105,7 @@ export async function restoreToDevice(deviceHandle, backupData, options = {}) {
     includeBooks = true,
     includeAnnotations = true,
     includeProgress = true,
+    cleanExistingBooks = true, // NEW: Clean existing books before restore
     onProgress = null,
   } = options;
 
@@ -129,11 +130,53 @@ export async function restoreToDevice(deviceHandle, backupData, options = {}) {
       );
     }
 
+    // Clean existing books if requested
+    if (includeBooks && cleanExistingBooks && backupData.bookFiles.length > 0) {
+      reportProgress('Removing existing books...', 5);
+
+      try {
+        const cleanedCount = await cleanExistingBooksFromDevice(deviceHandle, backupData.bookPathMap, reportProgress);
+        console.log(`[RESTORE] Cleaned ${cleanedCount} existing book files/folders`);
+      } catch (error) {
+        console.warn('[RESTORE] Failed to clean existing books:', error);
+        // Continue with restore even if cleanup fails
+      }
+    }
+
     // Restore database
-    reportProgress('Restoring database...', 10);
+    reportProgress('Restoring database...', 15);
 
     try {
-      await writeFile(koboFolder, 'KoboReader.sqlite', backupData.database);
+      // CRITICAL: Delete existing WAL/SHM files to prevent database corruption
+      // If we overwrite the .sqlite file but leave old WAL files, SQLite will try to recover
+      // from the mismatched WAL, corrupting the database.
+      try {
+        await koboFolder.removeEntry('KoboReader.sqlite-wal');
+        console.log('[RESTORE] Removed existing WAL file');
+      } catch (e) { /* Warning is fine, file might not exist */ }
+
+      try {
+        await koboFolder.removeEntry('KoboReader.sqlite-shm');
+        console.log('[RESTORE] Removed existing SHM file');
+      } catch (e) { /* Warning is fine */ }
+
+      // NEW: Sanitize database before writing
+      reportProgress('Sanitizing database...', 18);
+      let dbData = backupData.database;
+      try {
+        const db = await openDatabase(backupData.database);
+        await db.sanitize();
+        dbData = await db.export();
+        // db.close() is handled by garbage collection or we could add close() if we refactor,
+        // but openDatabase returns a new instance. Ideally we should close it.
+        db.close();
+        console.log('[RESTORE] Database sanitized and exported');
+      } catch (error) {
+        console.warn('[RESTORE] Database sanitization failed, using original:', error);
+        // Fallback to original
+      }
+
+      await writeFile(koboFolder, 'KoboReader.sqlite', dbData);
     } catch (error) {
       throw new RestoreError(
         'Failed to write database to device',
@@ -155,6 +198,11 @@ export async function restoreToDevice(deviceHandle, backupData, options = {}) {
         try {
           // Extract book file from ZIP
           const bookBlob = await bookFile.zipEntry.async('blob');
+
+          // Log the path being used (first 5 books only)
+          if (i < 5) {
+            console.log(`[RESTORE DEBUG] Book ${i + 1}: "${bookFile.name}" -> "${bookFile.originalPath}"`);
+          }
 
           // Write to original path (preserves database ContentID references)
           // This ensures annotations and reading progress are correctly linked
@@ -362,7 +410,6 @@ export async function validateRestoreTarget(deviceHandle) {
     };
   }
 }
-
 /**
  * Extract book file paths from backup database
  * Creates a mapping from filename to original path (without file:// prefix)
@@ -373,15 +420,30 @@ async function extractBookPathsFromDatabase(databaseBuffer) {
   const pathMap = new Map();
 
   try {
+    console.log('[RESTORE DEBUG] Opening database to extract book paths...');
     const db = await openDatabase(databaseBuffer);
     const books = await db.getBooks();
     db.close();
 
+    console.log(`[RESTORE DEBUG] Found ${books.length} books in database`);
+
+    // Log first few books to see the data structure
+    if (books.length > 0) {
+      console.log('[RESTORE DEBUG] Sample book data:', {
+        ContentID: books[0].ContentID,
+        FilePath: books[0].FilePath,
+        Title: books[0].Title
+      });
+    }
+
     for (const book of books) {
-      if (book.ContentID) {
+      // Use ContentID if available, otherwise try FilePath
+      const contentPath = book.ContentID || book.FilePath;
+
+      if (contentPath) {
         // ContentID format: "file:///mnt/onboard/path/to/book.epub"
         // We need to extract the relative path from the Kobo mount point
-        let originalPath = book.ContentID;
+        let originalPath = contentPath;
 
         // Remove file:// prefix
         if (originalPath.startsWith('file://')) {
@@ -402,10 +464,81 @@ async function extractBookPathsFromDatabase(databaseBuffer) {
         }
       }
     }
+
+    console.log(`[RESTORE DEBUG] Created path map with ${pathMap.size} entries`);
+
+    // Log some sample mappings
+    const entries = Array.from(pathMap.entries()).slice(0, 3);
+    console.log('[RESTORE DEBUG] Sample path mappings:', entries);
+
   } catch (error) {
-    console.error('Failed to extract book paths from database:', error);
+    console.error('[RESTORE DEBUG] Failed to extract book paths from database:', error);
     // Return empty map - will fall back to using just filename
   }
 
   return pathMap;
+}
+
+/**
+ * Clean existing book files from device before restore
+ * Removes book files that would conflict with the restore
+ * @param {FileSystemDirectoryHandle} deviceHandle - Device root handle
+ * @param {Map<string, string>} bookPathMap - Map of filename -> original path
+ * @param {Function} reportProgress - Progress callback
+ * @returns {Promise<number>} Number of items cleaned
+ */
+async function cleanExistingBooksFromDevice(deviceHandle, bookPathMap, reportProgress) {
+  let cleanedCount = 0;
+
+  // Sets to track what to remove
+  const dirsToClean = new Set();
+  const filesToClean = new Set();
+
+  for (const [filename, originalPath] of bookPathMap.entries()) {
+    // 1. Identify destination directories to clean (e.g. "AuthorName/")
+    const parts = originalPath.split('/');
+    if (parts.length > 1) {
+      dirsToClean.add(parts[0]);
+    }
+
+    // 2. ALWAYS identify the flat filename in root to clean
+    // This removes the "duplicates" caused by the previous buggy restore
+    // or manual flat copies
+    filesToClean.add(filename);
+  }
+
+  console.log(`[RESTORE CLEANUP] Targets: ${dirsToClean.size} directories, ${filesToClean.size} root files`);
+
+  // Remove top-level directories (author folders)
+  for (const dirName of dirsToClean) {
+    try {
+      await deviceHandle.removeEntry(dirName, { recursive: true });
+      cleanedCount++;
+      console.log(`[RESTORE CLEANUP] Removed directory: ${dirName}`);
+    } catch (error) {
+      // Directory might not exist, that's fine
+      if (error.name !== 'NotFoundError') {
+        console.warn(`[RESTORE CLEANUP] Could not remove directory ${dirName}:`, error.message);
+      }
+    }
+  }
+
+  // Remove root-level book files
+  let fileCount = 0;
+  for (const filename of filesToClean) {
+    try {
+      await deviceHandle.removeEntry(filename);
+      cleanedCount++;
+      fileCount++;
+    } catch (error) {
+      // File might not exist, that's fine
+      if (error.name !== 'NotFoundError') {
+        // Only warn for unexpected errors
+        console.warn(`[RESTORE CLEANUP] Could not remove file ${filename}:`, error.message);
+      }
+    }
+  }
+  console.log(`[RESTORE CLEANUP] Removed ${fileCount} root files`);
+
+  return cleanedCount;
 }

@@ -12,28 +12,30 @@
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
+    "browser-fs-access": "^0.35.0",
+    "jszip": "^3.10.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "zustand": "^4.5.0",
     "sql.js": "^1.10.3",
-    "jszip": "^3.10.1",
-    "browser-fs-access": "^0.35.0"
+    "zustand": "^4.5.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.4.6",
+    "@testing-library/react": "^16.0.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
-    "vite": "^5.3.1",
-    "tailwindcss": "^3.4.4",
-    "postcss": "^8.4.38",
+    "adm-zip": "^0.5.16",
     "autoprefixer": "^10.4.19",
-    "vitest": "^1.6.0",
-    "@testing-library/react": "^16.0.0",
-    "@testing-library/jest-dom": "^6.4.6",
+    "better-sqlite3": "^12.6.2",
     "eslint": "^8.57.0",
     "eslint-plugin-react": "^7.34.2",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.7",
-    "prettier": "^3.3.2"
+    "postcss": "^8.4.38",
+    "prettier": "^3.3.2",
+    "tailwindcss": "^3.4.4",
+    "vite": "^5.3.1",
+    "vitest": "^1.6.0"
   }
 }

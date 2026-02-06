@@ -375,6 +375,37 @@ export class KoboDatabase {
     const data = this.db.export();
     return data.buffer;
   }
+
+  /**
+   * Sanitize database for restore
+   * Runs VACUUM and sets incompatible flags to defaults
+   * @returns {Promise<void>}
+   */
+  async sanitize() {
+    await this.ready;
+    try {
+      console.log('[DB] Running integrity check...');
+      const integrity = this.db.exec("PRAGMA integrity_check");
+      console.log('[DB] Integrity check result:', integrity[0].values[0][0]);
+
+      console.log('[DB] Sanitizing database...');
+      // 1. Force rollback journal mode (no WAL)
+      this.db.exec("PRAGMA journaling_mode = DELETE");
+
+      // 2. Vacuum to rebuild the database file structure cleanly
+      // This fixes fragmentation and ensures a clean SQLite file
+      this.db.exec("VACUUM");
+
+      console.log('[DB] Database sanitized successfully');
+    } catch (error) {
+      console.error('[DB ERROR] Sanitize failed:', error);
+      throw new DatabaseError(
+        'Failed to sanitize database',
+        ERROR_CODES.DB_WRITE_ERROR,
+        { originalError: error }
+      );
+    }
+  }
 }
 
 /**
