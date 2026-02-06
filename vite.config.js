@@ -19,7 +19,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
   },
   optimizeDeps: {
-    exclude: ['sql.js'], // sql.js uses WASM, exclude from pre-bundling
+    // Don't exclude sql.js - let Vite handle it
   },
   server: {
     headers: {

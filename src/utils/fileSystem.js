@@ -292,6 +292,39 @@ export async function writeFile(dirHandle, filename, data) {
 }
 
 /**
+ * Write data to a file at a specific path, creating directories as needed
+ * @param {FileSystemDirectoryHandle} rootHandle - Root directory handle
+ * @param {string} filePath - Path to file (e.g., "Libri/subfolder/book.epub")
+ * @param {Blob|ArrayBuffer|string} data - Data to write
+ * @returns {Promise<void>}
+ */
+export async function writeFileToPath(rootHandle, filePath, data) {
+  try {
+    // Normalize path separators and remove leading slash
+    const normalizedPath = filePath.replace(/\\/g, '/').replace(/^\//, '');
+    const parts = normalizedPath.split('/');
+    const filename = parts.pop();
+    
+    // Navigate/create directories
+    let currentDir = rootHandle;
+    for (const dirName of parts) {
+      if (dirName && dirName !== '.') {
+        currentDir = await currentDir.getDirectoryHandle(dirName, { create: true });
+      }
+    }
+    
+    // Write the file
+    await writeFile(currentDir, filename, data);
+  } catch (error) {
+    throw new FileSystemError(
+      `Failed to write file at path: ${filePath}`,
+      ERROR_CODES.FS_WRITE_ERROR,
+      { filePath, originalError: error }
+    );
+  }
+}
+
+/**
  * Check if File System Access API is supported
  * @returns {boolean} True if supported
  */

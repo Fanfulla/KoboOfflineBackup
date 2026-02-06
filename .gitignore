@@ -59,6 +59,7 @@ out/
 ehthumbs.db
 Thumbs.db
 desktop.ini
+*.zip
 
 # Environment variables
 .env

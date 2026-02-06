@@ -4,9 +4,10 @@
  */
 
 import JSZip from 'jszip';
-import { writeFile } from './fileSystem.js';
+import { writeFile, writeFileToPath } from './fileSystem.js';
 import { RestoreError, ERROR_CODES } from './errors.js';
 import { validateBackupMetadata } from './validation.js';
+import { openDatabase } from './koboDatabase.js';
 
 /**
  * Parse and validate a backup ZIP file
@@ -48,7 +49,10 @@ export async function parseBackupFile(file) {
     // Extract database
     const database = await zip.files['KoboReader.sqlite'].async('arraybuffer');
 
-    // Get list of book files
+    // Extract original book paths from database
+    const bookPathMap = await extractBookPathsFromDatabase(database);
+
+    // Get list of book files with their original paths
     const bookFiles = [];
     const booksFolder = zip.folder('books');
 
@@ -56,9 +60,12 @@ export async function parseBackupFile(file) {
       for (const [path, zipEntry] of Object.entries(zip.files)) {
         if (path.startsWith('books/') && !zipEntry.dir) {
           const filename = path.replace('books/', '');
+          // Find original path for this book
+          const originalPath = bookPathMap.get(filename) || filename;
           bookFiles.push({
             name: filename,
             path: path,
+            originalPath: originalPath,
             zipEntry: zipEntry,
           });
         }
@@ -69,6 +76,7 @@ export async function parseBackupFile(file) {
       metadata,
       database,
       bookFiles,
+      bookPathMap,
       zip,
       valid: true,
     };
@@ -148,8 +156,9 @@ export async function restoreToDevice(deviceHandle, backupData, options = {}) {
           // Extract book file from ZIP
           const bookBlob = await bookFile.zipEntry.async('blob');
 
-          // Write to device root (where books are typically stored)
-          await writeFile(deviceHandle, bookFile.name, bookBlob);
+          // Write to original path (preserves database ContentID references)
+          // This ensures annotations and reading progress are correctly linked
+          await writeFileToPath(deviceHandle, bookFile.originalPath, bookBlob);
 
           restoredBooks++;
           const progress = 20 + (restoredBooks / totalBooks) * 70; // 20-90%
@@ -352,4 +361,51 @@ export async function validateRestoreTarget(deviceHandle) {
       error: `Validation failed: ${error.message}`,
     };
   }
+}
+
+/**
+ * Extract book file paths from backup database
+ * Creates a mapping from filename to original path (without file:// prefix)
+ * @param {ArrayBuffer} databaseBuffer - SQLite database as ArrayBuffer
+ * @returns {Promise<Map<string, string>>} Map of filename -> original relative path
+ */
+async function extractBookPathsFromDatabase(databaseBuffer) {
+  const pathMap = new Map();
+
+  try {
+    const db = await openDatabase(databaseBuffer);
+    const books = await db.getBooks();
+    db.close();
+
+    for (const book of books) {
+      if (book.ContentID) {
+        // ContentID format: "file:///mnt/onboard/path/to/book.epub"
+        // We need to extract the relative path from the Kobo mount point
+        let originalPath = book.ContentID;
+
+        // Remove file:// prefix
+        if (originalPath.startsWith('file://')) {
+          originalPath = originalPath.replace('file://', '');
+        }
+
+        // Remove /mnt/onboard/ prefix (Kobo's internal mount point)
+        // This leaves us with the relative path from the device root
+        if (originalPath.startsWith('/mnt/onboard/')) {
+          originalPath = originalPath.replace('/mnt/onboard/', '');
+        }
+
+        // Extract just the filename (for matching with backup files)
+        const filename = originalPath.split('/').pop();
+
+        if (filename) {
+          pathMap.set(filename, originalPath);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Failed to extract book paths from database:', error);
+    // Return empty map - will fall back to using just filename
+  }
+
+  return pathMap;
 }
