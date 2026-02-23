@@ -54,21 +54,32 @@ export async function parseBackupFile(file) {
 
     // Get list of book files with their original paths
     const bookFiles = [];
-    const booksFolder = zip.folder('books');
 
-    if (booksFolder) {
-      for (const [path, zipEntry] of Object.entries(zip.files)) {
-        if (path.startsWith('books/') && !zipEntry.dir) {
-          const filename = path.replace('books/', '');
-          // Find original path for this book
-          const originalPath = bookPathMap.get(filename) || filename;
-          bookFiles.push({
-            name: filename,
-            path: path,
-            originalPath: originalPath,
-            zipEntry: zipEntry,
-          });
+    for (const [path, zipEntry] of Object.entries(zip.files)) {
+      if (path.startsWith('books/') && !zipEntry.dir) {
+        // zipRelPath: the part after "books/"
+        // New backup format: "Libri/Author/book.epub" (full relative path embedded in ZIP)
+        // Old backup format: "book.epub" (filename only, path recovered via pathMap)
+        const zipRelPath = path.replace('books/', '');
+        const displayName = zipRelPath.split('/').pop();
+
+        let originalPath;
+        if (zipRelPath.includes('/')) {
+          // New format: path is already embedded in the ZIP structure — use it directly.
+          // This is the most reliable approach since it doesn't depend on the database lookup.
+          originalPath = zipRelPath;
+        } else {
+          // Old backup format (backwards compatibility):
+          // look up the full path from the database-derived pathMap.
+          originalPath = bookPathMap.get(zipRelPath) || zipRelPath;
         }
+
+        bookFiles.push({
+          name: displayName,
+          path: path,
+          originalPath: originalPath,
+          zipEntry: zipEntry,
+        });
       }
     }
 
@@ -188,6 +199,7 @@ export async function restoreToDevice(deviceHandle, backupData, options = {}) {
     reportProgress('Database restored', 20);
 
     // Restore books
+    const failedBooks = [];
     if (includeBooks && backupData.bookFiles.length > 0) {
       const totalBooks = backupData.bookFiles.length;
       let restoredBooks = 0;
@@ -195,48 +207,93 @@ export async function restoreToDevice(deviceHandle, backupData, options = {}) {
       for (let i = 0; i < backupData.bookFiles.length; i++) {
         const bookFile = backupData.bookFiles[i];
 
-        try {
-          // Extract book file from ZIP
-          const bookBlob = await bookFile.zipEntry.async('blob');
+        // Retry up to 2 times before marking a book as failed
+        let lastError = null;
+        let success = false;
 
-          // Log the path being used (first 5 books only)
-          if (i < 5) {
-            console.log(`[RESTORE DEBUG] Book ${i + 1}: "${bookFile.name}" -> "${bookFile.originalPath}"`);
+        for (let attempt = 1; attempt <= 2; attempt++) {
+          try {
+            // Extract book file from ZIP
+            const bookBlob = await bookFile.zipEntry.async('blob');
+
+            // Log the path being used (first 5 books only)
+            if (i < 5) {
+              console.log(`[RESTORE] Book ${i + 1}: "${bookFile.name}" -> "${bookFile.originalPath}"`);
+            }
+
+            // Write to original path (preserves database ContentID references).
+            // The Kobo matches book files to DB records via ContentID which encodes
+            // the full path (file:///mnt/onboard/<originalPath>). If this path is
+            // wrong, the Kobo creates a new empty record and progress/annotations
+            // are lost.
+            await writeFileToPath(deviceHandle, bookFile.originalPath, bookBlob);
+
+            success = true;
+            break;
+          } catch (error) {
+            lastError = error;
+            if (attempt < 2) {
+              // Brief pause before retry
+              await new Promise(resolve => setTimeout(resolve, 300));
+            }
           }
-
-          // Write to original path (preserves database ContentID references)
-          // This ensures annotations and reading progress are correctly linked
-          await writeFileToPath(deviceHandle, bookFile.originalPath, bookBlob);
-
-          restoredBooks++;
-          const progress = 20 + (restoredBooks / totalBooks) * 70; // 20-90%
-          reportProgress(
-            `Restoring books (${restoredBooks}/${totalBooks})...`,
-            progress,
-            { filesProcessed: restoredBooks, totalFiles: totalBooks }
-          );
-        } catch (error) {
-          console.error(`Failed to restore book: ${bookFile.name}`, error);
-          // Continue with other books even if one fails
         }
+
+        if (success) {
+          restoredBooks++;
+        } else {
+          console.error(`Failed to restore book after retries: ${bookFile.name}`, lastError);
+          failedBooks.push({
+            name: bookFile.name,
+            originalPath: bookFile.originalPath,
+            error: lastError?.message || 'Unknown error',
+          });
+        }
+
+        const progress = 20 + ((i + 1) / totalBooks) * 65; // 20-85%
+        reportProgress(
+          `Restoring books (${i + 1}/${totalBooks})...`,
+          progress,
+          { filesProcessed: i + 1, totalFiles: totalBooks }
+        );
       }
 
-      reportProgress('Books restored', 90);
+      reportProgress('Books restored', 85);
+    }
+
+    // Post-restore validation: reopen the database from the device and count books
+    reportProgress('Verifying restore...', 90);
+    let verification = null;
+    try {
+      const restoredDbHandle = await koboFolder.getFileHandle('KoboReader.sqlite');
+      const restoredDbBuffer = await (await restoredDbHandle.getFile()).arrayBuffer();
+      const verifyDb = await openDatabase(restoredDbBuffer);
+      const verifyBooks = await verifyDb.getBooks();
+      verifyDb.close();
+
+      const dbBooksCount = verifyBooks.length;
+      const expectedCount = backupData.metadata?.statistics?.totalBooks || 0;
+      verification = {
+        dbBooksCount,
+        expectedCount,
+        ok: expectedCount === 0 || dbBooksCount >= expectedCount,
+      };
+      console.log(`[RESTORE] Verification: ${dbBooksCount}/${expectedCount} books in restored DB`);
+    } catch (verifyError) {
+      console.warn('[RESTORE] Post-restore verification failed:', verifyError);
     }
 
     // Final steps
     reportProgress('Finalizing restore...', 95);
-
-    // Update metadata (if needed)
-    // ...
-
     reportProgress('Restore complete', 100);
 
     return {
       success: true,
-      booksRestored: backupData.bookFiles.length,
+      booksRestored: backupData.bookFiles.length - failedBooks.length,
+      failedBooks,
       databaseRestored: true,
       metadata: backupData.metadata,
+      verification,
     };
   } catch (error) {
     if (error instanceof RestoreError) {
@@ -445,7 +502,7 @@ async function extractBookPathsFromDatabase(databaseBuffer) {
         // We need to extract the relative path from the Kobo mount point
         let originalPath = contentPath;
 
-        // Remove file:// prefix
+        // Remove file:// prefix (note: file:///mnt/... → /mnt/... after removing file://)
         if (originalPath.startsWith('file://')) {
           originalPath = originalPath.replace('file://', '');
         }
@@ -456,11 +513,24 @@ async function extractBookPathsFromDatabase(databaseBuffer) {
           originalPath = originalPath.replace('/mnt/onboard/', '');
         }
 
-        // Extract just the filename (for matching with backup files)
+        // CRITICAL: URL-decode the path so filenames with spaces/special chars
+        // (stored as %20 etc. in ContentID) match the actual files in the ZIP.
+        // decodeURIComponent is a no-op for paths that aren't encoded.
+        try {
+          originalPath = decodeURIComponent(originalPath);
+        } catch (e) {
+          // If decoding fails (malformed URI), keep the original
+        }
+
+        // Extract just the filename (for matching with backup files stored by name only)
         const filename = originalPath.split('/').pop();
 
         if (filename) {
-          pathMap.set(filename, originalPath);
+          // Only set if not already present: first occurrence wins.
+          // Duplicate filenames with different paths will use the first one.
+          if (!pathMap.has(filename)) {
+            pathMap.set(filename, originalPath);
+          }
         }
       }
     }

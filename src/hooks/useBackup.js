@@ -38,6 +38,7 @@ export function useBackup() {
     try {
       // Read book file blobs
       const bookFileBlobs = [];
+      const backupErrors = [];
 
       if (options.includeBooks && koboData.bookFiles) {
         setProgress({
@@ -54,7 +55,11 @@ export function useBackup() {
             const blob = await readFile(fileInfo.handle);
 
             bookFileBlobs.push({
-              name: fileInfo.name,
+              // Use the full relative path (e.g. "Libri/Author/book.epub") so
+              // the ZIP preserves the original directory structure. The Kobo
+              // matches books by ContentID which encodes the full path, so the
+              // file must be restored to exactly the same location.
+              name: fileInfo.path || fileInfo.name,
               blob: new Blob([blob]),
               size: blob.byteLength,
             });
@@ -67,7 +72,7 @@ export function useBackup() {
             }));
           } catch (err) {
             console.error(`Failed to read book file: ${fileInfo.name}`, err);
-            // Continue with other files
+            backupErrors.push({ file: fileInfo.name, error: err.message });
           }
         }
       }
@@ -76,6 +81,7 @@ export function useBackup() {
       const backupData = {
         ...koboData,
         bookFiles: bookFileBlobs,
+        backupErrors,
       };
 
       const backupResult = await createBackup(backupData, {

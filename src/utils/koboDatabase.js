@@ -98,8 +98,8 @@ export class KoboDatabase {
           MimeType
         FROM content
         WHERE ContentType = 6
-          AND IsDownloaded = 'true'
-          AND BookTitle IS NULL
+          AND LOWER(IsDownloaded) = 'true'
+          AND (BookTitle IS NULL OR BookTitle = '')
           AND ContentID LIKE 'file://%'
         ORDER BY DateLastRead DESC
       `;
@@ -115,7 +115,7 @@ export class KoboDatabase {
         DateLastRead: book.DateLastRead ? new Date(book.DateLastRead) : null,
         DateCreated: book.DateCreated ? new Date(book.DateCreated) : null,
         TimeSpentReading: book.TimeSpentReading || 0,
-        FilePath: book.FilePath ? book.FilePath.replace('file://', '') : null,
+        FilePath: book.FilePath ? decodeURIComponent(book.FilePath.replace('file://', '')) : null,
       }));
     } catch (error) {
       console.error('[DB ERROR] getBooks failed:', error.message);
@@ -263,6 +263,7 @@ export class KoboDatabase {
         model: deviceModel,
         firmwareVersion: firmwareVersion,
         databaseVersion: this.getDatabaseVersion(),
+        schemaVersion: this.getSchemaVersion(),
       };
     } catch (error) {
       // If we can't get device info, return defaults
@@ -270,14 +271,15 @@ export class KoboDatabase {
         model: 'Unknown Kobo Device',
         firmwareVersion: 'Unknown',
         databaseVersion: 'Unknown',
+        schemaVersion: 0,
       };
     }
   }
 
   /**
-   * Get database schema version
+   * Get SQLite library version
    * @private
-   * @returns {string} Database version
+   * @returns {string} SQLite version string
    */
   getDatabaseVersion() {
     try {
@@ -287,6 +289,21 @@ export class KoboDatabase {
       return data ? data.version : 'Unknown';
     } catch (error) {
       return 'Unknown';
+    }
+  }
+
+  /**
+   * Get Kobo database schema version via PRAGMA user_version
+   * Different Kobo firmware versions bump this number when changing the schema
+   * @returns {number} Schema version (0 if unknown)
+   */
+  getSchemaVersion() {
+    try {
+      const result = this.db.exec('PRAGMA user_version');
+      const data = this.parseResults(result)[0];
+      return data ? data.user_version : 0;
+    } catch (error) {
+      return 0;
     }
   }
 

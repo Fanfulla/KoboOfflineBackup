@@ -61,15 +61,32 @@ export async function createBackup(koboData, options = {}) {
 
     reportProgress('Adding metadata...', 75);
 
+    // Calculate per-file checksums for later restore verification
+    const fileChecksums = {};
+    if (koboData.bookFiles && koboData.bookFiles.length > 0) {
+      for (const bookFile of koboData.bookFiles) {
+        try {
+          const checksum = await calculateChecksum(bookFile.blob);
+          // Key by just the filename (last segment) for readability
+          const displayName = bookFile.name.split('/').pop();
+          fileChecksums[displayName] = checksum;
+        } catch (e) {
+          // Non-critical: skip if checksum fails
+        }
+      }
+    }
+
     // Create backup metadata
+    const deviceInfo = koboData.deviceInfo || { model: 'Unknown', firmwareVersion: 'Unknown' };
     const metadata = {
       version: '1.0.0',
       created: new Date().toISOString(),
       generator: 'Kobo Backup Manager v1.0',
 
-      device: koboData.deviceInfo || {
-        model: 'Unknown',
-        firmwareVersion: 'Unknown',
+      device: {
+        model: deviceInfo.model || 'Unknown',
+        firmwareVersion: deviceInfo.firmwareVersion || 'Unknown',
+        schemaVersion: deviceInfo.schemaVersion ?? 0,
       },
 
       statistics: {
@@ -91,7 +108,8 @@ export async function createBackup(koboData, options = {}) {
       integrity: {
         databaseChecksum: await calculateChecksum(koboData.database),
         filesChecked: koboData.bookFiles?.length || 0,
-        errors: [],
+        fileChecksums,
+        errors: koboData.backupErrors || [],
       },
 
       compatibility: {

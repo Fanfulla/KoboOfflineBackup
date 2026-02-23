@@ -7,20 +7,31 @@ import { Button } from '../common/Button.jsx';
 import { Icon } from '../common/Icon.jsx';
 
 export function RestoreSuccess({ result, onDone }) {
+  const failedBooks = result.failedBooks || [];
+  const verification = result.verification || null;
+  const hasFailures = failedBooks.length > 0;
+  const verificationFailed = verification && !verification.ok;
+
   return (
     <div className="max-w-3xl mx-auto">
       <Card className="text-center">
-        {/* Success Animation */}
-        <div className="w-24 h-24 bg-kobo-success/10 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
-          <Icon type="check" size={48} className="text-kobo-success" />
+        {/* Success / Partial-success Animation */}
+        <div className={`w-24 h-24 ${hasFailures ? 'bg-yellow-100' : 'bg-kobo-success/10'} rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce`}>
+          <Icon
+            type={hasFailures ? 'warning' : 'check'}
+            size={48}
+            className={hasFailures ? 'text-yellow-500' : 'text-kobo-success'}
+          />
         </div>
 
         <h2 className="text-4xl font-display text-kobo-dark mb-4">
-          Restore Complete!
+          {hasFailures ? 'Restore Completed with Warnings' : 'Restore Complete!'}
         </h2>
 
         <p className="text-lg font-body text-kobo-gray mb-8">
-          Your library has been successfully restored to your Kobo
+          {hasFailures
+            ? `${result.booksRestored || 0} books restored, ${failedBooks.length} failed`
+            : 'Your library has been successfully restored to your Kobo'}
         </p>
 
         {/* Summary */}
@@ -41,6 +52,42 @@ export function RestoreSuccess({ result, onDone }) {
             label="Progress"
           />
         </div>
+
+        {/* Failed Books Warning */}
+        {hasFailures && (
+          <div className="text-left p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-6">
+            <h3 className="font-bold font-body text-yellow-800 mb-2 flex items-center gap-2">
+              <Icon type="warning" size={18} />
+              {failedBooks.length} book{failedBooks.length > 1 ? 's' : ''} could not be restored
+            </h3>
+            <ul className="space-y-1 max-h-40 overflow-y-auto">
+              {failedBooks.map((b, i) => (
+                <li key={i} className="text-sm font-body text-yellow-700 flex items-start gap-2">
+                  <span className="mt-0.5 flex-shrink-0">•</span>
+                  <span>
+                    <span className="font-medium">{b.name}</span>
+                    {b.error && <span className="text-yellow-600"> — {b.error}</span>}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Verification Warning */}
+        {verificationFailed && (
+          <div className="text-left p-4 bg-orange-50 border border-orange-200 rounded-lg mb-6">
+            <h3 className="font-bold font-body text-orange-800 mb-1 flex items-center gap-2">
+              <Icon type="warning" size={18} />
+              Database count mismatch
+            </h3>
+            <p className="text-sm font-body text-orange-700">
+              The restored database contains {verification.dbBooksCount} books but the backup
+              reported {verification.expectedCount}. Some records may not have transferred.
+              Try ejecting the device and reconnecting to trigger a full rescan.
+            </p>
+          </div>
+        )}
 
         {/* Next Steps */}
         <div className="text-left p-6 bg-kobo-cream-dark rounded-lg mb-8">
@@ -87,11 +134,20 @@ export function RestoreSuccess({ result, onDone }) {
           </div>
         </div>
 
-        {/* Success Message */}
-        <div className="p-4 bg-kobo-success/10 border border-kobo-success/20 rounded-lg mb-8">
+        {/* Success / Partial message */}
+        <div className={`p-4 ${hasFailures ? 'bg-yellow-50 border border-yellow-200' : 'bg-kobo-success/10 border border-kobo-success/20'} rounded-lg mb-8`}>
           <p className="font-body text-kobo-dark">
-            <Icon type="check" size={16} className="inline text-kobo-success mr-2" />
-            All your books, annotations, and reading progress have been restored
+            {hasFailures ? (
+              <>
+                <Icon type="warning" size={16} className="inline text-yellow-500 mr-2" />
+                Books and reading progress have been restored. Check the warnings above for any issues.
+              </>
+            ) : (
+              <>
+                <Icon type="check" size={16} className="inline text-kobo-success mr-2" />
+                All your books, annotations, and reading progress have been restored
+              </>
+            )}
           </p>
         </div>
 

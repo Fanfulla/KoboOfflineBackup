@@ -123,6 +123,8 @@ export function useRestore() {
       const finalResult = {
         ...restoreResult,
         duration: Date.now() - startTime,
+        failedBooks: restoreResult.failedBooks || [],
+        verification: restoreResult.verification || null,
       };
 
       setResult(finalResult);
