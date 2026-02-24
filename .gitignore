@@ -242,8 +242,9 @@ scratch/
 # Ignore nul file (appears to be an error file)
 nul
 
-# Keep .claude directory (GSD workflow files)
+# Keep .claude directory (GSD workflow files) but exclude local-only config
 !.claude/
+.claude/settings.local.json
 
 # Keep public directory for static assets
 !public/
@@ -253,3 +254,4 @@ nul
 !LICENSE
 !CONTRIBUTING.md
 !CODE_OF_CONDUCT.md
+test-backup.mjs
