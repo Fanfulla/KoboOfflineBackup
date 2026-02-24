@@ -242,16 +242,17 @@ scratch/
 # Ignore nul file (appears to be an error file)
 nul
 
-# Keep .claude directory (GSD workflow files) but exclude local-only config
-!.claude/
-.claude/settings.local.json
+# Exclude .claude and .planning (local dev workflow files, not needed on GitHub)
+.claude/
+.planning/
 
 # Keep public directory for static assets
 !public/
 
-# Keep important documentation
+# Keep only README and LICENSE
 !README.md
 !LICENSE
-!CONTRIBUTING.md
-!CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+KOBO_BACKUP_WEBAPP_BLUEPRINT.md
 test-backup.mjs
