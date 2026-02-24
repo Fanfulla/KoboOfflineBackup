@@ -242,13 +242,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Tailwind Labs** - For TailwindCSS
 - **All Contributors** - Thank you for your contributions!
 
-## 📞 Support
-
-- **Documentation** - Check this README and code comments
-- **Issues** - Report bugs on GitHub Issues
-- **Discussions** - Ask questions in GitHub Discussions
-- **Security** - Email security@example.com for sensitive issues
-
 ## 🗺️ Roadmap
 
 ### ✅ Completed (v1.0)
