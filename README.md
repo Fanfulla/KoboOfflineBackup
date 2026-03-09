@@ -230,9 +230,20 @@ Contributions are welcome! Here's how you can help:
 - Ensure browser compatibility
 - Maintain privacy-first principles
 
+## ⚠️ Disclaimer
+
+This is a **personal project**, shared as-is under the MIT License.
+
+- No support, assistance, or updates are guaranteed
+- Use at your own risk — always keep a separate copy of your books
+- Not affiliated with or endorsed by Rakuten Kobo Inc.
+- Issues and pull requests are welcome but may not receive a response
+
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+The MIT License means you are free to use, copy, modify, and distribute this software, but it comes **with no warranty of any kind** — no guarantee of fitness for purpose, no support obligations, and no liability for any damages.
 
 ## 🙏 Acknowledgments
 
