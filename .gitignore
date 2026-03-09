@@ -256,3 +256,6 @@ CONTRIBUTING.md
 CODE_OF_CONDUCT.md
 KOBO_BACKUP_WEBAPP_BLUEPRINT.md
 test-backup.mjs
+
+# Local analysis/testing folders
+_backup_analysis/

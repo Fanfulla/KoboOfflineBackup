@@ -300,7 +300,7 @@ export function PrivacyPolicy({ onNavigate }) {
         </ul>
         <div className="bg-kobo-cream p-4 rounded-lg">
           <p className="text-kobo-gray mb-2">
-            <strong>GitHub Repository:</strong> <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-kobo-accent hover:underline">github.com/[your-repo-name]</a>
+            <strong>GitHub Repository:</strong> <a href="https://github.com/Fanfulla/KoboOfflineBackup" target="_blank" rel="noopener noreferrer" className="text-kobo-accent hover:underline">github.com/Fanfulla/KoboOfflineBackup</a>
           </p>
           <p className="text-kobo-gray text-sm">
             All questions, bug reports, and feature requests should be submitted via GitHub Issues.
@@ -327,7 +327,7 @@ export function PrivacyPolicy({ onNavigate }) {
         </p>
         <div className="bg-kobo-cream p-4 rounded-lg mb-4">
           <p className="text-kobo-gray mb-2">
-            <strong>GitHub Issues:</strong> <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-kobo-accent hover:underline">github.com/[your-repo]/issues</a>
+            <strong>GitHub Issues:</strong> <a href="https://github.com/Fanfulla/KoboOfflineBackup/issues" target="_blank" rel="noopener noreferrer" className="text-kobo-accent hover:underline">github.com/Fanfulla/KoboOfflineBackup/issues</a>
           </p>
           <p className="text-kobo-gray text-sm">
             Open an issue on GitHub for questions, bug reports, or privacy concerns.

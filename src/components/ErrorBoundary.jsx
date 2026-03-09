@@ -151,7 +151,7 @@ export class ErrorBoundary extends Component {
                   <p className="text-sm text-kobo-gray">
                     If the problem persists, please{' '}
                     <a
-                      href="https://github.com/yourusername/kobo-backup-manager/issues"
+                      href="https://github.com/Fanfulla/KoboOfflineBackup/issues"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-kobo-accent hover:underline font-semibold"

@@ -36,8 +36,8 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/kobo-backup-manager.git
-cd kobo-backup-manager
+git clone https://github.com/Fanfulla/KoboOfflineBackup.git
+cd KoboOfflineBackup
 
 # Install dependencies
 npm install

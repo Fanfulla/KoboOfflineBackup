@@ -50,7 +50,7 @@ export function Footer({ onNavigate }) {
               </li>
               <li>
                 <a
-                  href="https://github.com"
+                  href="https://github.com/Fanfulla/KoboOfflineBackup"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-kobo-gray-light hover:text-kobo-accent transition-colors inline-flex items-center gap-1"
