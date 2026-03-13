@@ -1,5 +1,5 @@
 /**
- * Privacy Policy page - GDPR compliant (January 2026)
+ * Privacy Policy page - GDPR compliant (March 2026)
  */
 
 import PropTypes from 'prop-types';
@@ -18,7 +18,7 @@ export function PrivacyPolicy({ onNavigate }) {
 
       <h1 className="text-4xl font-display font-bold text-kobo-dark mb-4">Privacy Policy</h1>
       <p className="text-kobo-gray mb-8">
-        <strong>Last Updated:</strong> January 11, 2026
+        <strong>Last Updated:</strong> March 13, 2026
       </p>
 
       {/* Introduction */}
@@ -26,39 +26,38 @@ export function PrivacyPolicy({ onNavigate }) {
         <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Introduction</h2>
         <p className="text-kobo-gray mb-4">
           Kobo Backup Manager is a <strong>free, non-commercial, open-source</strong> web application
-          created by the community to help Kobo e-reader users backup their libraries. This Privacy Policy
-          explains how data is processed when you use this tool.
+          that helps Kobo e-reader users backup their libraries. This Privacy Policy explains how data
+          is processed when you use this tool.
         </p>
         <p className="text-kobo-gray mb-4">
           <strong>Key principles:</strong>
         </p>
         <ul className="list-disc list-inside text-kobo-gray ml-4 space-y-1 mb-4">
-          <li>No commercial purpose - this is a free community tool</li>
-          <li>No account required - no registration or login</li>
-          <li>Privacy-first architecture - all backup operations happen in your browser</li>
+          <li>No commercial purpose — this is a free personal project</li>
+          <li>No account required — no registration or login</li>
+          <li>Privacy-first architecture — all backup operations happen entirely in your browser</li>
           <li>Your Kobo library data never leaves your device</li>
-          <li>Open source - full code available on GitHub for security audit</li>
+          <li>Open source — full code available on GitHub for audit</li>
+          <li>No cookies — the only analytics used is cookieless</li>
         </ul>
       </section>
 
       {/* About This Project */}
       <section className="mb-12">
-        <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">About This Open Source Project</h2>
+        <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">About This Project</h2>
         <p className="text-kobo-gray mb-4">
-          This project has <strong>no commercial entity</strong> behind it. It is maintained by volunteers
-          and provided free of charge to the community. The complete source code is available on GitHub,
-          where you can:
+          This is a <strong>personal open-source project</strong> with no commercial entity behind it.
+          The complete source code is available on GitHub, where you can:
         </p>
         <ul className="list-disc list-inside text-kobo-gray ml-4 space-y-1 mb-4">
           <li>Review the code to verify privacy claims</li>
           <li>Report issues or suggest improvements</li>
-          <li>Contribute to the project</li>
-          <li>Fork and modify for your own use</li>
+          <li>Fork and self-host your own copy (without any analytics)</li>
         </ul>
         <p className="text-kobo-gray mb-4">
-          <strong>GDPR Compliance:</strong> While this is a non-commercial project, we still comply with
-          the General Data Protection Regulation (GDPR) to protect EU residents' privacy rights. The use
-          of limited analytics (described below) is for service improvement only, never for commercial gain.
+          <strong>GDPR note:</strong> Although this is a non-commercial project, we still respect EU
+          residents' privacy rights. The minimal analytics described below serves only to understand
+          basic usage; it is never used for commercial gain.
         </p>
       </section>
 
@@ -68,7 +67,7 @@ export function PrivacyPolicy({ onNavigate }) {
 
         <h3 className="text-xl font-display font-bold text-kobo-dark mb-3 mt-6">1. Library Data (Processed Locally Only)</h3>
         <p className="text-kobo-gray mb-4">
-          When you use the Service to create or restore backups, we process:
+          When you create or restore a backup, the app processes:
         </p>
         <ul className="list-disc list-inside text-kobo-gray ml-4 mb-4 space-y-1">
           <li>Kobo database contents (books, highlights, bookmarks, reading progress)</li>
@@ -78,109 +77,110 @@ export function PrivacyPolicy({ onNavigate }) {
         <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-4">
           <p className="font-medium text-green-800">
             ✓ This data is processed entirely within your browser using JavaScript and WebAssembly.
-            It is never transmitted to our servers or any third party.
+            It is never transmitted to any server or third party.
           </p>
         </div>
 
-        <h3 className="text-xl font-display font-bold text-kobo-dark mb-3 mt-6">2. Browser Storage (Local Storage)</h3>
+        <h3 className="text-xl font-display font-bold text-kobo-dark mb-3 mt-6">2. Browser Local Storage</h3>
         <p className="text-kobo-gray mb-4">
-          We store the following information in your browser's local storage:
+          The app stores the following in your browser's local storage:
         </p>
         <ul className="list-disc list-inside text-kobo-gray ml-4 mb-4 space-y-1">
           <li>Backup history (dates, file sizes, statistics)</li>
           <li>Application preferences and settings</li>
-          <li>Feature compatibility information</li>
+          <li>Analytics banner dismissal flag</li>
         </ul>
         <p className="text-kobo-gray mb-4">
-          This data remains on your device and can be deleted at any time by clearing your browser data.
+          This data stays on your device and can be deleted by clearing browser data.
         </p>
 
-        <h3 className="text-xl font-display font-bold text-kobo-dark mb-3 mt-6">3. Analytics Data</h3>
+        <h3 className="text-xl font-display font-bold text-kobo-dark mb-3 mt-6">3. Vercel Analytics (Anonymous Page Views)</h3>
         <p className="text-kobo-gray mb-4">
-          We use Google Analytics 4 (GA4) and ContentSquare to collect anonymous usage statistics:
+          The site uses <strong>Vercel Analytics</strong> to collect anonymous, aggregated page-view
+          statistics. Vercel Analytics is designed with privacy as a core feature:
         </p>
         <ul className="list-disc list-inside text-kobo-gray ml-4 mb-4 space-y-1">
-          <li>Pages visited and features used</li>
-          <li>Browser type, version, and operating system</li>
-          <li>Device type (desktop, tablet, mobile)</li>
-          <li>Approximate location (country/region level)</li>
-          <li>Session duration and interaction patterns</li>
-          <li>Error messages and technical issues</li>
+          <li><strong>No cookies</strong> — does not set any cookies</li>
+          <li><strong>No fingerprinting</strong> — does not track individual users across sessions</li>
+          <li><strong>No personal data</strong> — IP addresses are not stored; only aggregated counts are kept</li>
+          <li>Data collected: page URL, referrer, approximate country, browser/OS family, screen size</li>
         </ul>
-        <p className="text-kobo-gray mb-4">
-          <strong>Important:</strong> Analytics tools do not access, collect, or transmit your Kobo library
-          data, backup files, or any personal reading information. They only track how you interact with
-          the application interface.
-        </p>
+        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+          <p className="font-medium text-blue-800">
+            Vercel Analytics does not access, collect, or transmit your Kobo library data, backup
+            files, or any personal reading information. It only counts page visits at an aggregate level.
+          </p>
+        </div>
       </section>
 
       {/* How We Use Your Information */}
       <section className="mb-12">
         <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">How We Use Your Information</h2>
-        <p className="text-kobo-gray mb-4">We use collected information for the following purposes:</p>
         <ul className="list-disc list-inside text-kobo-gray ml-4 space-y-2">
-          <li><strong>Service Operation:</strong> To provide backup and restore functionality</li>
-          <li><strong>Service Improvement:</strong> To understand usage patterns and improve features</li>
-          <li><strong>Bug Detection:</strong> To identify and fix technical issues</li>
+          <li><strong>Service Operation:</strong> To provide backup and restore functionality (local only)</li>
+          <li><strong>Service Improvement:</strong> To understand which features are used most (via aggregate analytics)</li>
           <li><strong>Browser Compatibility:</strong> To ensure the app works across different browsers</li>
-          <li><strong>User Experience:</strong> To optimize interface design and usability</li>
         </ul>
       </section>
 
       {/* Legal Basis for Processing (GDPR) */}
       <section className="mb-12">
         <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Legal Basis for Processing (GDPR)</h2>
-        <p className="text-kobo-gray mb-4">
-          Under GDPR, we process your data based on the following legal grounds:
-        </p>
         <ul className="list-disc list-inside text-kobo-gray ml-4 space-y-2">
-          <li><strong>Consent:</strong> Analytics tracking requires your consent via cookie banner</li>
-          <li><strong>Legitimate Interests:</strong> Service improvement and bug detection serve our legitimate
-            interest in providing a reliable, high-quality application</li>
-          <li><strong>Contract Performance:</strong> Local data processing is necessary to provide the backup
-            service you request</li>
+          <li>
+            <strong>Legitimate Interests (Art. 6(1)(f)):</strong> Vercel Analytics provides only
+            aggregate, cookieless statistics that cannot identify individuals. This minimal processing
+            serves our legitimate interest in understanding how the app is used, and does not override
+            your privacy rights.
+          </li>
+          <li>
+            <strong>Contract Performance:</strong> Local data processing is necessary to provide the
+            backup service you request.
+          </li>
         </ul>
+        <p className="text-kobo-gray mt-4">
+          Because Vercel Analytics is cookieless and processes no personal data, it does not require
+          a prior consent banner under the ePrivacy Directive.
+        </p>
       </section>
 
       {/* Data Sharing and Third Parties */}
       <section className="mb-12">
         <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Data Sharing and Third Parties</h2>
         <p className="text-kobo-gray mb-4">
-          We share analytics data with the following third-party processors:
+          The only third-party service this site sends data to is:
         </p>
 
-        <div className="space-y-4">
-          <div className="bg-white p-4 rounded-lg border border-kobo-gray-light">
-            <h3 className="font-display font-bold text-kobo-dark mb-2">Google Analytics 4</h3>
-            <p className="text-kobo-gray text-sm mb-2">
-              Purpose: Website analytics and usage statistics
-            </p>
-            <p className="text-kobo-gray text-sm mb-2">
-              Data Collected: Anonymous usage patterns, browser info, approximate location
-            </p>
-            <p className="text-kobo-gray text-sm">
-              Privacy Policy: <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-kobo-accent hover:underline">https://policies.google.com/privacy</a>
-            </p>
-          </div>
-
-          <div className="bg-white p-4 rounded-lg border border-kobo-gray-light">
-            <h3 className="font-display font-bold text-kobo-dark mb-2">ContentSquare</h3>
-            <p className="text-kobo-gray text-sm mb-2">
-              Purpose: User experience analysis and interaction tracking
-            </p>
-            <p className="text-kobo-gray text-sm mb-2">
-              Data Collected: Mouse movements, clicks, scrolling behavior, session recordings (anonymized)
-            </p>
-            <p className="text-kobo-gray text-sm">
-              Privacy Policy: <a href="https://contentsquare.com/privacy-center/" target="_blank" rel="noopener noreferrer" className="text-kobo-accent hover:underline">https://contentsquare.com/privacy-center/</a>
-            </p>
-          </div>
+        <div className="bg-white p-4 rounded-lg border border-kobo-gray-light">
+          <h3 className="font-display font-bold text-kobo-dark mb-2">Vercel Analytics</h3>
+          <p className="text-kobo-gray text-sm mb-1">
+            <strong>Purpose:</strong> Anonymous, aggregate page-view statistics
+          </p>
+          <p className="text-kobo-gray text-sm mb-1">
+            <strong>Data collected:</strong> Page URL, referrer, approximate country, browser family,
+            screen size — no personal identifiers, no cookies
+          </p>
+          <p className="text-kobo-gray text-sm mb-1">
+            <strong>Data processor:</strong> Vercel Inc. (San Francisco, CA, USA) — EU Standard
+            Contractual Clauses apply for transfers outside the EEA
+          </p>
+          <p className="text-kobo-gray text-sm">
+            <strong>Privacy Policy:</strong>{' '}
+            <a
+              href="https://vercel.com/legal/privacy-policy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-kobo-accent hover:underline"
+            >
+              vercel.com/legal/privacy-policy
+            </a>
+          </p>
         </div>
 
-        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mt-4">
-          <p className="font-medium text-blue-800">
-            Important: Your Kobo library data, backup files, and reading information are NEVER shared
-            with any third party. They are processed only within your browser.
+        <div className="bg-green-50 border-l-4 border-green-500 p-4 mt-4">
+          <p className="font-medium text-green-800">
+            Your Kobo library data, backup files, and reading information are NEVER shared with any
+            third party. They are processed only within your browser and never leave your device.
           </p>
         </div>
       </section>
@@ -189,9 +189,9 @@ export function PrivacyPolicy({ onNavigate }) {
       <section className="mb-12">
         <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Data Retention</h2>
         <ul className="list-disc list-inside text-kobo-gray ml-4 space-y-2">
-          <li><strong>Local Storage:</strong> Retained until you clear browser data or uninstall the app</li>
-          <li><strong>Analytics Data:</strong> Google Analytics retains data for 14 months, ContentSquare for 13 months</li>
-          <li><strong>Library Data:</strong> Never retained on our servers (processed locally only)</li>
+          <li><strong>Local Storage:</strong> Retained until you clear browser data</li>
+          <li><strong>Vercel Analytics:</strong> Aggregated data retained for up to 1 year per Vercel's policy; no personal data is stored</li>
+          <li><strong>Library Data:</strong> Never retained on any server — processed locally only</li>
         </ul>
       </section>
 
@@ -199,14 +199,13 @@ export function PrivacyPolicy({ onNavigate }) {
       <section className="mb-12">
         <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Your Rights Under GDPR</h2>
         <p className="text-kobo-gray mb-4">
-          If you are located in the European Economic Area (EEA), you have the following rights:
+          If you are in the European Economic Area (EEA), you have the following rights:
         </p>
         <ul className="list-disc list-inside text-kobo-gray ml-4 space-y-2">
-          <li><strong>Right to Access:</strong> All data is stored locally in your browser - you have full access</li>
-          <li><strong>Right to Erasure:</strong> Clear your browser's local storage to delete all app data ("right to be forgotten")</li>
-          <li><strong>Right to Data Portability:</strong> Your backup files are already portable ZIP files under your control</li>
-          <li><strong>Right to Object:</strong> Opt out of analytics via browser cookie settings</li>
-          <li><strong>Right to Withdraw Consent:</strong> Disable analytics cookies at any time through browser settings</li>
+          <li><strong>Right to Access:</strong> All data is stored locally in your browser — you have full access</li>
+          <li><strong>Right to Erasure:</strong> Clear your browser's local storage to delete all app data</li>
+          <li><strong>Right to Data Portability:</strong> Your backup files are portable ZIP files under your full control</li>
+          <li><strong>Right to Object:</strong> You can block Vercel Analytics by using a browser extension that blocks network requests to <code className="text-sm bg-kobo-cream px-1 rounded">va.vercel-scripts.com</code></li>
           <li><strong>Right to Lodge a Complaint:</strong> Contact your local data protection supervisory authority</li>
         </ul>
 
@@ -216,20 +215,15 @@ export function PrivacyPolicy({ onNavigate }) {
           </p>
           <ul className="list-disc list-inside text-blue-800 ml-4 space-y-1 text-sm">
             <li><strong>Local Storage:</strong> Clear via browser settings (e.g., Chrome → Settings → Privacy → Clear browsing data)</li>
-            <li><strong>Analytics:</strong> Block via browser settings or use Do Not Track headers</li>
-            <li><strong>Backups:</strong> You control the files - delete from your computer as needed</li>
+            <li><strong>Analytics:</strong> Block via an ad/tracker blocker, or use browser developer tools to block <code>va.vercel-scripts.com</code></li>
+            <li><strong>Backups:</strong> You control the ZIP files — delete from your computer as needed</li>
           </ul>
         </div>
 
         <p className="text-kobo-gray mt-4">
-          Since this is a non-commercial open-source project with no central data controller, there is
-          no email or entity to contact for data requests. All personal data is either stored locally on
-          your device (under your control) or anonymized analytics sent to third parties (Google, ContentSquare).
-        </p>
-
-        <p className="text-kobo-gray mt-4">
-          <strong>For analytics data requests:</strong> Contact Google or ContentSquare directly through
-          their privacy portals. For questions about the app itself, use the GitHub repository to open an issue.
+          Since this is a non-commercial open-source project with no central data controller, there
+          is no email or support entity to contact for data requests. For questions about the app,
+          please open a GitHub Issue.
         </p>
       </section>
 
@@ -237,70 +231,60 @@ export function PrivacyPolicy({ onNavigate }) {
       <section className="mb-12">
         <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">International Data Transfers</h2>
         <p className="text-kobo-gray mb-4">
-          Analytics data may be transferred to and processed in countries outside the EEA, including the
-          United States. These transfers are protected by:
+          Vercel Analytics data may be transferred to and processed in the United States. Vercel Inc.
+          relies on Standard Contractual Clauses (SCCs) approved by the European Commission for
+          transfers of personal data from the EEA.
         </p>
-        <ul className="list-disc list-inside text-kobo-gray ml-4 space-y-2">
-          <li>Google Analytics: EU-U.S. Data Privacy Framework certification</li>
-          <li>ContentSquare: Standard Contractual Clauses (SCCs) approved by the European Commission</li>
-        </ul>
+        <p className="text-kobo-gray">
+          Because Vercel Analytics collects no personal data (no IP addresses stored, no cookies),
+          the practical privacy risk of these transfers is negligible.
+        </p>
       </section>
 
-      {/* Cookies and Tracking Technologies */}
+      {/* Cookies */}
       <section className="mb-12">
-        <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Cookies and Tracking Technologies</h2>
-        <p className="text-kobo-gray mb-4">We use the following types of cookies:</p>
-
-        <div className="space-y-4">
-          <div>
-            <h3 className="font-display font-bold text-kobo-dark mb-2">Essential Cookies (No Consent Required)</h3>
-            <p className="text-kobo-gray text-sm">
-              Strictly necessary for the application to function. These store your preferences and backup
-              history locally.
-            </p>
-          </div>
-
-          <div>
-            <h3 className="font-display font-bold text-kobo-dark mb-2">Analytics Cookies (Consent Required)</h3>
-            <p className="text-kobo-gray text-sm">
-              Google Analytics and ContentSquare cookies track usage patterns to help us improve the service.
-              You can opt-out via cookie settings.
-            </p>
-          </div>
-        </div>
-
-        <p className="text-kobo-gray mt-4">
-          Manage your cookie preferences using the cookie banner when you first visit the site, or adjust
-          them in your browser settings.
+        <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Cookies</h2>
+        <p className="text-kobo-gray mb-4">
+          This website <strong>does not use any cookies</strong> for tracking or analytics.
         </p>
+        <ul className="list-disc list-inside text-kobo-gray ml-4 space-y-2">
+          <li><strong>No tracking cookies</strong> — Vercel Analytics is entirely cookieless</li>
+          <li><strong>No third-party cookies</strong> — no advertising or retargeting networks</li>
+          <li><strong>Local Storage only</strong> — app preferences (backup history, settings, banner dismissal) are stored in browser local storage, which is not a cookie and is not shared with any third party</li>
+        </ul>
       </section>
 
       {/* Children's Privacy */}
       <section className="mb-12">
         <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Children's Privacy</h2>
         <p className="text-kobo-gray">
-          Our Service is not directed to individuals under the age of 16. We do not knowingly collect
-          personal information from children. If you believe a child has provided us with personal information,
-          please contact us immediately.
+          This Service is not directed to individuals under the age of 16. We do not knowingly collect
+          personal information from children.
         </p>
       </section>
 
-      {/* Open Source & Community */}
+      {/* Open Source */}
       <section className="mb-12">
-        <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Open Source & Community</h2>
+        <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Open Source & Transparency</h2>
         <p className="text-kobo-gray mb-4">
-          The complete source code is available on GitHub under an open-source license. This transparency
-          allows you to:
+          The complete source code is available on GitHub. This transparency allows you to:
         </p>
         <ul className="list-disc list-inside text-kobo-gray ml-4 space-y-1 mb-4">
-          <li>Audit the code to verify privacy and security claims</li>
-          <li>Understand exactly what data is collected and how it's used</li>
-          <li>Self-host your own version without analytics</li>
+          <li>Audit the code to verify every privacy claim in this policy</li>
+          <li>Self-host your own version — without any analytics at all</li>
           <li>Contribute improvements or report issues</li>
         </ul>
         <div className="bg-kobo-cream p-4 rounded-lg">
           <p className="text-kobo-gray mb-2">
-            <strong>GitHub Repository:</strong> <a href="https://github.com/Fanfulla/KoboOfflineBackup" target="_blank" rel="noopener noreferrer" className="text-kobo-accent hover:underline">github.com/Fanfulla/KoboOfflineBackup</a>
+            <strong>GitHub Repository:</strong>{' '}
+            <a
+              href="https://github.com/Fanfulla/KoboOfflineBackup"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-kobo-accent hover:underline"
+            >
+              github.com/Fanfulla/KoboOfflineBackup
+            </a>
           </p>
           <p className="text-kobo-gray text-sm">
             All questions, bug reports, and feature requests should be submitted via GitHub Issues.
@@ -312,45 +296,35 @@ export function PrivacyPolicy({ onNavigate }) {
       <section className="mb-12">
         <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Changes to This Privacy Policy</h2>
         <p className="text-kobo-gray">
-          We may update this Privacy Policy periodically to reflect changes in our practices or legal requirements.
-          The "Last Updated" date at the top of this page indicates when the policy was last revised. Continued
-          use of the Service after changes constitutes acceptance of the updated policy.
+          We may update this Privacy Policy to reflect changes in our practices or legal requirements.
+          The "Last Updated" date at the top indicates when the policy was last revised. Continued use
+          of the Service after changes constitutes acceptance of the updated policy.
         </p>
       </section>
 
-      {/* Contact & Support */}
+      {/* Questions */}
       <section className="mb-12">
-        <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Questions & Support</h2>
-
-        <p className="text-kobo-gray mb-4">
-          <strong>For questions about this Privacy Policy or the application:</strong>
-        </p>
+        <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Questions</h2>
         <div className="bg-kobo-cream p-4 rounded-lg mb-4">
           <p className="text-kobo-gray mb-2">
-            <strong>GitHub Issues:</strong> <a href="https://github.com/Fanfulla/KoboOfflineBackup/issues" target="_blank" rel="noopener noreferrer" className="text-kobo-accent hover:underline">github.com/Fanfulla/KoboOfflineBackup/issues</a>
+            <strong>GitHub Issues:</strong>{' '}
+            <a
+              href="https://github.com/Fanfulla/KoboOfflineBackup/issues"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-kobo-accent hover:underline"
+            >
+              github.com/Fanfulla/KoboOfflineBackup/issues
+            </a>
           </p>
           <p className="text-kobo-gray text-sm">
-            Open an issue on GitHub for questions, bug reports, or privacy concerns.
+            Open an issue for questions, bug reports, or privacy concerns.
           </p>
         </div>
-
-        <p className="text-kobo-gray mb-4">
-          <strong>For GDPR data requests related to analytics:</strong>
-        </p>
-        <ul className="list-disc list-inside text-kobo-gray ml-4 space-y-1 mb-4">
-          <li>Google Analytics: <a href="https://support.google.com/analytics/answer/6004245" target="_blank" rel="noopener noreferrer" className="text-kobo-accent hover:underline">Google Privacy Controls</a></li>
-          <li>ContentSquare: <a href="https://contentsquare.com/privacy-center/" target="_blank" rel="noopener noreferrer" className="text-kobo-accent hover:underline">ContentSquare Privacy Center</a></li>
-        </ul>
-
-        <p className="text-kobo-gray">
-          <strong>For GDPR complaints:</strong> Contact your local EU data protection supervisory authority.
-        </p>
-
-        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 mt-4">
+        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4">
           <p className="font-medium text-yellow-800">
-            ℹ️ Note: This is a volunteer-maintained open-source project with no commercial entity or formal
-            data controller. There is no customer support email or helpdesk. Community support is provided
-            via GitHub.
+            Note: This is a personal open-source project with no commercial entity or formal data
+            controller. There is no support email or helpdesk. Community support is provided via GitHub.
           </p>
         </div>
       </section>

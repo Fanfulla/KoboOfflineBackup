@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import { useFeatureDetection } from './hooks/useFeatureDetection.js'
 import { useKoboStore } from './stores/koboStore.js'
 
@@ -9,6 +10,9 @@ import { Footer } from './components/layout/Footer.jsx'
 // Browser compatibility
 import { UnsupportedBrowser } from './components/UnsupportedBrowser.jsx'
 import { BrowserWarning } from './components/BrowserWarning.jsx'
+
+// Analytics banner
+import { AnalyticsBanner } from './components/AnalyticsBanner.jsx'
 
 // Pages
 import { Home } from './pages/Home.jsx'
@@ -87,6 +91,12 @@ function App() {
 
       {/* Footer */}
       <Footer onNavigate={handleNavigate} />
+
+      {/* Analytics disclosure banner */}
+      <AnalyticsBanner onNavigate={handleNavigate} />
+
+      {/* Vercel Analytics - cookieless, privacy-preserving */}
+      <Analytics />
     </div>
   )
 }
