@@ -7,8 +7,11 @@ import { Card } from '../common/Card.jsx';
 import { Button } from '../common/Button.jsx';
 import { Icon } from '../common/Icon.jsx';
 
+const LARGE_FILE_THRESHOLD = 2 * 1024 * 1024 * 1024; // 2 GB
+
 export function FileUploader({ onFileSelect, error }) {
   const [isDragging, setIsDragging] = useState(false);
+  const [largeFileWarning, setLargeFileWarning] = useState(false);
 
   const handleDragOver = useCallback((e) => {
     e.preventDefault();
@@ -28,6 +31,7 @@ export function FileUploader({ onFileSelect, error }) {
     const zipFile = files.find(f => f.name.endsWith('.zip'));
 
     if (zipFile) {
+      setLargeFileWarning(zipFile.size > LARGE_FILE_THRESHOLD);
       onFileSelect(zipFile);
     }
   }, [onFileSelect]);
@@ -35,6 +39,7 @@ export function FileUploader({ onFileSelect, error }) {
   const handleFileInput = useCallback((e) => {
     const file = e.target.files?.[0];
     if (file) {
+      setLargeFileWarning(file.size > LARGE_FILE_THRESHOLD);
       onFileSelect(file);
     }
   }, [onFileSelect]);
@@ -111,6 +116,25 @@ export function FileUploader({ onFileSelect, error }) {
             Looking for: kobo_backup_*.zip
           </p>
         </div>
+
+        {/* Large file warning */}
+        {largeFileWarning && !error && (
+          <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-start gap-3">
+              <Icon type="alert" className="text-yellow-600 flex-shrink-0" />
+              <div className="text-left">
+                <h4 className="font-semibold font-body text-yellow-800 mb-1">
+                  Large backup detected (&gt;2 GB)
+                </h4>
+                <p className="text-sm font-body text-yellow-700">
+                  Restoring large backups requires loading the entire ZIP into browser memory.
+                  Make sure you have enough free RAM and no other heavy tabs open.
+                  If it fails, close other applications and try again.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Error Message */}
         {error && (

@@ -1,354 +1,261 @@
 /**
- * Backup creation utilities using JSZip
+ * Backup creation utilities - streaming approach via client-zip.
+ *
+ * WHY: JSZip buffers ALL files simultaneously. For a 4 GB library
+ * this peaks at ~10 GB and throws RangeError: Array buffer allocation failed.
+ * client-zip streams one file at a time to disk, so peak RAM = 1 book file.
  */
 
-import JSZip from 'jszip';
+import { downloadZip } from 'client-zip';
 import { saveFile } from './fileSystem.js';
 import { BackupError, ERROR_CODES } from './errors.js';
 
-/**
- * Create a backup ZIP file from Kobo data
- * @param {object} koboData - Kobo device data
- * @param {object} options - Backup options
- * @returns {Promise<{filename: string, size: number, blob: Blob}>} Backup result
- */
-export async function createBackup(koboData, options = {}) {
+// ---------------------------------------------------------------------------
+// Internal helpers
+// ---------------------------------------------------------------------------
+
+function buildMetadata(koboData, options, extra = {}) {
   const {
-    includeBooks = true,
-    includeAnnotations = true,
-    includeProgress = true,
-    includeSettings = false,
-    onProgress = null,
+    includeBooks = true, includeAnnotations = true,
+    includeProgress = true, includeSettings = false,
   } = options;
+  const dev = koboData.deviceInfo || {};
+  return {
+    version: '1.0.0',
+    created: new Date().toISOString(),
+    generator: 'Kobo Backup Manager v1.0',
+    device: {
+      model: dev.model || 'Unknown',
+      firmwareVersion: dev.firmwareVersion || 'Unknown',
+      schemaVersion: dev.schemaVersion ?? 0,
+    },
+    statistics: {
+      totalBooks: koboData.books?.length || 0,
+      totalAnnotations: koboData.annotations?.length || 0,
+      totalSize: koboData.totalSize || 0,
+      booksStarted: koboData.stats?.booksStarted || 0,
+      booksFinished: koboData.stats?.booksFinished || 0,
+      totalReadingTime: koboData.stats?.totalMinutesRead || 0,
+    },
+    options: { includeBooks, includeAnnotations, includeProgress, includeSettings },
+    integrity: {
+      databaseChecksum: extra.databaseChecksum || 'unavailable',
+      filesChecked: koboData.bookFiles?.length || 0,
+      // Per-file checksums not computed in streaming mode (would need two reads per file)
+      fileChecksums: {},
+      // Shared mutable array filled by the generator; JSON.stringify captures
+      // the final state when the metadata entry is yielded (after all books).
+      errors: extra.errors || [],
+    },
+    compatibility: { minAppVersion: '1.0.0', supportedDevices: ['all'] },
+  };
+}
 
-  try {
-    const zip = new JSZip();
+async function* generateZipEntries(koboData, options, onProgress, metadata) {
+  const { includeBooks = true, includeAnnotations = true } = options;
 
-    // Report progress
-    const reportProgress = (stage, percent) => {
-      if (onProgress) {
-        onProgress({ stage, percent });
+  // 1. SQLite database (small, safe to buffer)
+  onProgress('Preparing backup...', 0);
+  yield {
+    name: 'KoboReader.sqlite',
+    input: new Blob([koboData.database]),
+    size: koboData.database.byteLength,
+  };
+
+  // 2. Book files — ONE at a time.
+  //    handle.getFile() returns a File (Blob subclass) lazily; client-zip
+  //    streams it to disk before requesting the next file.
+  //    Peak memory = max single-file size, not the whole library.
+  if (includeBooks && koboData.bookFiles?.length > 0) {
+    const total = koboData.bookFiles.length;
+    for (let i = 0; i < total; i++) {
+      const bf = koboData.bookFiles[i];
+      try {
+        const file = await bf.handle.getFile();
+        yield {
+          name: 'books/' + (bf.path || bf.name),
+          input: file,
+          size: file.size,
+          lastModified: new Date(file.lastModified),
+        };
+      } catch (err) {
+        console.warn('[BACKUP] Skipping unreadable file:', bf.name, err);
+        metadata.integrity.errors.push({ file: bf.name, error: err.message });
       }
-    };
-
-    reportProgress('Preparing backup...', 0);
-
-    // Add database file
-    if (koboData.database) {
-      zip.file('KoboReader.sqlite', koboData.database);
-      reportProgress('Adding database...', 10);
-    } else {
-      throw new BackupError(
-        'No database provided',
-        ERROR_CODES.BACKUP_FAILED,
-        { reason: 'Missing database file' }
+      onProgress(
+        'Adding books (' + (i + 1) + '/' + total + ')...',
+        10 + ((i + 1) / total) * 72,
+        i + 1,
       );
     }
+  }
 
-    // Add books
-    if (includeBooks && koboData.bookFiles && koboData.bookFiles.length > 0) {
-      const booksFolder = zip.folder('books');
-      const totalBooks = koboData.bookFiles.length;
-
-      for (let i = 0; i < koboData.bookFiles.length; i++) {
-        const bookFile = koboData.bookFiles[i];
-        booksFolder.file(bookFile.name, bookFile.blob);
-
-        const progress = 10 + (i / totalBooks) * 60; // 10-70%
-        reportProgress(`Adding books (${i + 1}/${totalBooks})...`, progress);
-      }
-    }
-
-    reportProgress('Adding metadata...', 75);
-
-    // Calculate per-file checksums for later restore verification
-    const fileChecksums = {};
-    if (koboData.bookFiles && koboData.bookFiles.length > 0) {
-      for (const bookFile of koboData.bookFiles) {
-        try {
-          const checksum = await calculateChecksum(bookFile.blob);
-          // Key by just the filename (last segment) for readability
-          const displayName = bookFile.name.split('/').pop();
-          fileChecksums[displayName] = checksum;
-        } catch (e) {
-          // Non-critical: skip if checksum fails
-        }
-      }
-    }
-
-    // Create backup metadata
-    const deviceInfo = koboData.deviceInfo || { model: 'Unknown', firmwareVersion: 'Unknown' };
-    const metadata = {
-      version: '1.0.0',
-      created: new Date().toISOString(),
-      generator: 'Kobo Backup Manager v1.0',
-
-      device: {
-        model: deviceInfo.model || 'Unknown',
-        firmwareVersion: deviceInfo.firmwareVersion || 'Unknown',
-        schemaVersion: deviceInfo.schemaVersion ?? 0,
-      },
-
-      statistics: {
-        totalBooks: koboData.books?.length || 0,
-        totalAnnotations: koboData.annotations?.length || 0,
-        totalSize: koboData.totalSize || 0,
-        booksStarted: koboData.stats?.booksStarted || 0,
-        booksFinished: koboData.stats?.booksFinished || 0,
-        totalReadingTime: koboData.stats?.totalMinutesRead || 0,
-      },
-
-      options: {
-        includeBooks,
-        includeAnnotations,
-        includeProgress,
-        includeSettings,
-      },
-
-      integrity: {
-        databaseChecksum: await calculateChecksum(koboData.database),
-        filesChecked: koboData.bookFiles?.length || 0,
-        fileChecksums,
-        errors: koboData.backupErrors || [],
-      },
-
-      compatibility: {
-        minAppVersion: '1.0.0',
-        supportedDevices: ['all'],
-      },
+  // 3. Annotations
+  if (includeAnnotations && koboData.annotations?.length > 0) {
+    onProgress('Exporting annotations...', 85);
+    yield {
+      name: 'annotations/all-annotations.md',
+      input: exportAnnotationsAsMarkdown(koboData.annotations),
     };
+  }
 
-    zip.file('backup-metadata.json', JSON.stringify(metadata, null, 2));
+  // 4. Metadata — AFTER all books so the errors array is complete when JSON.stringify runs
+  onProgress('Adding metadata...', 90);
+  yield { name: 'backup-metadata.json', input: JSON.stringify(metadata, null, 2) };
 
-    // Optionally add human-readable exports
-    if (includeAnnotations && koboData.annotations && koboData.annotations.length > 0) {
-      const annotationsFolder = zip.folder('annotations');
+  // 5. README
+  yield { name: 'README.txt', input: generateReadme(metadata) };
 
-      // Export annotations as Markdown
-      const annotationsMarkdown = exportAnnotationsAsMarkdown(koboData.annotations);
-      annotationsFolder.file('all-annotations.md', annotationsMarkdown);
+  onProgress('Finalizing...', 95);
+}
 
-      reportProgress('Exporting annotations...', 80);
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+
+/**
+ * PRIMARY PATH: stream backup directly to disk via showSaveFilePicker.
+ * Peak memory: ~1 book file at a time, regardless of library size.
+ *
+ * fileHandle MUST be obtained from window.showSaveFilePicker() synchronously
+ * inside the click handler (before any await) to satisfy the user-gesture
+ * requirement. BackupWizard is responsible for this.
+ *
+ * @param {object} koboData - scan result; bookFiles items must have .handle (FileSystemFileHandle)
+ * @param {FileSystemFileHandle} fileHandle - writable handle from showSaveFilePicker
+ * @param {string} filename - filename chosen by the user
+ * @param {object} options
+ * @returns {Promise<{filename, size, metadata}>}
+ */
+export async function streamBackupToDisk(koboData, fileHandle, filename, options = {}) {
+  const { onProgress = () => {} } = options;
+  try {
+    const databaseChecksum = await calculateChecksum(koboData.database);
+    const metadata = buildMetadata(koboData, options, { databaseChecksum, errors: [] });
+    const entries = generateZipEntries(koboData, options, onProgress, metadata);
+    const zipResponse = downloadZip(entries);
+
+    const writable = await fileHandle.createWritable();
+    try {
+      await zipResponse.body.pipeTo(writable);
+    } catch (err) {
+      await writable.abort().catch(() => {});
+      throw err;
     }
 
-    // Add README
-    const readme = generateReadme(metadata);
-    zip.file('README.txt', readme);
-
-    reportProgress('Compressing backup...', 85);
-
-    // Generate ZIP file
-    const blob = await zip.generateAsync({
-      type: 'blob',
-      compression: 'DEFLATE',
-      compressionOptions: {
-        level: 6, // Balance between size and speed
-      },
-    }, (metadata) => {
-      // Progress callback during compression
-      const progress = 85 + (metadata.percent * 0.15); // 85-100%
-      reportProgress('Compressing backup...', progress);
-    });
-
-    reportProgress('Backup complete', 100);
-
-    // Generate filename
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
-    const filename = `kobo_backup_${timestamp}.zip`;
-
-    return {
-      filename,
-      size: blob.size,
-      blob,
-      metadata,
-    };
+    onProgress('Backup complete', 100);
+    const savedFile = await fileHandle.getFile();
+    return { filename, size: savedFile.size, metadata };
   } catch (error) {
-    console.error('[BACKUP ERROR] Failed to create backup:', error);
-    console.error('[BACKUP ERROR] Error message:', error.message);
-    console.error('[BACKUP ERROR] Error stack:', error.stack);
-    throw new BackupError(
-      'Failed to create backup',
-      ERROR_CODES.BACKUP_FAILED,
-      { originalError: error }
-    );
+    console.error('[BACKUP] Streaming failed:', error);
+    throw new BackupError('Failed to create backup', ERROR_CODES.BACKUP_FAILED, { originalError: error });
   }
 }
 
 /**
- * Save backup to user's downloads folder
- * @param {Blob} blob - Backup blob
- * @param {string} filename - Filename for backup
- * @returns {Promise<{filename: string, size: number}>} Save result
+ * FALLBACK PATH: buffer the ZIP as a Blob then trigger a browser download.
+ * Used when showSaveFilePicker is unavailable (Firefox, Safari).
+ * WARNING: may still OOM for libraries > ~2 GB on these browsers.
+ *
+ * @param {object} koboData
+ * @param {object} options
+ * @returns {Promise<{blob, filename, size, metadata}>}
  */
+export async function createBackupBlob(koboData, options = {}) {
+  const { onProgress = () => {} } = options;
+  try {
+    const databaseChecksum = await calculateChecksum(koboData.database);
+    const metadata = buildMetadata(koboData, options, { databaseChecksum, errors: [] });
+    const entries = generateZipEntries(koboData, options, onProgress, metadata);
+    const blob = await downloadZip(entries).blob();
+    onProgress('Backup complete', 100);
+    return { blob, filename: generateBackupFilename(), size: blob.size, metadata };
+  } catch (error) {
+    console.error('[BACKUP] Blob creation failed:', error);
+    throw new BackupError('Failed to create backup', ERROR_CODES.BACKUP_FAILED, { originalError: error });
+  }
+}
+
 export async function saveBackup(blob, filename) {
   try {
-    console.log('[BACKUP] Attempting to save backup:', { filename, size: blob.size });
-    const result = await saveFile(blob, {
-      fileName: filename,
-      extensions: ['.zip'],
-    });
-    console.log('[BACKUP] Save successful:', result);
-    return result;
+    return await saveFile(blob, { fileName: filename, extensions: ['.zip'] });
   } catch (error) {
-    console.error('[BACKUP ERROR] Failed to save backup:', error);
-    console.error('[BACKUP ERROR] Error message:', error.message);
-    console.error('[BACKUP ERROR] Error name:', error.name);
-    throw new BackupError(
-      'Failed to save backup file',
-      ERROR_CODES.BACKUP_FAILED,
-      { originalError: error }
-    );
+    throw new BackupError('Failed to save backup file', ERROR_CODES.BACKUP_FAILED, { originalError: error });
   }
 }
 
-/**
- * Calculate checksum of data (SHA-256)
- * @param {ArrayBuffer|Blob} data - Data to checksum
- * @returns {Promise<string>} Hex checksum
- */
+/** Generate the suggested filename. Exported so BackupWizard can use it before the save dialog. */
+export function generateBackupFilename() {
+  return 'kobo_backup_' + new Date().toISOString().split('T')[0] + '.zip';
+}
+
 export async function calculateChecksum(data) {
   try {
-    let buffer;
-
-    if (data instanceof Blob) {
-      buffer = await data.arrayBuffer();
-    } else {
-      buffer = data;
-    }
-
-    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    return `sha256:${hashHex}`;
-  } catch (error) {
+    const buffer = data instanceof Blob ? await data.arrayBuffer() : data;
+    const hb = await crypto.subtle.digest('SHA-256', buffer);
+    return 'sha256:' + Array.from(new Uint8Array(hb)).map(b => b.toString(16).padStart(2, '0')).join('');
+  } catch {
     return 'unavailable';
   }
 }
 
-/**
- * Export annotations as Markdown
- * @param {Array<object>} annotations - Array of annotation objects
- * @returns {string} Markdown formatted annotations
- */
-function exportAnnotationsAsMarkdown(annotations) {
-  let markdown = '# Kobo Annotations Export\n\n';
-  markdown += `Exported on: ${new Date().toLocaleString()}\n\n`;
-  markdown += `Total annotations: ${annotations.length}\n\n`;
-  markdown += '---\n\n';
-
-  // Group by book
-  const byBook = {};
-  annotations.forEach(annotation => {
-    const bookTitle = annotation.BookTitle || 'Unknown Book';
-    if (!byBook[bookTitle]) {
-      byBook[bookTitle] = [];
-    }
-    byBook[bookTitle].push(annotation);
-  });
-
-  // Export each book's annotations
-  Object.entries(byBook).forEach(([bookTitle, bookAnnotations]) => {
-    markdown += `## ${bookTitle}\n\n`;
-
-    const author = bookAnnotations[0]?.Author;
-    if (author) {
-      markdown += `*by ${author}*\n\n`;
-    }
-
-    bookAnnotations.forEach((annotation, index) => {
-      markdown += `### Annotation ${index + 1}\n\n`;
-
-      if (annotation.HighlightedText) {
-        markdown += `> ${annotation.HighlightedText}\n\n`;
-      }
-
-      if (annotation.Note) {
-        markdown += `**Note:** ${annotation.Note}\n\n`;
-      }
-
-      if (annotation.DateCreated) {
-        markdown += `*Created: ${new Date(annotation.DateCreated).toLocaleString()}*\n\n`;
-      }
-
-      markdown += '---\n\n';
-    });
-  });
-
-  return markdown;
-}
-
-/**
- * Generate README for backup
- * @param {object} metadata - Backup metadata
- * @returns {string} README content
- */
-function generateReadme(metadata) {
-  return `Kobo Backup Archive
-====================
-
-Created: ${new Date(metadata.created).toLocaleString()}
-Generator: ${metadata.generator}
-
-Device Information
-------------------
-Model: ${metadata.device.model}
-Firmware: ${metadata.device.firmwareVersion}
-
-Backup Statistics
------------------
-Total Books: ${metadata.statistics.totalBooks}
-Total Annotations: ${metadata.statistics.totalAnnotations}
-Books Started: ${metadata.statistics.booksStarted}
-Books Finished: ${metadata.statistics.booksFinished}
-Total Reading Time: ${Math.floor(metadata.statistics.totalReadingTime / 60)} hours
-
-Contents
---------
-- KoboReader.sqlite: Your Kobo database with all reading data
-- books/: All your ebook files
-- annotations/: Human-readable export of your highlights and notes
-- backup-metadata.json: Technical metadata about this backup
-
-How to Restore
---------------
-1. Open Kobo Backup Manager (https://kobo-backup.app)
-2. Click "Restore Backup"
-3. Select this ZIP file
-4. Follow the wizard to restore to your Kobo device
-
-Privacy Note
-------------
-This backup was created entirely in your browser.
-No data was sent to any server.
-Keep this file safe and private.
-
-For more information, visit: https://kobo-backup.app
-`;
-}
-
-/**
- * Estimate backup size before creating
- * @param {object} koboData - Kobo device data
- * @returns {number} Estimated size in bytes
- */
 export function estimateBackupSize(koboData) {
   let size = 0;
+  if (koboData.database) size += koboData.database.byteLength || koboData.database.size || 0;
+  if (koboData.bookFiles) koboData.bookFiles.forEach(f => { size += f.size || f.blob?.size || 0; });
+  return Math.floor((size + 100 * 1024) * 0.9);
+}
 
-  // Database size
-  if (koboData.database) {
-    size += koboData.database.byteLength || koboData.database.size || 0;
-  }
+// ---------------------------------------------------------------------------
+// Private formatting helpers
+// ---------------------------------------------------------------------------
 
-  // Books size
-  if (koboData.bookFiles) {
-    koboData.bookFiles.forEach(bookFile => {
-      size += bookFile.blob?.size || bookFile.size || 0;
+function exportAnnotationsAsMarkdown(annotations) {
+  let md = '# Kobo Annotations Export\n\n';
+  md += 'Exported on: ' + new Date().toLocaleString() + '\n\nTotal annotations: ' + annotations.length + '\n\n---\n\n';
+  const byBook = {};
+  annotations.forEach(a => {
+    const t = a.BookTitle || 'Unknown Book';
+    (byBook[t] = byBook[t] || []).push(a);
+  });
+  Object.entries(byBook).forEach(([title, list]) => {
+    md += '## ' + title + '\n\n';
+    if (list[0]?.Author) md += '*by ' + list[0].Author + '*\n\n';
+    list.forEach((a, idx) => {
+      md += '### Annotation ' + (idx + 1) + '\n\n';
+      if (a.HighlightedText) md += '> ' + a.HighlightedText + '\n\n';
+      if (a.Note) md += '**Note:** ' + a.Note + '\n\n';
+      if (a.DateCreated) md += '*Created: ' + new Date(a.DateCreated).toLocaleString() + '*\n\n';
+      md += '---\n\n';
     });
-  }
+  });
+  return md;
+}
 
-  // Metadata and extras (estimate 100KB)
-  size += 100 * 1024;
-
-  // Compression typically reduces size by 10-30%, but be conservative
-  return Math.floor(size * 0.9);
+function generateReadme(m) {
+  return [
+    'Kobo Backup Archive', '====================', '',
+    'Created: ' + new Date(m.created).toLocaleString(),
+    'Generator: ' + m.generator, '',
+    'Device Information', '------------------',
+    'Model: ' + m.device.model, 'Firmware: ' + m.device.firmwareVersion, '',
+    'Backup Statistics', '-----------------',
+    'Total Books: ' + m.statistics.totalBooks,
+    'Total Annotations: ' + m.statistics.totalAnnotations,
+    'Books Started: ' + m.statistics.booksStarted,
+    'Books Finished: ' + m.statistics.booksFinished,
+    'Total Reading Time: ' + Math.floor(m.statistics.totalReadingTime / 60) + ' hours', '',
+    'Contents', '--------',
+    '- KoboReader.sqlite: Your Kobo database with all reading data',
+    '- books/: All your ebook files',
+    '- annotations/: Human-readable export of your highlights and notes',
+    '- backup-metadata.json: Technical metadata about this backup', '',
+    'How to Restore', '--------------',
+    '1. Open Kobo Backup Manager', '2. Click "Restore Backup"',
+    '3. Select this ZIP file', '4. Follow the wizard to restore to your Kobo device', '',
+    'Privacy Note', '------------',
+    'This backup was created entirely in your browser.',
+    'No data was sent to any server.',
+    'Keep this file safe and private.', '',
+  ].join('\n');
 }
