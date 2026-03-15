@@ -15,7 +15,7 @@
 
 **KoBup** ([kobup.org](https://www.kobup.org/)) is a free, open-source web tool that lets you create a complete backup of your Kobo e-reader directly in the browser — no app to install, no account to create, no data ever leaving your device.
 
-Whether you want to protect against a factory reset, switch to a new Kobo device, or simply keep a safe copy of your sideloaded books and reading progress, KoBup handles it in a few clicks.
+Whether you want to protect against a factory reset, switch to a new Kobo device, or simply keep a safe copy of your books and reading progress, KoBup handles it in a few clicks.
 
 ---
 
