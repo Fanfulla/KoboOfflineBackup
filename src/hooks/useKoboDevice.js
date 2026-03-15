@@ -71,10 +71,20 @@ export function useKoboDevice() {
       });
 
       const allFiles = await getAllFiles(dirHandle);
-      const foundBookFiles = allFiles.filter(file => {
-        // Filter for book files (epub, pdf, etc.)
-        return isValidBookFile(file.name);
-      });
+      const filteredFiles = allFiles.filter(file => isValidBookFile(file.name));
+
+      // Fetch file size for each book (metadata only, no content read)
+      // so that estimateBackupSize() can return an accurate value.
+      const foundBookFiles = await Promise.all(
+        filteredFiles.map(async (file) => {
+          try {
+            const f = await file.handle.getFile();
+            return { ...file, size: f.size };
+          } catch {
+            return { ...file, size: 0 };
+          }
+        })
+      );
 
       setBookFiles(foundBookFiles);
 

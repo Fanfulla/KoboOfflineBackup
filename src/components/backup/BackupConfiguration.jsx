@@ -28,10 +28,10 @@ export function BackupConfiguration({
 
         <div className="space-y-4 mb-8">
           <Checkbox
-            checked={true}
-            disabled={true}
-            label={`All Books (${bookCount} files)`}
-            sublabel="Required - Your ebook files"
+            checked={options.includeBooks}
+            onChange={(checked) => onOptionsChange({ ...options, includeBooks: checked })}
+            label={`Book Files (${bookCount} files)`}
+            sublabel="Uncheck for a database-only backup (faster, smaller — useful if you only want to preserve reading progress and annotations)"
           />
 
           <Checkbox
