@@ -1,5 +1,5 @@
 /**
- * Backup wizard - orchestrates the entire backup flow
+ * Backup wizard — orchestrates the entire backup flow.
  */
 
 import { useState } from 'react';
@@ -7,6 +7,7 @@ import { useFileSystem } from '../../hooks/useFileSystem.js';
 import { useKoboDevice } from '../../hooks/useKoboDevice.js';
 import { useBackup } from '../../hooks/useBackup.js';
 import { useKoboStore } from '../../stores/koboStore.js';
+import { generateBackupFilename } from '../../utils/backup.js';
 import { Container } from '../layout/Container.jsx';
 
 import { DeviceSelector } from './DeviceSelector.jsx';
@@ -17,13 +18,14 @@ import { BackupProgress } from './BackupProgress.jsx';
 import { BackupSuccess } from './BackupSuccess.jsx';
 
 export function BackupWizard({ onComplete }) {
-  const [step, setStep] = useState('select'); // select, scanning, overview, configure, progress, success
+  const [step, setStep] = useState('select'); // select | scanning | overview | configure | progress | success
   const [backupOptions, setBackupOptions] = useState({
     includeBooks: true,
     includeAnnotations: true,
     includeProgress: true,
     includeSettings: false,
   });
+  const [backupError, setBackupError] = useState(null);
 
   const fileSystem = useFileSystem();
   const koboDevice = useKoboDevice();
@@ -35,10 +37,8 @@ export function BackupWizard({ onComplete }) {
   // Step 1: Select device
   const handleSelectDevice = async () => {
     const dirHandle = await fileSystem.selectDirectory();
-
     if (dirHandle) {
       setStep('scanning');
-
       try {
         const data = await koboDevice.scanDevice(dirHandle);
         setKoboData(data);
@@ -51,19 +51,48 @@ export function BackupWizard({ onComplete }) {
   };
 
   // Step 2: After overview, go to configuration
-  const handleContinueToConfig = () => {
-    setStep('configure');
-  };
+  const handleContinueToConfig = () => setStep('configure');
 
   // Step 3: Start backup
+  //
+  // CRITICAL: showSaveFilePicker must be called BEFORE any await inside this
+  // function. Chrome requires a synchronous user-gesture chain — any await
+  // before the picker call breaks that chain and throws SecurityError.
+  // The picker IS async (it shows a dialog), but calling await on it from
+  // within a synchronous click handler preserves the gesture context.
   const handleStartBackup = async () => {
+    const suggestedFilename = generateBackupFilename();
+
+    // Try to get a writable file handle via the streaming-friendly API.
+    let writableFileHandle = null;
+    if ('showSaveFilePicker' in window) {
+      try {
+        writableFileHandle = await window.showSaveFilePicker({
+          suggestedName: suggestedFilename,
+          startIn: 'downloads',
+          types: [{ description: 'Kobo Backup Archive', accept: { 'application/zip': ['.zip'] } }],
+        });
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          // User dismissed the dialog — stay on configure screen
+          return;
+        }
+        // Other error (e.g. browser restriction) — fall through to blob path
+        console.warn('[BACKUP] showSaveFilePicker failed, using blob fallback:', err.message);
+      }
+    }
+
     setStep('progress');
+    setBackupError(null);
 
     try {
-      const result = await backup.create(koboData, backupOptions);
+      const result = await backup.create(koboData, {
+        ...backupOptions,
+        writableFileHandle,
+        suggestedFilename,
+      });
 
       if (result) {
-        // Add to history
         addBackup({
           filename: result.filename,
           created: new Date().toISOString(),
@@ -72,16 +101,22 @@ export function BackupWizard({ onComplete }) {
           bookCount: koboData.books?.length || 0,
           annotationCount: koboData.annotations?.length || 0,
         });
-
         setStep('success');
       } else {
-        // User cancelled
         setStep('configure');
       }
     } catch (error) {
       console.error('Backup failed:', error);
-      setStep('configure');
+      // Stay on progress screen and show the error there instead of
+      // silently returning to configure (which gave users zero feedback).
+      setBackupError(error.message || 'An unexpected error occurred during backup.');
     }
+  };
+
+  const handleRetryAfterError = () => {
+    setBackupError(null);
+    backup.reset();
+    setStep('configure');
   };
 
   // Step 4: Create another or done
@@ -90,6 +125,7 @@ export function BackupWizard({ onComplete }) {
     koboDevice.clearDevice();
     backup.reset();
     setKoboData(null);
+    setBackupError(null);
     setStep('select');
   };
 
@@ -138,7 +174,11 @@ export function BackupWizard({ onComplete }) {
         )}
 
         {step === 'progress' && (
-          <BackupProgress progress={backup.progress} />
+          <BackupProgress
+            progress={backup.progress}
+            error={backupError}
+            onRetry={handleRetryAfterError}
+          />
         )}
 
         {step === 'success' && backup.result && (
