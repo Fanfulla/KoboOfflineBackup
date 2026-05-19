@@ -22,6 +22,7 @@ import { History } from './pages/History.jsx'
 import { UserGuide } from './pages/UserGuide.jsx'
 import { FAQ } from './pages/FAQ.jsx'
 import { PrivacyPolicy } from './pages/PrivacyPolicy.jsx'
+import { LibraryDashboard } from './pages/LibraryDashboard.jsx'
 
 function App() {
   const features = useFeatureDetection()
@@ -59,6 +60,8 @@ function App() {
     switch (currentPage) {
       case 'home':
         return <Home onNavigate={handleNavigate} />
+      case 'dashboard':
+        return <LibraryDashboard onNavigate={handleNavigate} />
       case 'backup':
         return <Backup onComplete={() => handleNavigate('home')} />
       case 'restore':

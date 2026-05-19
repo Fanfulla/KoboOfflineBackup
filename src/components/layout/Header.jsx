@@ -4,12 +4,15 @@
 
 import { useState } from 'react';
 import { Button } from '../common/Button.jsx';
+import { useKoboStore } from '../../stores/koboStore.js';
 
 export function Header({ currentPage = 'home', onNavigate }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const books = useKoboStore((state) => state.books);
 
   const navItems = [
     { id: 'home', label: 'Home' },
+    ...(books && books.length > 0 ? [{ id: 'dashboard', label: 'Dashboard' }] : []),
     { id: 'backup', label: 'Create Backup' },
     { id: 'restore', label: 'Restore' },
     { id: 'history', label: 'History' },

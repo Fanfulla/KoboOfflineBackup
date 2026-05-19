@@ -13,6 +13,7 @@ export const useKoboStore = create(
       books: [],
       annotations: [],
       stats: null,
+      deviceHandle: null,
 
       // Backup history (persisted to localStorage)
       backups: [],
@@ -37,6 +38,8 @@ export const useKoboStore = create(
       setAnnotations: (annotations) => set({ annotations }),
 
       setStats: (stats) => set({ stats }),
+
+      setDeviceHandle: (deviceHandle) => set({ deviceHandle }),
 
       addBackup: (backup) =>
         set((state) => ({
@@ -67,6 +70,7 @@ export const useKoboStore = create(
           books: [],
           annotations: [],
           stats: null,
+          deviceHandle: null,
         }),
 
       reset: () =>
@@ -75,6 +79,7 @@ export const useKoboStore = create(
           books: [],
           annotations: [],
           stats: null,
+          deviceHandle: null,
           currentPage: 'home',
         }),
     }),

@@ -31,6 +31,12 @@ export function BackupWizard({ onComplete }) {
   const koboDevice = useKoboDevice();
   const backup = useBackup();
   const addBackup = useKoboStore((state) => state.addBackup);
+  
+  const setDevice = useKoboStore((state) => state.setDevice);
+  const setBooks = useKoboStore((state) => state.setBooks);
+  const setAnnotations = useKoboStore((state) => state.setAnnotations);
+  const setStats = useKoboStore((state) => state.setStats);
+  const setDeviceHandle = useKoboStore((state) => state.setDeviceHandle);
 
   const [koboData, setKoboData] = useState(null);
 
@@ -42,6 +48,14 @@ export function BackupWizard({ onComplete }) {
       try {
         const data = await koboDevice.scanDevice(dirHandle);
         setKoboData(data);
+        
+        // Populate global store
+        setDevice(data.deviceInfo);
+        setBooks(data.books);
+        setAnnotations(data.annotations);
+        setStats(data.stats);
+        setDeviceHandle(dirHandle);
+
         setStep('overview');
       } catch (error) {
         console.error('Scan failed:', error);

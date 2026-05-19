@@ -23,7 +23,10 @@ Whether you want to protect against a factory reset, switch to a new Kobo device
 
 - **🔒 100% Private** — All processing happens locally in your browser. Your books never touch a server.
 - **📚 Complete Kobo Backup** — Backs up sideloaded books (EPUB, PDF), the Kobo database, annotations, highlights, and reading progress.
-- **⚡ Handles Any Library Size** — Streaming ZIP engine writes directly to disk, so even 4 GB+ libraries back up without running out of memory.
+- **⚡ Handles Any Library Size** — Streaming ZIP engine writes directly to disk, so even 4 GB+ libraries back up and restore without running out of memory.
+- **📊 Library Dashboard** — Once connected, explore your library interactively: filter books by progress (Read, Reading, Unread), search by title/author, and view reading stats.
+- **🖼️ Real Cover Extraction** — Extracts actual cover thumbnails from `.kobo/images` using suffix match resolution, with a smart fallback system for missing covers.
+- **🎒 Advanced Notes Exporter** — Export all annotations to Obsidian (ZIP of Markdown files with YAML frontmatter) or Anki (escaped CSV ready for flashcard import).
 - **💾 Database-Only Mode** — Skip the book files and back up only the database (reading progress, highlights, annotations) for a fast, small backup.
 - **🔄 Full Restore** — Restore your entire library to a new or reset Kobo device.
 - **🌐 No Installation** — Works directly in Chrome or Edge — just visit [kobup.org](https://www.kobup.org/).
@@ -43,6 +46,13 @@ Whether you want to protect against a factory reset, switch to a new Kobo device
 5. Choose what to include (books, annotations, reading progress)
 6. Chrome will ask where to save the ZIP file — pick a location
 7. Done! Store the backup in a safe place (cloud, external drive)
+
+### Explore Library & Export Notes
+
+1. Connect your Kobo device and run the scanning process.
+2. Click **"Open Dashboard"** or select **Dashboard** in the header.
+3. Browse your books, check your reading statistics, or view highlighted notes.
+4. Go to the **Annotations** tab to export all highlights/notes directly to Obsidian or Anki.
 
 ### Restore a Kobo Backup
 
@@ -111,8 +121,9 @@ The complete source code is public on GitHub. You can audit every line, or self-
 | State | Zustand |
 | SQLite in browser | sql.js (WebAssembly) |
 | ZIP creation | **client-zip** (streaming, replaces JSZip) |
-| ZIP extraction | JSZip |
+| ZIP extraction | **@zip.js/zip.js** (streaming, replaces JSZip) |
 | File System | File System Access API + browser-fs-access |
+| Testing | Vitest |
 | Analytics | Vercel Analytics (cookieless) |
 | Hosting | Vercel |
 
@@ -126,17 +137,19 @@ KoboOfflineBackup/
 │   ├── components/
 │   │   ├── common/          # Button, Card, Checkbox, etc.
 │   │   ├── layout/          # Header, Footer
-│   │   ├── backup/          # Backup wizard steps
+│   │   ├── backup/          # Backup wizard steps & CoverPreview
 │   │   └── restore/         # Restore wizard steps
 │   ├── hooks/
 │   │   ├── useBackup.js     # Backup orchestration (streaming-first)
 │   │   ├── useKoboDevice.js # Device scanning
 │   │   └── useRestore.js    # Restore orchestration
-│   ├── pages/               # Home, Backup, Restore, History, FAQ, etc.
+│   ├── pages/               # Home, LibraryDashboard, Backup, Restore, History, FAQ, etc.
 │   ├── utils/
 │   │   ├── backup.js        # ZIP creation via client-zip (streaming)
-│   │   ├── restore.js       # ZIP extraction and device restore
+│   │   ├── restore.js       # ZIP extraction via @zip.js/zip.js (streaming)
 │   │   ├── koboDatabase.js  # SQLite parsing with sql.js
+│   │   ├── koboCovers.js    # Cover image extraction utility
+│   │   ├── export.js        # Obsidian Markdown & Anki CSV Exporters
 │   │   └── fileSystem.js    # File System Access API wrapper
 │   └── App.jsx
 ├── public/
@@ -162,6 +175,9 @@ npm install
 
 # Start dev server
 npm run dev
+
+# Run unit tests
+npm run test
 
 # Build for production
 npm run build
@@ -190,6 +206,13 @@ MIT License — see [LICENSE](LICENSE) for details.
 ---
 
 ## 🗺️ Changelog
+
+### v1.2 (May 2026)
+- **Library Dashboard** — responsive UI grid to view connected books, filter by status, read metadata, and check reading time/metrics.
+- **Kobo Covers Extractor** — parse real book covers from `.kobo/images` using suffix match resolution logic.
+- **Advanced Notes Exporter** — export all highlights to Obsidian Markdown ZIP (with YAML frontmatter metadata) or Anki CSV (escaped flashcards).
+- **Streaming ZIP Restore** — refactored restore logic to use `@zip.js/zip.js` streams, preventing client memory exhaustion when restoring large files.
+- **Vitest Test Suite** — added unit tests for cover parsing and Obsidian/Anki exporters.
 
 ### v1.1 (March 2026)
 - **Streaming backup engine** — replaced JSZip with client-zip; files are written to disk one at a time, fixing OOM crashes on large libraries (4 GB+, 500+ books)

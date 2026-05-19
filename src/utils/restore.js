@@ -3,7 +3,7 @@
  * Handles extracting and restoring backup ZIPs to Kobo devices
  */
 
-import JSZip from 'jszip';
+import { ZipReader, BlobReader, BlobWriter, TextWriter } from '@zip.js/zip.js';
 import { writeFile, writeFileToPath } from './fileSystem.js';
 import { RestoreError, ERROR_CODES } from './errors.js';
 import { validateBackupMetadata } from './validation.js';
@@ -15,25 +15,33 @@ import { openDatabase } from './koboDatabase.js';
  * @returns {Promise<object>} Parsed backup data
  */
 export async function parseBackupFile(file) {
+  let zipReader;
   try {
     // Load ZIP
-    const zip = await JSZip.loadAsync(file);
+    zipReader = new ZipReader(new BlobReader(file));
+    const entries = await zipReader.getEntries();
 
     // Check for required files
-    const requiredFiles = ['KoboReader.sqlite', 'backup-metadata.json'];
+    const metadataEntry = entries.find(e => e.filename === 'backup-metadata.json');
+    const dbEntry = entries.find(e => e.filename === 'KoboReader.sqlite');
 
-    for (const filename of requiredFiles) {
-      if (!zip.files[filename]) {
-        throw new RestoreError(
-          `Invalid backup: missing ${filename}`,
-          ERROR_CODES.RESTORE_INVALID_FILE,
-          { missingFile: filename }
-        );
-      }
+    if (!metadataEntry) {
+      throw new RestoreError(
+        'Invalid backup: missing backup-metadata.json',
+        ERROR_CODES.RESTORE_INVALID_FILE,
+        { missingFile: 'backup-metadata.json' }
+      );
+    }
+    if (!dbEntry) {
+      throw new RestoreError(
+        'Invalid backup: missing KoboReader.sqlite',
+        ERROR_CODES.RESTORE_INVALID_FILE,
+        { missingFile: 'KoboReader.sqlite' }
+      );
     }
 
     // Parse metadata
-    const metadataText = await zip.files['backup-metadata.json'].async('text');
+    const metadataText = await metadataEntry.getData(new TextWriter());
     const metadata = JSON.parse(metadataText);
 
     // Validate metadata
@@ -47,7 +55,8 @@ export async function parseBackupFile(file) {
     }
 
     // Extract database
-    const database = await zip.files['KoboReader.sqlite'].async('arraybuffer');
+    const dbBlob = await dbEntry.getData(new BlobWriter());
+    const database = await dbBlob.arrayBuffer();
 
     // Extract original book paths from database
     const bookPathMap = await extractBookPathsFromDatabase(database);
@@ -55,8 +64,9 @@ export async function parseBackupFile(file) {
     // Get list of book files with their original paths
     const bookFiles = [];
 
-    for (const [path, zipEntry] of Object.entries(zip.files)) {
-      if (path.startsWith('books/') && !zipEntry.dir) {
+    for (const entry of entries) {
+      const path = entry.filename;
+      if (path.startsWith('books/') && !entry.directory) {
         // zipRelPath: the part after "books/"
         // New backup format: "Libri/Author/book.epub" (full relative path embedded in ZIP)
         // Old backup format: "book.epub" (filename only, path recovered via pathMap)
@@ -78,7 +88,6 @@ export async function parseBackupFile(file) {
           name: displayName,
           path: path,
           originalPath: originalPath,
-          zipEntry: zipEntry,
         });
       }
     }
@@ -88,7 +97,7 @@ export async function parseBackupFile(file) {
       database,
       bookFiles,
       bookPathMap,
-      zip,
+      file,
       valid: true,
     };
   } catch (error) {
@@ -101,6 +110,10 @@ export async function parseBackupFile(file) {
       ERROR_CODES.RESTORE_CORRUPTED,
       { originalError: error }
     );
+  } finally {
+    if (zipReader) {
+      await zipReader.close();
+    }
   }
 }
 
@@ -204,58 +217,77 @@ export async function restoreToDevice(deviceHandle, backupData, options = {}) {
       const totalBooks = backupData.bookFiles.length;
       let restoredBooks = 0;
 
-      for (let i = 0; i < backupData.bookFiles.length; i++) {
-        const bookFile = backupData.bookFiles[i];
+      const zipReader = new ZipReader(new BlobReader(backupData.file));
+      try {
+        const entries = await zipReader.getEntries();
 
-        // Retry up to 2 times before marking a book as failed
-        let lastError = null;
-        let success = false;
+        for (let i = 0; i < backupData.bookFiles.length; i++) {
+          const bookFile = backupData.bookFiles[i];
 
-        for (let attempt = 1; attempt <= 2; attempt++) {
-          try {
-            // Extract book file from ZIP
-            const bookBlob = await bookFile.zipEntry.async('blob');
+          // Find matching entry in ZIP by path
+          const zipEntry = entries.find(e => e.filename === bookFile.path);
+          if (!zipEntry) {
+            console.error(`Book entry not found in backup archive: ${bookFile.path}`);
+            failedBooks.push({
+              name: bookFile.name,
+              originalPath: bookFile.originalPath,
+              error: 'File not found in ZIP archive',
+            });
+            continue;
+          }
 
-            // Log the path being used (first 5 books only)
-            if (i < 5) {
-              console.log(`[RESTORE] Book ${i + 1}: "${bookFile.name}" -> "${bookFile.originalPath}"`);
-            }
+          // Retry up to 2 times before marking a book as failed
+          let lastError = null;
+          let success = false;
 
-            // Write to original path (preserves database ContentID references).
-            // The Kobo matches book files to DB records via ContentID which encodes
-            // the full path (file:///mnt/onboard/<originalPath>). If this path is
-            // wrong, the Kobo creates a new empty record and progress/annotations
-            // are lost.
-            await writeFileToPath(deviceHandle, bookFile.originalPath, bookBlob);
+          for (let attempt = 1; attempt <= 2; attempt++) {
+            try {
+              // Extract book file from ZIP
+              const bookBlob = await zipEntry.getData(new BlobWriter());
 
-            success = true;
-            break;
-          } catch (error) {
-            lastError = error;
-            if (attempt < 2) {
-              // Brief pause before retry
-              await new Promise(resolve => setTimeout(resolve, 300));
+              // Log the path being used (first 5 books only)
+              if (i < 5) {
+                console.log(`[RESTORE] Book ${i + 1}: "${bookFile.name}" -> "${bookFile.originalPath}"`);
+              }
+
+              // Write to original path (preserves database ContentID references).
+              // The Kobo matches book files to DB records via ContentID which encodes
+              // the full path (file:///mnt/onboard/<originalPath>). If this path is
+              // wrong, the Kobo creates a new empty record and progress/annotations
+              // are lost.
+              await writeFileToPath(deviceHandle, bookFile.originalPath, bookBlob);
+
+              success = true;
+              break;
+            } catch (error) {
+              lastError = error;
+              if (attempt < 2) {
+                // Brief pause before retry
+                await new Promise(resolve => setTimeout(resolve, 300));
+              }
             }
           }
-        }
 
-        if (success) {
-          restoredBooks++;
-        } else {
-          console.error(`Failed to restore book after retries: ${bookFile.name}`, lastError);
-          failedBooks.push({
-            name: bookFile.name,
-            originalPath: bookFile.originalPath,
-            error: lastError?.message || 'Unknown error',
-          });
-        }
+          if (success) {
+            restoredBooks++;
+          } else {
+            console.error(`Failed to restore book after retries: ${bookFile.name}`, lastError);
+            failedBooks.push({
+              name: bookFile.name,
+              originalPath: bookFile.originalPath,
+              error: lastError?.message || 'Unknown error',
+            });
+          }
 
-        const progress = 20 + ((i + 1) / totalBooks) * 65; // 20-85%
-        reportProgress(
-          `Restoring books (${i + 1}/${totalBooks})...`,
-          progress,
-          { filesProcessed: i + 1, totalFiles: totalBooks }
-        );
+          const progress = 20 + ((i + 1) / totalBooks) * 65; // 20-85%
+          reportProgress(
+            `Restoring books (${i + 1}/${totalBooks})...`,
+            progress,
+            { filesProcessed: i + 1, totalFiles: totalBooks }
+          );
+        }
+      } finally {
+        await zipReader.close();
       }
 
       reportProgress('Books restored', 85);
@@ -395,18 +427,16 @@ export function previewBackup(backupData) {
   };
 }
 
-/**
- * Extract annotations from backup without restoring
- * @param {object} backupData - Parsed backup data
- * @returns {Promise<Array<object>>} Array of annotations
- */
 export async function extractAnnotations(backupData) {
+  let zipReader;
   try {
     // Check if annotations folder exists
-    const annotationsFile = backupData.zip.files['annotations/all-annotations.md'];
+    zipReader = new ZipReader(new BlobReader(backupData.file));
+    const entries = await zipReader.getEntries();
+    const annotationsEntry = entries.find(e => e.filename === 'annotations/all-annotations.md');
 
-    if (annotationsFile) {
-      const markdown = await annotationsFile.async('text');
+    if (annotationsEntry) {
+      const markdown = await annotationsEntry.getData(new TextWriter());
       return {
         format: 'markdown',
         content: markdown,
@@ -425,6 +455,10 @@ export async function extractAnnotations(backupData) {
       content: '',
       error: error.message,
     };
+  } finally {
+    if (zipReader) {
+      await zipReader.close();
+    }
   }
 }
 

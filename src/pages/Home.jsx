@@ -7,9 +7,33 @@ import { Card } from '../components/common/Card.jsx';
 import { Container } from '../components/layout/Container.jsx';
 import { Icon } from '../components/common/Icon.jsx';
 
+import { useKoboStore } from '../stores/koboStore.js';
+
 export function Home({ onNavigate }) {
+  const books = useKoboStore((state) => state.books);
+  const device = useKoboStore((state) => state.device);
+
   return (
     <div className="min-h-screen">
+      {/* Active Session Banner */}
+      {books && books.length > 0 && (
+        <div className="bg-kobo-accent/10 border-b border-kobo-accent/20 py-3 text-center">
+          <Container>
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-3 text-sm font-body text-kobo-dark">
+              <span>
+                📲 Connected to <strong className="font-semibold">{device?.model || 'Kobo Device'}</strong> with <strong className="font-semibold">{books.length} books</strong>.
+              </span>
+              <button
+                onClick={() => onNavigate('dashboard')}
+                className="bg-kobo-accent text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold hover:bg-kobo-accent-dark transition-colors shadow-sm"
+              >
+                Open Dashboard
+              </button>
+            </div>
+          </Container>
+        </div>
+      )}
+
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-kobo-cream to-white py-16 sm:py-24">
         <Container>
