@@ -207,6 +207,14 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ## 🗺️ Changelog
 
+### v1.2.1 (May 2026) — hardening
+- **Safer restore (behavior change)** — "Remove existing book folders" is now **opt-in**. By default restore overwrites backed-up files without recursively deleting device folders, so books added *after* a backup are no longer wiped when restoring an older one.
+- **Path-traversal guard** — restore refuses any book path containing `..` (defense-in-depth against a crafted/corrupt backup ZIP), and the cleanup step never touches protected folders (`.kobo`, etc.).
+- **CSV injection guard** — Anki export prefixes fields starting with `= + - @` so they can't run as formulas if opened in a spreadsheet.
+- **Obsidian export** — de-duplicates filenames so books with identical titles no longer overwrite each other.
+- **Fixes** — cover-thumbnail object-URL leak, removed dead code, and corrected the Vite `zip` chunk (was empty after the JSZip → client-zip/zip.js migration).
+- **Tests** — added an integration suite that runs the restore engine end-to-end against an in-memory device and real Kobo backups (both flat and nested formats).
+
 ### v1.2 (May 2026)
 - **Library Dashboard** — responsive UI grid to view connected books, filter by status, read metadata, and check reading time/metrics.
 - **Kobo Covers Extractor** — parse real book covers from `.kobo/images` using suffix match resolution logic.

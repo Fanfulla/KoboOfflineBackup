@@ -19,6 +19,7 @@ export function RestoreWizard({ onComplete }) {
   const [restoreOptions, setRestoreOptions] = useState({
     includeAnnotations: true,
     includeProgress: true,
+    cleanExistingBooks: false,
     confirmed: false,
   });
   const [deviceHandle, setDeviceHandle] = useState(null);

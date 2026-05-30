@@ -39,6 +39,9 @@ export function CoverPreview({ deviceHandle, coverId, title = 'Untitled', author
         url = await getCoverUrl(deviceHandle, coverId);
         if (active) {
           setCoverUrl(url);
+        } else if (url) {
+          // Component unmounted / deps changed while loading — don't leak the URL.
+          URL.revokeObjectURL(url);
         }
       } catch (err) {
         console.error('[CoverPreview] Failed to load cover:', err);

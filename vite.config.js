@@ -11,7 +11,7 @@ export default defineConfig({
         manualChunks: {
           'vendor': ['react', 'react-dom'],
           'db': ['sql.js'], // SQLite WASM - large file, separate chunk
-          'zip': ['jszip'], // ZIP library - separate chunk
+          'zip': ['client-zip', '@zip.js/zip.js'], // streaming ZIP read/write
         }
       }
     },

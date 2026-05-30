@@ -303,8 +303,21 @@ export async function writeFileToPath(rootHandle, filePath, data) {
     // Normalize path separators and remove leading slash
     const normalizedPath = filePath.replace(/\\/g, '/').replace(/^\//, '');
     const parts = normalizedPath.split('/');
+
+    // SECURITY: reject path traversal. A malicious or corrupt backup ZIP could
+    // embed entries like "books/../../../etc/passwd". Although the File System
+    // Access API itself rejects "." / ".." in getDirectoryHandle, we fail fast
+    // and explicitly here so a crafted path can never escape the device root.
+    if (parts.some((p) => p === '..' || p === '.')) {
+      throw new FileSystemError(
+        `Unsafe path rejected (path traversal): ${filePath}`,
+        ERROR_CODES.FS_WRITE_ERROR,
+        { filePath }
+      );
+    }
+
     const filename = parts.pop();
-    
+
     // Navigate/create directories
     let currentDir = rootHandle;
     for (const dirName of parts) {
@@ -316,6 +329,10 @@ export async function writeFileToPath(rootHandle, filePath, data) {
     // Write the file
     await writeFile(currentDir, filename, data);
   } catch (error) {
+    // Preserve our own typed errors (e.g. the traversal guard above)
+    if (error instanceof FileSystemError) {
+      throw error;
+    }
     throw new FileSystemError(
       `Failed to write file at path: ${filePath}`,
       ERROR_CODES.FS_WRITE_ERROR,

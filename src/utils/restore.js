@@ -129,7 +129,9 @@ export async function restoreToDevice(deviceHandle, backupData, options = {}) {
     includeBooks = true,
     includeAnnotations = true,
     includeProgress = true,
-    cleanExistingBooks = true, // NEW: Clean existing books before restore
+    cleanExistingBooks = false, // Opt-in: recursively removes top-level book folders
+                                // before restore. Off by default because it can delete
+                                // files added to those folders AFTER the backup was made.
     onProgress = null,
   } = options;
 
@@ -382,13 +384,6 @@ export function checkCompatibility(backupMetadata, deviceInfo) {
     }
   }
 
-  // Check app version compatibility
-  if (backupMetadata.compatibility?.minAppVersion) {
-    const currentVersion = '1.0.0';
-    // In a real app, you'd compare versions properly
-    // For now, just check if it exists
-  }
-
   return {
     compatible: true, // Backups are generally forward-compatible
     warnings,
@@ -598,10 +593,14 @@ async function cleanExistingBooksFromDevice(deviceHandle, bookPathMap, reportPro
   const dirsToClean = new Set();
   const filesToClean = new Set();
 
+  // Never recursively delete these top-level entries even if a (malicious or
+  // corrupt) backup path resolves to them — they hold system/non-book data.
+  const PROTECTED_DIRS = new Set(['', '.', '..', '.kobo', '.adobe-digital-editions', 'System Volume Information']);
+
   for (const [filename, originalPath] of bookPathMap.entries()) {
     // 1. Identify destination directories to clean (e.g. "AuthorName/")
     const parts = originalPath.split('/');
-    if (parts.length > 1) {
+    if (parts.length > 1 && !PROTECTED_DIRS.has(parts[0])) {
       dirsToClean.add(parts[0]);
     }
 

@@ -4,7 +4,6 @@ import { CoverPreview } from '../components/backup/CoverPreview.jsx';
 import { Container } from '../components/layout/Container.jsx';
 import { Card } from '../components/common/Card.jsx';
 import { Button } from '../components/common/Button.jsx';
-import { Icon } from '../components/common/Icon.jsx';
 import { formatDuration } from '../utils/formatters.js';
 import { exportToObsidianZip, exportToAnkiCsv } from '../utils/export.js';
 

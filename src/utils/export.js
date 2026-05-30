@@ -53,6 +53,7 @@ export function generateObsidianMarkdown(book, bookAnns) {
  */
 export async function exportToObsidianZip(books, annotationsByBook) {
   const entries = [];
+  const usedNames = new Set();
 
   books.forEach((book) => {
     const bookAnns = annotationsByBook[book.ContentID] || [];
@@ -63,7 +64,17 @@ export async function exportToObsidianZip(books, annotationsByBook) {
       .replace(/[^a-z0-9]/gi, '_')
       .toLowerCase()
       .slice(0, 50);
-    const filename = `${safeTitle}.md`;
+
+    // De-duplicate: two books with the same/similar title would otherwise
+    // collide to one .md entry and silently drop notes.
+    let filename = `${safeTitle}.md`;
+    let counter = 2;
+    while (usedNames.has(filename)) {
+      filename = `${safeTitle}_${counter}.md`;
+      counter++;
+    }
+    usedNames.add(filename);
+
     const markdownContent = generateObsidianMarkdown(book, bookAnns);
 
     entries.push({
@@ -80,10 +91,17 @@ export async function exportToObsidianZip(books, annotationsByBook) {
 }
 
 /**
- * Clean string for CSV escaping
+ * Clean string for CSV escaping.
+ * Also neutralizes CSV/formula injection: a field starting with = + - @ (or a
+ * control char) can execute as a formula if the CSV is opened in a spreadsheet.
+ * Prefixing with a single quote forces it to be treated as plain text.
  */
 function escapeCsvField(str = '') {
-  return `"${str.replace(/"/g, '""')}"`;
+  let value = String(str);
+  if (/^[=+\-@\t\r]/.test(value)) {
+    value = `'${value}`;
+  }
+  return `"${value.replace(/"/g, '""')}"`;
 }
 
 /**

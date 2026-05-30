@@ -51,6 +51,13 @@ export function RestoreOptions({
             label="Reading Progress"
             sublabel="Continue where you left off"
           />
+
+          <Checkbox
+            checked={options.cleanExistingBooks || false}
+            onChange={(checked) => onOptionsChange({ ...options, cleanExistingBooks: checked })}
+            label="Remove existing book folders first"
+            sublabel="Deletes the device's current book folders before restoring. Leave off to keep any books you added after this backup."
+          />
         </div>
 
         {/* Warning */}
