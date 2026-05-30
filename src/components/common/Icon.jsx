@@ -228,6 +228,7 @@ export function Icon({
   type,
   size = 'md',
   className = '',
+  style,
   ...props
 }) {
   const iconPath = icons[type];
@@ -243,14 +244,18 @@ export function Icon({
     lg: 'w-6 h-6',
   };
 
-  const sizeClass = sizeClasses[size] || sizeClasses.md;
+  // size can be a keyword ('sm'|'md'|'lg') -> Tailwind class, or a number -> px.
+  const numeric = typeof size === 'number';
+  const sizeClass = numeric ? '' : (sizeClasses[size] || sizeClasses.md);
+  const sizeStyle = numeric ? { width: size, height: size } : undefined;
 
   return (
     <svg
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      className={`${sizeClass} ${className}`}
+      className={`${sizeClass} ${className}`.trim()}
+      style={{ ...sizeStyle, ...style }}
       {...props}
     >
       {iconPath}
@@ -260,6 +265,7 @@ export function Icon({
 
 Icon.propTypes = {
   type: PropTypes.oneOf(Object.keys(icons)).isRequired,
-  size: PropTypes.oneOf(['sm', 'md', 'lg']),
+  size: PropTypes.oneOfType([PropTypes.oneOf(['sm', 'md', 'lg']), PropTypes.number]),
   className: PropTypes.string,
+  style: PropTypes.object,
 };
