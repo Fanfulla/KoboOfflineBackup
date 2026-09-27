@@ -10,8 +10,6 @@ import { FileSystemError, ERROR_CODES } from './errors.ts';
 import type { KoboSource } from './deviceSource.ts';
 import type { ScanResult, ScanWarning } from '../types/kobo.ts';
 
-export const SCAN_STEPS = 4;
-
 export const DATABASE_PATH = '.kobo/KoboReader.sqlite';
 export const SETTINGS_PATH = '.kobo/Kobo/Kobo eReader.conf';
 

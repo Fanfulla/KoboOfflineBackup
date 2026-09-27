@@ -18,16 +18,6 @@ export async function isValidKoboDirectory(dirHandle: FileSystemDirectoryHandle 
   }
 }
 
-const MAX_BACKUP_SIZE = 10 * 1024 * 1024 * 1024; // 10 GB
-
-export function validateBackupFile(file: File | null | undefined): ValidationResult {
-  if (!file) return { valid: false, error: 'No file provided' };
-  if (!file.name.toLowerCase().endsWith('.zip')) return { valid: false, error: 'File must be a ZIP archive' };
-  if (file.size > MAX_BACKUP_SIZE) return { valid: false, error: 'Backup file is too large (max 10GB)' };
-  if (file.size < 1024) return { valid: false, error: 'Backup file is too small to be valid' };
-  return { valid: true };
-}
-
 export function validateBackupMetadata(metadata: unknown): ValidationResult {
   if (!metadata || typeof metadata !== 'object') return { valid: false, error: 'No metadata provided' };
 

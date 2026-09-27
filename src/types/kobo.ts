@@ -141,13 +141,6 @@ export interface BackupMetadata {
   compatibility?: { minAppVersion: string; supportedDevices: string[] };
 }
 
-export interface ProgressState {
-  stage: string;
-  percent: number;
-  filesProcessed: number;
-  totalFiles: number;
-}
-
 export type BackupStage =
   'preparing' | 'books' | 'settings' | 'annotations' | 'metadata' | 'finalizing' | 'verifying' | 'complete';
 

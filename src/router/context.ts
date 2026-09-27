@@ -17,10 +17,6 @@ export function useRouter(): RouterValue {
   return value;
 }
 
-export function useLang(): Lang {
-  return useRouter().route.lang;
-}
-
 /** Navigate to a route in the current language. */
 export function useNavigateTo() {
   const { navigate, route } = useRouter();

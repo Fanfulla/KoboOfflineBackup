@@ -1,8 +1,6 @@
 import { downloadZip } from 'client-zip';
 import type { KoboAnnotation, KoboBook } from '../types/kobo.ts';
 
-export type AnnotationsByBook = Record<string, KoboAnnotation[]>;
-
 type BookLike = Pick<KoboBook, 'ContentID'> & Partial<KoboBook>;
 type AnnotationLike = Partial<KoboAnnotation>;
 

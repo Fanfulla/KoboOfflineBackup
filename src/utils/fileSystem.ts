@@ -4,17 +4,6 @@
 
 import { FileSystemError, ERROR_CODES } from './errors.ts';
 
-export interface DeviceFile {
-  handle: FileSystemFileHandle;
-  path: string;
-  name: string;
-}
-
-/** Folders never descended into while scanning (hidden/system). */
-function isSkippedDirectory(name: string): boolean {
-  return name.startsWith('.') || name === 'System Volume Information';
-}
-
 /**
  * Let the user pick a directory. Returns null if the dialog is dismissed.
  */
@@ -47,18 +36,6 @@ export function selectKoboDirectory(
   return selectDirectory({ id: 'kobo-device', mode });
 }
 
-/** Read a file handle fully into memory. */
-export async function readFile(fileHandle: FileSystemFileHandle): Promise<ArrayBuffer> {
-  try {
-    return await (await fileHandle.getFile()).arrayBuffer();
-  } catch (error) {
-    throw new FileSystemError('Failed to read file', ERROR_CODES.FS_READ_ERROR, {
-      filename: fileHandle.name,
-      originalError: error,
-    });
-  }
-}
-
 /** Trigger a browser download for an in-memory blob. */
 export function downloadBlob(blob: Blob, fileName: string): { filename: string; size: number } {
   const url = URL.createObjectURL(blob);
@@ -75,65 +52,8 @@ export function downloadBlob(blob: Blob, fileName: string): { filename: string; 
   return { filename: fileName, size: blob.size };
 }
 
-/** Recursively list files, skipping hidden and system folders. */
-export async function getAllFiles(dirHandle: FileSystemDirectoryHandle, path = ''): Promise<DeviceFile[]> {
-  const files: DeviceFile[] = [];
-
-  try {
-    for await (const entry of dirHandle.values()) {
-      const entryPath = path ? `${path}/${entry.name}` : entry.name;
-
-      if (entry.kind === 'file') {
-        files.push({ handle: entry, path: entryPath, name: entry.name });
-      } else if (!isSkippedDirectory(entry.name)) {
-        files.push(...(await getAllFiles(entry, entryPath)));
-      }
-    }
-  } catch (error) {
-    console.error('Error reading directory:', path || '/', error);
-  }
-
-  return files;
-}
-
 function splitPath(path: string): string[] {
   return path.replace(/\\/g, '/').split('/').filter(Boolean);
-}
-
-/** Get a file handle by relative path (e.g. ".kobo/KoboReader.sqlite"). */
-export async function getFileByPath(
-  dirHandle: FileSystemDirectoryHandle,
-  path: string,
-): Promise<FileSystemFileHandle> {
-  try {
-    const parts = splitPath(path);
-    const fileName = parts.pop()!;
-    let current = dirHandle;
-    for (const part of parts) current = await current.getDirectoryHandle(part);
-    return await current.getFileHandle(fileName);
-  } catch (error) {
-    throw new FileSystemError(`File not found: ${path}`, ERROR_CODES.FS_NOT_FOUND, {
-      path,
-      originalError: error,
-    });
-  }
-}
-
-/** Get a directory handle by relative path (e.g. ".kobo"). */
-export async function getDirectoryByPath(
-  dirHandle: FileSystemDirectoryHandle,
-  path: string,
-): Promise<FileSystemDirectoryHandle> {
-  try {
-    let current = dirHandle;
-    for (const part of splitPath(path)) current = await current.getDirectoryHandle(part);
-    return current;
-  } catch (error) {
-    throw new FileSystemError(`Directory not found: ${path}`, ERROR_CODES.FS_NOT_FOUND, {
-      path,
-      originalError: error,
-    });
-  }
 }
 
 /** Write data to a file inside a directory (creating/overwriting it). */
