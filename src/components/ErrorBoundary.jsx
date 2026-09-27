@@ -3,9 +3,9 @@
  */
 
 import { Component } from 'react';
-import { Card } from './common/Card.jsx';
-import { Button } from './common/Button.jsx';
-import { Icon } from './common/Icon.jsx';
+import { Card } from './common/Card.tsx';
+import { Button } from './common/Button.tsx';
+import { Icon } from './common/Icon.tsx';
 
 export class ErrorBoundary extends Component {
   constructor(props) {
@@ -17,7 +17,7 @@ export class ErrorBoundary extends Component {
     };
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError() {
     // Update state so the next render will show the fallback UI
     return { hasError: true };
   }
@@ -88,7 +88,7 @@ export class ErrorBoundary extends Component {
                           <strong>Error:</strong> {this.state.error.toString()}
                         </p>
                         {this.state.errorInfo && (
-                          <pre className="whitespace-pre-wrap text-xs bg-white p-3 rounded border border-kobo-gray-light">
+                          <pre className="whitespace-pre-wrap text-xs bg-white p-3 rounded-sm border border-kobo-gray-light">
                             {this.state.errorInfo.componentStack}
                           </pre>
                         )}
@@ -129,18 +129,10 @@ export class ErrorBoundary extends Component {
 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button
-                    size="lg"
-                    variant="primary"
-                    onClick={this.handleReset}
-                  >
+                  <Button size="lg" variant="primary" onClick={this.handleReset}>
                     Try Again
                   </Button>
-                  <Button
-                    size="lg"
-                    variant="secondary"
-                    onClick={this.handleReload}
-                  >
+                  <Button size="lg" variant="secondary" onClick={this.handleReload}>
                     <Icon type="refresh" size={20} />
                     Reload Page
                   </Button>

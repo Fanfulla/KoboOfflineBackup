@@ -3,13 +3,13 @@
  */
 
 import { useState } from 'react';
-import { useKoboStore } from '../stores/koboStore.js';
-import { Container } from '../components/layout/Container.jsx';
-import { Card } from '../components/common/Card.jsx';
-import { Button } from '../components/common/Button.jsx';
-import { Icon } from '../components/common/Icon.jsx';
-import { Modal } from '../components/common/Modal.jsx';
-import { formatBytes, formatDate } from '../utils/formatters.js';
+import { useKoboStore } from '../stores/koboStore.ts';
+import { Container } from '../components/layout/Container.tsx';
+import { Card } from '../components/common/Card.tsx';
+import { Button } from '../components/common/Button.tsx';
+import { Icon } from '../components/common/Icon.tsx';
+import { Modal } from '../components/common/Modal.tsx';
+import { formatBytes, formatDate } from '../utils/formatters.ts';
 
 export function History({ onNavigate }) {
   const backups = useKoboStore((state) => state.backups);
@@ -27,7 +27,7 @@ export function History({ onNavigate }) {
     setDeleteModal({ isOpen: false, backup: null });
   };
 
-  const handleRestore = (backup) => {
+  const handleRestore = () => {
     // Navigate to restore page
     // In a real implementation, you might want to pre-load the backup file
     if (onNavigate) {
@@ -45,19 +45,13 @@ export function History({ onNavigate }) {
                 <Icon type="history" size={48} className="text-kobo-gray-light" />
               </div>
 
-              <h2 className="text-3xl font-display font-bold text-kobo-dark mb-4">
-                No Backup History
-              </h2>
+              <h2 className="text-3xl font-display font-bold text-kobo-dark mb-4">No Backup History</h2>
 
               <p className="text-lg text-kobo-gray mb-8">
                 You haven't created any backups yet. Create your first backup to keep your Kobo library safe.
               </p>
 
-              <Button
-                size="lg"
-                variant="primary"
-                onClick={() => onNavigate && onNavigate('backup')}
-              >
+              <Button size="lg" variant="primary" onClick={() => onNavigate && onNavigate('backup')}>
                 <Icon type="backup" size={20} />
                 Create Backup
               </Button>
@@ -73,34 +67,23 @@ export function History({ onNavigate }) {
       <Container>
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
-            <h1 className="text-4xl font-display font-bold text-kobo-dark mb-2">
-              Backup History
-            </h1>
-            <p className="text-lg text-kobo-gray">
-              View and manage your Kobo library backups
-            </p>
+            <h1 className="text-4xl font-display font-bold text-kobo-dark mb-2">Backup History</h1>
+            <p className="text-lg text-kobo-gray">View and manage your Kobo library backups</p>
           </div>
 
           {/* Backup List */}
           <div className="space-y-4">
             {backups.map((backup) => (
-              <BackupCard
-                key={backup.id}
-                backup={backup}
-                onDelete={handleDelete}
-                onRestore={handleRestore}
-              />
+              <BackupCard key={backup.id} backup={backup} onDelete={handleDelete} onRestore={handleRestore} />
             ))}
           </div>
 
           {/* Info Section */}
           <Card className="mt-8 bg-kobo-info/10 border-2 border-kobo-info/20">
             <div className="flex items-start gap-3">
-              <Icon type="info" className="text-kobo-info flex-shrink-0 mt-1" />
+              <Icon type="info" className="text-kobo-info shrink-0 mt-1" />
               <div>
-                <h4 className="font-semibold text-kobo-dark mb-2">
-                  Backup Best Practices
-                </h4>
+                <h4 className="font-semibold text-kobo-dark mb-2">Backup Best Practices</h4>
                 <ul className="text-sm text-kobo-gray space-y-1 list-disc list-inside">
                   <li>Create regular backups, especially before device updates</li>
                   <li>Store backups in multiple locations (cloud + external drive)</li>
@@ -114,18 +97,13 @@ export function History({ onNavigate }) {
       </Container>
 
       {/* Delete Confirmation Modal */}
-      <Modal
-        isOpen={deleteModal.isOpen}
-        onClose={() => setDeleteModal({ isOpen: false, backup: null })}
-      >
+      <Modal isOpen={deleteModal.isOpen} onClose={() => setDeleteModal({ isOpen: false, backup: null })}>
         <div className="text-center">
           <div className="w-16 h-16 bg-kobo-error/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <Icon type="alert" size={32} className="text-kobo-error" />
           </div>
 
-          <h3 className="text-2xl font-display font-bold text-kobo-dark mb-2">
-            Delete Backup?
-          </h3>
+          <h3 className="text-2xl font-display font-bold text-kobo-dark mb-2">Delete Backup?</h3>
 
           <p className="text-kobo-gray mb-6">
             Are you sure you want to remove this backup from your history? This action cannot be undone.
@@ -134,17 +112,12 @@ export function History({ onNavigate }) {
           {deleteModal.backup && (
             <div className="p-4 bg-kobo-cream-dark rounded-lg mb-6 text-left">
               <p className="text-sm text-kobo-gray mb-1">Backup File</p>
-              <p className="font-semibold text-kobo-dark">
-                {deleteModal.backup.filename}
-              </p>
+              <p className="font-semibold text-kobo-dark">{deleteModal.backup.filename}</p>
             </div>
           )}
 
           <div className="flex gap-3 justify-center">
-            <Button
-              variant="secondary"
-              onClick={() => setDeleteModal({ isOpen: false, backup: null })}
-            >
+            <Button variant="secondary" onClick={() => setDeleteModal({ isOpen: false, backup: null })}>
               Cancel
             </Button>
             <Button variant="danger" onClick={confirmDelete}>
@@ -163,15 +136,13 @@ function BackupCard({ backup, onDelete, onRestore }) {
     <Card variant="elevated">
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
         {/* Backup Icon */}
-        <div className="w-16 h-16 bg-gradient-to-br from-kobo-accent to-kobo-accent-dark rounded-xl flex items-center justify-center flex-shrink-0">
+        <div className="w-16 h-16 bg-linear-to-br from-kobo-accent to-kobo-accent-dark rounded-xl flex items-center justify-center shrink-0">
           <Icon type="backup" size={32} className="text-white" />
         </div>
 
         {/* Backup Info */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-display font-bold text-kobo-dark mb-1 truncate">
-            {backup.filename}
-          </h3>
+          <h3 className="text-lg font-display font-bold text-kobo-dark mb-1 truncate">{backup.filename}</h3>
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-kobo-gray">
             <span className="flex items-center gap-1">
               <Icon type="calendar" size={14} />
@@ -195,22 +166,12 @@ function BackupCard({ backup, onDelete, onRestore }) {
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 flex-shrink-0">
-          <Button
-            size="sm"
-            variant="primary"
-            onClick={() => onRestore(backup)}
-            title="Restore this backup"
-          >
+        <div className="flex gap-2 shrink-0">
+          <Button size="sm" variant="primary" onClick={() => onRestore(backup)} title="Restore this backup">
             <Icon type="restore" size={16} />
             Restore
           </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => onDelete(backup)}
-            title="Remove from history"
-          >
+          <Button size="sm" variant="ghost" onClick={() => onDelete(backup)} title="Remove from history">
             <Icon type="trash" size={16} />
           </Button>
         </div>

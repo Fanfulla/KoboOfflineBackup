@@ -67,14 +67,14 @@ Whether you want to protect against a factory reset, switch to a new Kobo device
 
 ## 🌐 Browser Compatibility
 
-| Browser | Backup | Restore | Notes |
-|---|---|---|---|
-| **Chrome 86+** | ✅ | ✅ | Recommended |
-| **Edge 86+** | ✅ | ✅ | Fully supported |
-| **Opera 72+** | ✅ | ✅ | Fully supported |
-| **Brave** | ⚠️ | ⚠️ | Enable File System API in settings |
-| **Firefox** | ❌ | ❌ | File System Access API not supported |
-| **Safari** | ❌ | ❌ | File System Access API not available |
+| Browser        | Backup | Restore | Notes                                |
+| -------------- | ------ | ------- | ------------------------------------ |
+| **Chrome 86+** | ✅     | ✅      | Recommended                          |
+| **Edge 86+**   | ✅     | ✅      | Fully supported                      |
+| **Opera 72+**  | ✅     | ✅      | Fully supported                      |
+| **Brave**      | ⚠️     | ⚠️      | Enable File System API in settings   |
+| **Firefox**    | ❌     | ❌      | File System Access API not supported |
+| **Safari**     | ❌     | ❌      | File System Access API not available |
 
 > **Why Chrome/Edge only?** KoBup uses the [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API) to read directly from your Kobo device and write the backup directly to disk without loading everything into memory. This API is only available in Chromium-based browsers.
 
@@ -83,15 +83,18 @@ Whether you want to protect against a factory reset, switch to a new Kobo device
 ## 📋 What Gets Backed Up?
 
 ### Always Included
+
 - ✅ **Kobo Database** (`KoboReader.sqlite`) — reading progress, bookmarks, highlights, collections
-- ✅ **Book Files** — all sideloaded EPUB, PDF, and other ebook files *(optional: can be skipped for a database-only backup)*
+- ✅ **Book Files** — all sideloaded EPUB, PDF, and other ebook files _(optional: can be skipped for a database-only backup)_
 
 ### Optional (User Choice)
+
 - 📝 **Annotations & Highlights** — all your notes and highlighted passages, also exported as Markdown
 - 📖 **Reading Progress** — current page positions and reading statistics
 - ⚙️ **Device Settings** — font and reading preferences
 
 ### Not Included
+
 - ❌ **Kobo Store Purchases** — re-downloadable from your Kobo account
 - ❌ **System / Firmware Files** — not needed for library backup
 
@@ -113,19 +116,19 @@ The complete source code is public on GitHub. You can audit every line, or self-
 
 ## 🛠️ Technology Stack
 
-| Layer | Technology |
-|---|---|
-| UI Framework | React 18.3+ |
-| Build Tool | Vite 5+ |
-| Styling | TailwindCSS 3.4+ |
-| State | Zustand |
-| SQLite in browser | sql.js (WebAssembly) |
-| ZIP creation | **client-zip** (streaming, replaces JSZip) |
-| ZIP extraction | **@zip.js/zip.js** (streaming, replaces JSZip) |
-| File System | File System Access API + browser-fs-access |
-| Testing | Vitest |
-| Analytics | Vercel Analytics (cookieless) |
-| Hosting | Vercel |
+| Layer             | Technology                                     |
+| ----------------- | ---------------------------------------------- |
+| UI Framework      | React 18.3+                                    |
+| Build Tool        | Vite 5+                                        |
+| Styling           | TailwindCSS 3.4+                               |
+| State             | Zustand                                        |
+| SQLite in browser | sql.js (WebAssembly)                           |
+| ZIP creation      | **client-zip** (streaming, replaces JSZip)     |
+| ZIP extraction    | **@zip.js/zip.js** (streaming, replaces JSZip) |
+| File System       | File System Access API + browser-fs-access     |
+| Testing           | Vitest                                         |
+| Analytics         | Vercel Analytics (cookieless)                  |
+| Hosting           | Vercel                                         |
 
 ---
 
@@ -208,7 +211,8 @@ MIT License — see [LICENSE](LICENSE) for details.
 ## 🗺️ Changelog
 
 ### v1.2.1 (May 2026) — hardening
-- **Safer restore (behavior change)** — "Remove existing book folders" is now **opt-in**. By default restore overwrites backed-up files without recursively deleting device folders, so books added *after* a backup are no longer wiped when restoring an older one.
+
+- **Safer restore (behavior change)** — "Remove existing book folders" is now **opt-in**. By default restore overwrites backed-up files without recursively deleting device folders, so books added _after_ a backup are no longer wiped when restoring an older one.
 - **Path-traversal guard** — restore refuses any book path containing `..` (defense-in-depth against a crafted/corrupt backup ZIP), and the cleanup step never touches protected folders (`.kobo`, etc.).
 - **CSV injection guard** — Anki export prefixes fields starting with `= + - @` so they can't run as formulas if opened in a spreadsheet.
 - **Obsidian export** — de-duplicates filenames so books with identical titles no longer overwrite each other.
@@ -216,6 +220,7 @@ MIT License — see [LICENSE](LICENSE) for details.
 - **Tests** — added an integration suite that runs the restore engine end-to-end against an in-memory device and real Kobo backups (both flat and nested formats).
 
 ### v1.2 (May 2026)
+
 - **Library Dashboard** — responsive UI grid to view connected books, filter by status, read metadata, and check reading time/metrics.
 - **Kobo Covers Extractor** — parse real book covers from `.kobo/images` using suffix match resolution logic.
 - **Advanced Notes Exporter** — export all highlights to Obsidian Markdown ZIP (with YAML frontmatter metadata) or Anki CSV (escaped flashcards).
@@ -223,6 +228,7 @@ MIT License — see [LICENSE](LICENSE) for details.
 - **Vitest Test Suite** — added unit tests for cover parsing and Obsidian/Anki exporters.
 
 ### v1.1 (March 2026)
+
 - **Streaming backup engine** — replaced JSZip with client-zip; files are written to disk one at a time, fixing OOM crashes on large libraries (4 GB+, 500+ books)
 - **Database-only backup** — option to skip book files and back up only reading progress, annotations, and highlights
 - **Accurate size estimate** — estimated backup size now reflects actual file sizes
@@ -230,6 +236,7 @@ MIT License — see [LICENSE](LICENSE) for details.
 - **Vercel Analytics** — cookieless, privacy-preserving page-view tracking
 
 ### v1.0 (January 2026)
+
 - Initial release
 - Full backup and restore functionality
 - Browser compatibility detection
@@ -237,4 +244,4 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
-*Made with ❤️ for the Kobo community — [kobup.org](https://www.kobup.org/)*
+_Made with ❤️ for the Kobo community — [kobup.org](https://www.kobup.org/)_

@@ -3,8 +3,7 @@
  */
 
 import { useState } from 'react';
-import { Button } from '../common/Button.jsx';
-import { useKoboStore } from '../../stores/koboStore.js';
+import { useKoboStore } from '../../stores/koboStore.ts';
 
 export function Header({ currentPage = 'home', onNavigate }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -19,7 +18,7 @@ export function Header({ currentPage = 'home', onNavigate }) {
   ];
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-40">
+    <header className="bg-white shadow-xs sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
@@ -27,13 +26,8 @@ export function Header({ currentPage = 'home', onNavigate }) {
             onClick={() => onNavigate('home')}
             className="flex items-center gap-3 hover:opacity-80 transition-opacity"
           >
-            <div className="w-10 h-10 bg-gradient-to-br from-kobo-accent to-kobo-accent-dark rounded-lg flex items-center justify-center">
-              <svg
-                className="w-6 h-6 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+            <div className="w-10 h-10 bg-linear-to-br from-kobo-accent to-kobo-accent-dark rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -43,12 +37,8 @@ export function Header({ currentPage = 'home', onNavigate }) {
               </svg>
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-xl font-display font-bold text-kobo-dark">
-                Kobo Backup Manager
-              </h1>
-              <p className="text-xs text-kobo-gray">
-                Never lose your library again
-              </p>
+              <h1 className="text-xl font-display font-bold text-kobo-dark">Kobo Backup Manager</h1>
+              <p className="text-xs text-kobo-gray">Never lose your library again</p>
             </div>
           </button>
 
@@ -74,19 +64,9 @@ export function Header({ currentPage = 'home', onNavigate }) {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden p-2 rounded-lg hover:bg-kobo-cream-dark"
           >
-            <svg
-              className="w-6 h-6 text-kobo-dark"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-6 h-6 text-kobo-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {mobileMenuOpen ? (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               ) : (
                 <path
                   strokeLinecap="round"

@@ -2,11 +2,10 @@
  * Backup progress screen with circular progress
  */
 
-import PropTypes from 'prop-types';
-import { Card } from '../common/Card.jsx';
-import { CircularProgress } from '../common/CircularProgress.jsx';
-import { Icon } from '../common/Icon.jsx';
-import { Button } from '../common/Button.jsx';
+import { Card } from '../common/Card.tsx';
+import { CircularProgress } from '../common/CircularProgress.tsx';
+import { Icon } from '../common/Icon.tsx';
+import { Button } from '../common/Button.tsx';
 
 export function BackupProgress({ progress, error, onRetry }) {
   const { stage, percent, filesProcessed, totalFiles } = progress;
@@ -22,19 +21,15 @@ export function BackupProgress({ progress, error, onRetry }) {
             </div>
           </div>
           <h2 className="text-2xl font-display text-kobo-dark mb-3">Backup Failed</h2>
-          <p className="text-kobo-gray mb-2 text-sm">
-            The backup could not be completed. Error details:
-          </p>
+          <p className="text-kobo-gray mb-2 text-sm">The backup could not be completed. Error details:</p>
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 text-left">
-            <p className="text-red-800 text-sm font-mono break-words">{error}</p>
+            <p className="text-red-800 text-sm font-mono wrap-break-word">{error}</p>
           </div>
           <p className="text-kobo-gray text-sm mb-6">
-            If you have a large library (&gt;2 GB), try closing other browser tabs to free memory,
-            then retry. Open the browser console (F12) for more details.
+            If you have a large library (&gt;2 GB), try closing other browser tabs to free memory, then retry.
+            Open the browser console (F12) for more details.
           </p>
-          <Button onClick={onRetry}>
-            Try Again
-          </Button>
+          <Button onClick={onRetry}>Try Again</Button>
         </Card>
       </div>
     );
@@ -43,9 +38,7 @@ export function BackupProgress({ progress, error, onRetry }) {
   return (
     <div className="max-w-2xl mx-auto">
       <Card className="text-center">
-        <h2 className="text-3xl font-display text-kobo-dark mb-8">
-          Creating Backup
-        </h2>
+        <h2 className="text-3xl font-display text-kobo-dark mb-8">Creating Backup</h2>
 
         {/* Circular Progress */}
         <div className="mb-8 flex justify-center">
@@ -53,9 +46,7 @@ export function BackupProgress({ progress, error, onRetry }) {
         </div>
 
         {/* Current Stage */}
-        <p className="text-lg font-body text-kobo-dark mb-2">
-          {stage || 'Processing...'}
-        </p>
+        <p className="text-lg font-body text-kobo-dark mb-2">{stage || 'Processing...'}</p>
 
         {/* File counter */}
         {filesProcessed !== undefined && totalFiles > 0 && (
@@ -90,7 +81,7 @@ export function BackupProgress({ progress, error, onRetry }) {
         {/* Warning */}
         <div className="p-4 bg-kobo-warning/10 border border-kobo-warning/20 rounded-lg">
           <div className="flex items-center gap-3">
-            <Icon type="alert" className="text-kobo-warning flex-shrink-0" />
+            <Icon type="alert" className="text-kobo-warning shrink-0" />
             <p className="text-sm font-body text-kobo-gray text-left">
               Keep this window open until the backup is complete
             </p>
@@ -101,32 +92,16 @@ export function BackupProgress({ progress, error, onRetry }) {
   );
 }
 
-BackupProgress.propTypes = {
-  progress: PropTypes.object.isRequired,
-  error: PropTypes.string,
-  onRetry: PropTypes.func,
-};
-
 function StageItem({ text, status }) {
-  const icons = {
-    completed: 'check',
-    active: 'loading',
-    pending: 'loading',
-  };
-
-  const colors = {
-    completed: 'text-kobo-success',
-    active: 'text-kobo-accent',
-    pending: 'text-kobo-gray-light',
-  };
-
   return (
     <div className={`flex items-center gap-3 ${status === 'pending' ? 'opacity-50' : ''}`}>
       {status === 'completed' && <Icon type="check" size={20} className="text-kobo-success" />}
       {status === 'active' && (
         <div className="w-5 h-5 border-2 border-kobo-accent border-t-transparent rounded-full animate-spin" />
       )}
-      {status === 'pending' && <div className="w-5 h-5 border-2 border-kobo-gray-light rounded-full opacity-30" />}
+      {status === 'pending' && (
+        <div className="w-5 h-5 border-2 border-kobo-gray-light rounded-full opacity-30" />
+      )}
       <span className="font-body text-base text-kobo-dark">{text}</span>
     </div>
   );

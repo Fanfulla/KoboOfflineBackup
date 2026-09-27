@@ -3,8 +3,8 @@
  */
 
 import { useState } from 'react';
-import { StatusBadge } from './common/StatusBadge.jsx';
-import { Button } from './common/Button.jsx';
+import { StatusBadge } from './common/StatusBadge.tsx';
+import { Button } from './common/Button.tsx';
 
 export function BrowserWarning({ features }) {
   const [dismissed, setDismissed] = useState(false);
@@ -17,13 +17,8 @@ export function BrowserWarning({ features }) {
     <div className="bg-kobo-warning/10 border-b-2 border-kobo-warning/30 py-4 animate-slide-down">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-start gap-4">
-          <div className="flex-shrink-0 mt-0.5">
-            <svg
-              className="w-6 h-6 text-kobo-warning"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+          <div className="shrink-0 mt-0.5">
+            <svg className="w-6 h-6 text-kobo-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -34,28 +29,17 @@ export function BrowserWarning({ features }) {
           </div>
 
           <div className="flex-1">
-            <h3 className="font-display font-semibold text-kobo-dark mb-2">
-              Limited Browser Support
-            </h3>
+            <h3 className="font-display font-semibold text-kobo-dark mb-2">Limited Browser Support</h3>
             <p className="text-sm text-kobo-gray mb-3">
-              Your browser has limited support for this application. For the best
-              experience, we recommend using Google Chrome 86+, Microsoft Edge 86+, or
-              Opera 72+.
+              Your browser has limited support for this application. For the best experience, we recommend
+              using Google Chrome 86+, Microsoft Edge 86+, or Opera 72+.
             </p>
             <div className="flex flex-wrap gap-2">
-              <StatusBadge status="warning">
-                Slower backup process
-              </StatusBadge>
-              <StatusBadge status="warning">
-                Manual file selection required
-              </StatusBadge>
+              <StatusBadge status="warning">Slower backup process</StatusBadge>
+              <StatusBadge status="warning">Manual file selection required</StatusBadge>
             </div>
             <div className="mt-3 flex gap-3">
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => setDismissed(true)}
-              >
+              <Button size="sm" variant="ghost" onClick={() => setDismissed(true)}>
                 Continue Anyway
               </Button>
               <a
@@ -66,7 +50,12 @@ export function BrowserWarning({ features }) {
               >
                 Download Chrome
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
                 </svg>
               </a>
             </div>
@@ -74,21 +63,11 @@ export function BrowserWarning({ features }) {
 
           <button
             onClick={() => setDismissed(true)}
-            className="flex-shrink-0 p-1 hover:bg-kobo-warning/20 rounded"
+            className="shrink-0 p-1 hover:bg-kobo-warning/20 rounded-sm"
             aria-label="Dismiss warning"
           >
-            <svg
-              className="w-5 h-5 text-kobo-gray"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
+            <svg className="w-5 h-5 text-kobo-gray" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>

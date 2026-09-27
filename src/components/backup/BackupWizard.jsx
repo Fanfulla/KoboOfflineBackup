@@ -3,12 +3,12 @@
  */
 
 import { useState } from 'react';
-import { useFileSystem } from '../../hooks/useFileSystem.js';
-import { useKoboDevice } from '../../hooks/useKoboDevice.js';
-import { useBackup } from '../../hooks/useBackup.js';
-import { useKoboStore } from '../../stores/koboStore.js';
-import { generateBackupFilename } from '../../utils/backup.js';
-import { Container } from '../layout/Container.jsx';
+import { useFileSystem } from '../../hooks/useFileSystem.ts';
+import { useKoboDevice } from '../../hooks/useKoboDevice.ts';
+import { useBackup } from '../../hooks/useBackup.ts';
+import { useKoboStore } from '../../stores/koboStore.ts';
+import { generateBackupFilename } from '../../utils/backup.ts';
+import { Container } from '../layout/Container.tsx';
 
 import { DeviceSelector } from './DeviceSelector.jsx';
 import { ScanningScreen } from './ScanningScreen.jsx';
@@ -31,7 +31,7 @@ export function BackupWizard({ onComplete }) {
   const koboDevice = useKoboDevice();
   const backup = useBackup();
   const addBackup = useKoboStore((state) => state.addBackup);
-  
+
   const setDevice = useKoboStore((state) => state.setDevice);
   const setBooks = useKoboStore((state) => state.setBooks);
   const setAnnotations = useKoboStore((state) => state.setAnnotations);
@@ -48,7 +48,7 @@ export function BackupWizard({ onComplete }) {
       try {
         const data = await koboDevice.scanDevice(dirHandle);
         setKoboData(data);
-        
+
         // Populate global store
         setDevice(data.deviceInfo);
         setBooks(data.books);
@@ -162,9 +162,7 @@ export function BackupWizard({ onComplete }) {
           />
         )}
 
-        {step === 'scanning' && (
-          <ScanningScreen scanProgress={koboDevice.scanProgress} />
-        )}
+        {step === 'scanning' && <ScanningScreen scanProgress={koboDevice.scanProgress} />}
 
         {step === 'overview' && koboData && (
           <LibraryOverview
@@ -188,19 +186,11 @@ export function BackupWizard({ onComplete }) {
         )}
 
         {step === 'progress' && (
-          <BackupProgress
-            progress={backup.progress}
-            error={backupError}
-            onRetry={handleRetryAfterError}
-          />
+          <BackupProgress progress={backup.progress} error={backupError} onRetry={handleRetryAfterError} />
         )}
 
         {step === 'success' && backup.result && (
-          <BackupSuccess
-            result={backup.result}
-            onCreateAnother={handleCreateAnother}
-            onDone={handleDone}
-          />
+          <BackupSuccess result={backup.result} onCreateAnother={handleCreateAnother} onDone={handleDone} />
         )}
       </Container>
     </div>

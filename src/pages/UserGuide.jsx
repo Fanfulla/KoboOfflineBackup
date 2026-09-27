@@ -2,17 +2,12 @@
  * User Guide page - comprehensive instructions for using Kobo Backup Manager
  */
 
-import PropTypes from 'prop-types';
-import { Button } from '../components/common/Button.jsx';
+import { Button } from '../components/common/Button.tsx';
 
 export function UserGuide({ onNavigate }) {
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
-      <Button
-        variant="ghost"
-        onClick={() => onNavigate('home')}
-        className="mb-8"
-      >
+      <Button variant="ghost" onClick={() => onNavigate('home')} className="mb-8">
         ← Back to Home
       </Button>
 
@@ -23,12 +18,13 @@ export function UserGuide({ onNavigate }) {
         <h2 className="text-2xl font-display font-bold text-kobo-dark mb-4">Getting Started</h2>
         <div className="prose prose-lg">
           <p className="text-kobo-gray mb-4">
-            Kobo Backup Manager is a privacy-first web application that helps you backup and restore
-            your Kobo e-reader library entirely in your browser. No data is sent to any server.
+            Kobo Backup Manager is a privacy-first web application that helps you backup and restore your Kobo
+            e-reader library entirely in your browser. No data is sent to any server.
           </p>
           <div className="bg-kobo-accent/10 border-l-4 border-kobo-accent p-4 mb-4">
             <p className="font-medium text-kobo-dark">
-              Requirements: Chrome 86+, Edge 86+, or any Chromium-based browser with File System Access API support.
+              Requirements: Chrome 86+, Edge 86+, or any Chromium-based browser with File System Access API
+              support.
             </p>
           </div>
         </div>
@@ -41,21 +37,25 @@ export function UserGuide({ onNavigate }) {
           <div>
             <h3 className="text-xl font-display font-bold text-kobo-dark mb-2">Step 1: Connect Your Kobo</h3>
             <p className="text-kobo-gray mb-2">
-              Connect your Kobo e-reader to your computer using a USB cable. Wait for it to be recognized
-              as a storage device.
+              Connect your Kobo e-reader to your computer using a USB cable. Wait for it to be recognized as a
+              storage device.
             </p>
           </div>
 
           <div>
-            <h3 className="text-xl font-display font-bold text-kobo-dark mb-2">Step 2: Start Backup Wizard</h3>
+            <h3 className="text-xl font-display font-bold text-kobo-dark mb-2">
+              Step 2: Start Backup Wizard
+            </h3>
             <p className="text-kobo-gray mb-2">
-              Click the "Create Backup" button on the home page. The backup wizard will guide you through
-              the process.
+              Click the "Create Backup" button on the home page. The backup wizard will guide you through the
+              process.
             </p>
           </div>
 
           <div>
-            <h3 className="text-xl font-display font-bold text-kobo-dark mb-2">Step 3: Select Kobo Device Folder</h3>
+            <h3 className="text-xl font-display font-bold text-kobo-dark mb-2">
+              Step 3: Select Kobo Device Folder
+            </h3>
             <p className="text-kobo-gray mb-2">
               Click "Select Kobo Device" and navigate to your Kobo's root folder. This is typically named
               "KOBOeReader" in your file system.
@@ -71,10 +71,10 @@ export function UserGuide({ onNavigate }) {
           </div>
 
           <div>
-            <h3 className="text-xl font-display font-bold text-kobo-dark mb-2">Step 5: Choose What to Backup</h3>
-            <p className="text-kobo-gray mb-2">
-              Select which data you want to include in your backup:
-            </p>
+            <h3 className="text-xl font-display font-bold text-kobo-dark mb-2">
+              Step 5: Choose What to Backup
+            </h3>
+            <p className="text-kobo-gray mb-2">Select which data you want to include in your backup:</p>
             <ul className="list-disc list-inside text-kobo-gray ml-4 space-y-1">
               <li>Books and documents</li>
               <li>Reading progress and statistics</li>
@@ -112,10 +112,10 @@ export function UserGuide({ onNavigate }) {
           </div>
 
           <div>
-            <h3 className="text-xl font-display font-bold text-kobo-dark mb-2">Step 2: Start Restore Wizard</h3>
-            <p className="text-kobo-gray mb-2">
-              Click the "Restore Backup" button on the home page.
-            </p>
+            <h3 className="text-xl font-display font-bold text-kobo-dark mb-2">
+              Step 2: Start Restore Wizard
+            </h3>
+            <p className="text-kobo-gray mb-2">Click the "Restore Backup" button on the home page.</p>
           </div>
 
           <div>
@@ -126,17 +126,17 @@ export function UserGuide({ onNavigate }) {
           </div>
 
           <div>
-            <h3 className="text-xl font-display font-bold text-kobo-dark mb-2">Step 4: Select Target Device</h3>
-            <p className="text-kobo-gray mb-2">
-              Choose your Kobo device folder as the restore destination.
-            </p>
+            <h3 className="text-xl font-display font-bold text-kobo-dark mb-2">
+              Step 4: Select Target Device
+            </h3>
+            <p className="text-kobo-gray mb-2">Choose your Kobo device folder as the restore destination.</p>
           </div>
 
           <div>
             <h3 className="text-xl font-display font-bold text-kobo-dark mb-2">Step 5: Review and Restore</h3>
             <p className="text-kobo-gray mb-2">
-              Review what will be restored, then click "Restore Backup" to complete the process. Safely
-              eject your Kobo device when done.
+              Review what will be restored, then click "Restore Backup" to complete the process. Safely eject
+              your Kobo device when done.
             </p>
           </div>
         </div>
@@ -165,7 +165,9 @@ export function UserGuide({ onNavigate }) {
 
         <div className="space-y-6">
           <div>
-            <h3 className="text-xl font-display font-bold text-kobo-dark mb-2">Can't find KoboReader.sqlite?</h3>
+            <h3 className="text-xl font-display font-bold text-kobo-dark mb-2">
+              Can't find KoboReader.sqlite?
+            </h3>
             <p className="text-kobo-gray">
               Make sure your Kobo is connected and recognized as a storage device. Look for a folder named
               ".kobo" inside your Kobo device - the database file is located there.
@@ -175,8 +177,8 @@ export function UserGuide({ onNavigate }) {
           <div>
             <h3 className="text-xl font-display font-bold text-kobo-dark mb-2">Browser not supported?</h3>
             <p className="text-kobo-gray">
-              This app requires Chrome 86+, Edge 86+, or another Chromium-based browser. Safari and Firefox
-              do not yet support the File System Access API needed for direct device access.
+              This app requires Chrome 86+, Edge 86+, or another Chromium-based browser. Safari and Firefox do
+              not yet support the File System Access API needed for direct device access.
             </p>
           </div>
 
@@ -213,25 +215,16 @@ export function UserGuide({ onNavigate }) {
         </ul>
         <p className="text-kobo-gray mt-4">
           We use Google Analytics and ContentSquare solely to improve the service. See our{' '}
-          <button
-            onClick={() => onNavigate('privacy')}
-            className="text-kobo-accent hover:underline"
-          >
+          <button onClick={() => onNavigate('privacy')} className="text-kobo-accent hover:underline">
             Privacy Policy
-          </button>
-          {' '}for details.
+          </button>{' '}
+          for details.
         </p>
       </section>
 
       <div className="text-center mt-12">
-        <Button onClick={() => onNavigate('home')}>
-          Return to Home
-        </Button>
+        <Button onClick={() => onNavigate('home')}>Return to Home</Button>
       </div>
     </div>
   );
 }
-
-UserGuide.propTypes = {
-  onNavigate: PropTypes.func.isRequired,
-};

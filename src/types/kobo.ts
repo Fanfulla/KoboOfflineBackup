@@ -1,0 +1,151 @@
+/**
+ * Domain types shared across the app (Kobo database rows, scan results,
+ * backup metadata, progress/error state).
+ */
+
+export interface KoboBook {
+  ContentID: string;
+  Title: string | null;
+  Author: string;
+  Description: string | null;
+  Publisher: string | null;
+  Series: string | null;
+  SeriesNumber: string | null;
+  ISBN: string | null;
+  Language: string | null;
+  Progress: number;
+  ReadStatus: number | null;
+  DateCreated: Date | null;
+  DateLastRead: Date | null;
+  FilePath: string | null;
+  CoverId: string | null;
+  TimeSpentReading: number;
+  MimeType: string | null;
+}
+
+export interface KoboAnnotation {
+  BookmarkID: string;
+  VolumeID: string;
+  HighlightedText: string | null;
+  Note: string | null;
+  DateCreated: Date | null;
+  DateModified: Date | null;
+  StartContainerPath?: string | null;
+  StartOffset?: number | null;
+  EndContainerPath?: string | null;
+  EndOffset?: number | null;
+  BookTitle: string;
+  Author: string;
+}
+
+export interface ReadingStats {
+  totalBooks: number;
+  booksStarted: number;
+  booksFinished: number;
+  currentlyReading: number;
+  totalMinutesRead: number;
+  averageProgress: number;
+  uniqueAuthors: number;
+}
+
+export interface DeviceInfo {
+  model: string;
+  firmwareVersion: string;
+  databaseVersion: string;
+  schemaVersion: number;
+}
+
+export interface KoboCollection {
+  Id: string;
+  Name: string;
+  InternalName: string | null;
+  Type: string | null;
+  CreationDate: Date | null;
+  LastModified: Date | null;
+}
+
+export interface ExtractedData {
+  books: KoboBook[];
+  annotations: KoboAnnotation[];
+  stats: ReadingStats;
+  deviceInfo: DeviceInfo;
+  collections: KoboCollection[];
+  databaseSize: number;
+}
+
+/** A book file found on the device. */
+export interface BookFileEntry {
+  handle: FileSystemFileHandle;
+  /** Path relative to the device root, e.g. "Author/Title.kepub.epub". */
+  path: string;
+  name: string;
+  size: number;
+}
+
+export interface ScanResult {
+  books: KoboBook[];
+  annotations: KoboAnnotation[];
+  stats: ReadingStats;
+  deviceInfo: DeviceInfo;
+  bookFiles: BookFileEntry[];
+  database: ArrayBuffer;
+}
+
+export interface BackupOptions {
+  includeBooks: boolean;
+  includeAnnotations: boolean;
+  includeProgress: boolean;
+  includeSettings: boolean;
+}
+
+export interface BackupMetadata {
+  version: string;
+  created: string;
+  generator: string;
+  device: {
+    model: string;
+    firmwareVersion: string;
+    schemaVersion: number;
+  };
+  statistics: {
+    totalBooks: number;
+    totalAnnotations: number;
+    totalSize?: number;
+    booksStarted?: number;
+    booksFinished?: number;
+    totalReadingTime?: number;
+  };
+  options?: Partial<BackupOptions>;
+  integrity?: {
+    databaseChecksum: string;
+    filesChecked: number;
+    fileChecksums: Record<string, string>;
+    errors: { file: string; error: string }[];
+  };
+  compatibility?: { minAppVersion: string; supportedDevices: string[] };
+}
+
+export interface ProgressState {
+  stage: string;
+  percent: number;
+  filesProcessed: number;
+  totalFiles: number;
+}
+
+export type ProgressCallback = (stage: string, percent: number, filesProcessed?: number) => void;
+
+export interface UiError {
+  title: string;
+  message: string;
+  code: string;
+}
+
+export interface BackupHistoryEntry {
+  id: string;
+  filename: string;
+  created: string;
+  size: number;
+  deviceModel: string;
+  bookCount: number;
+  annotationCount: number;
+}

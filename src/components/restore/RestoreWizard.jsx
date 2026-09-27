@@ -3,9 +3,9 @@
  */
 
 import { useState } from 'react';
-import { useFileSystem } from '../../hooks/useFileSystem.js';
-import { useRestore } from '../../hooks/useRestore.js';
-import { Container } from '../layout/Container.jsx';
+import { useFileSystem } from '../../hooks/useFileSystem.ts';
+import { useRestore } from '../../hooks/useRestore.ts';
+import { Container } from '../layout/Container.tsx';
 
 import { RestoreDeviceSelector } from './RestoreDeviceSelector.jsx';
 import { FileUploader } from './FileUploader.jsx';
@@ -105,12 +105,7 @@ export function RestoreWizard({ onComplete }) {
   return (
     <div className="min-h-screen py-12">
       <Container maxWidth="6xl">
-        {step === 'upload' && (
-          <FileUploader
-            onFileSelect={handleFileSelect}
-            error={restore.error}
-          />
-        )}
+        {step === 'upload' && <FileUploader onFileSelect={handleFileSelect} error={restore.error} />}
 
         {step === 'selectDevice' && (
           <RestoreDeviceSelector
@@ -140,15 +135,10 @@ export function RestoreWizard({ onComplete }) {
           />
         )}
 
-        {step === 'progress' && (
-          <RestoreProgress progress={restore.progress} />
-        )}
+        {step === 'progress' && <RestoreProgress progress={restore.progress} />}
 
         {step === 'success' && restore.result && (
-          <RestoreSuccess
-            result={restore.result}
-            onDone={handleDone}
-          />
+          <RestoreSuccess result={restore.result} onDone={handleDone} />
         )}
       </Container>
     </div>

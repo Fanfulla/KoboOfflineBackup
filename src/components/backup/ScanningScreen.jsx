@@ -2,9 +2,9 @@
  * Scanning screen showing progress while reading Kobo device
  */
 
-import { Card } from '../common/Card.jsx';
-import { ProgressBar } from '../common/ProgressBar.jsx';
-import { Icon } from '../common/Icon.jsx';
+import { Card } from '../common/Card.tsx';
+import { ProgressBar } from '../common/ProgressBar.tsx';
+import { Icon } from '../common/Icon.tsx';
 
 export function ScanningScreen({ scanProgress }) {
   const { stage, current, total } = scanProgress;
@@ -23,43 +23,29 @@ export function ScanningScreen({ scanProgress }) {
             </div>
           </div>
 
-          <h2 className="text-2xl font-display text-kobo-dark mb-2">
-            Scanning Your Kobo
-          </h2>
-          <p className="text-lg font-body text-kobo-gray">
-            {stage || 'Preparing...'}
-          </p>
+          <h2 className="text-2xl font-display text-kobo-dark mb-2">Scanning Your Kobo</h2>
+          <p className="text-lg font-body text-kobo-gray">{stage || 'Preparing...'}</p>
         </div>
 
         {/* Progress Bar */}
-        <ProgressBar
-          percent={percent}
-          animated={true}
-          className="mb-8"
-        />
+        <ProgressBar percent={percent} animated={true} className="mb-8" />
 
         {/* Status Details */}
         <div className="space-y-3">
-          <StatusItem
-            text="Device connected"
-            status="completed"
-          />
+          <StatusItem text="Device connected" status="completed" />
           <StatusItem
             text="Reading database"
-            status={current >= 1 ? "completed" : current === 0 ? "pending" : "active"}
+            status={current >= 1 ? 'completed' : current === 0 ? 'pending' : 'active'}
           />
           <StatusItem
             text="Analyzing books"
-            status={current >= 2 ? "completed" : current < 1 ? "pending" : "active"}
+            status={current >= 2 ? 'completed' : current < 1 ? 'pending' : 'active'}
           />
           <StatusItem
             text="Finding book files"
-            status={current >= 3 ? "completed" : current < 2 ? "pending" : "active"}
+            status={current >= 3 ? 'completed' : current < 2 ? 'pending' : 'active'}
           />
-          <StatusItem
-            text="Scan complete"
-            status={current >= 4 ? "completed" : "pending"}
-          />
+          <StatusItem text="Scan complete" status={current >= 4 ? 'completed' : 'pending'} />
         </div>
 
         {/* Info Message */}
@@ -73,7 +59,7 @@ export function ScanningScreen({ scanProgress }) {
   );
 }
 
-function StatusItem({ icon, text, status }) {
+function StatusItem({ text, status }) {
   const statusColors = {
     completed: 'bg-kobo-success',
     active: 'bg-kobo-accent',

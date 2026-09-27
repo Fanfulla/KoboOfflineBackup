@@ -1,83 +1,68 @@
-import { useState, useEffect } from 'react'
-import { Analytics } from '@vercel/analytics/react'
-import { useFeatureDetection } from './hooks/useFeatureDetection.js'
-import { useKoboStore } from './stores/koboStore.js'
+import { Analytics } from '@vercel/analytics/react';
+import { useFeatureDetection } from './hooks/useFeatureDetection.ts';
+import { useKoboStore } from './stores/koboStore.ts';
 
 // Layout
-import { Header } from './components/layout/Header.jsx'
-import { Footer } from './components/layout/Footer.jsx'
+import { Header } from './components/layout/Header.jsx';
+import { Footer } from './components/layout/Footer.jsx';
 
 // Browser compatibility
-import { UnsupportedBrowser } from './components/UnsupportedBrowser.jsx'
-import { BrowserWarning } from './components/BrowserWarning.jsx'
+import { UnsupportedBrowser } from './components/UnsupportedBrowser.jsx';
+import { BrowserWarning } from './components/BrowserWarning.jsx';
 
 // Analytics banner
-import { AnalyticsBanner } from './components/AnalyticsBanner.jsx'
+import { AnalyticsBanner } from './components/AnalyticsBanner.jsx';
 
 // Pages
-import { Home } from './pages/Home.jsx'
-import { Backup } from './pages/Backup.jsx'
-import { Restore } from './pages/Restore.jsx'
-import { History } from './pages/History.jsx'
-import { UserGuide } from './pages/UserGuide.jsx'
-import { FAQ } from './pages/FAQ.jsx'
-import { PrivacyPolicy } from './pages/PrivacyPolicy.jsx'
-import { LibraryDashboard } from './pages/LibraryDashboard.jsx'
+import { Home } from './pages/Home.jsx';
+import { Backup } from './pages/Backup.jsx';
+import { Restore } from './pages/Restore.jsx';
+import { History } from './pages/History.jsx';
+import { UserGuide } from './pages/UserGuide.jsx';
+import { FAQ } from './pages/FAQ.jsx';
+import { PrivacyPolicy } from './pages/PrivacyPolicy.jsx';
+import { LibraryDashboard } from './pages/LibraryDashboard.jsx';
 
 function App() {
-  const features = useFeatureDetection()
-  const currentPage = useKoboStore((state) => state.currentPage)
-  const setCurrentPage = useKoboStore((state) => state.setCurrentPage)
-
-  // Browser compatibility check
-  if (features.loading) {
-    return (
-      <div className="min-h-screen bg-kobo-cream flex items-center justify-center">
-        <div className="text-center">
-          <div className="spinner w-16 h-16 mx-auto mb-4" />
-          <p className="text-kobo-gray">Loading...</p>
-        </div>
-      </div>
-    )
-  }
+  const features = useFeatureDetection();
+  const currentPage = useKoboStore((state) => state.currentPage);
+  const setCurrentPage = useKoboStore((state) => state.setCurrentPage);
 
   // Show error page for completely unsupported browsers
   if (!features.isSupported) {
-    const missingFeatures = []
-    if (!features.fileReader) missingFeatures.push('FileReader API')
-    if (!features.webAssembly) missingFeatures.push('WebAssembly')
-    if (!features.blob) missingFeatures.push('Blob API')
+    const missingFeatures = [];
+    if (!features.webAssembly) missingFeatures.push('WebAssembly');
 
-    return <UnsupportedBrowser missingFeatures={missingFeatures} />
+    return <UnsupportedBrowser missingFeatures={missingFeatures} />;
   }
 
   const handleNavigate = (page) => {
-    setCurrentPage(page)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const renderPage = () => {
     switch (currentPage) {
       case 'home':
-        return <Home onNavigate={handleNavigate} />
+        return <Home onNavigate={handleNavigate} />;
       case 'dashboard':
-        return <LibraryDashboard onNavigate={handleNavigate} />
+        return <LibraryDashboard onNavigate={handleNavigate} />;
       case 'backup':
-        return <Backup onComplete={() => handleNavigate('home')} />
+        return <Backup onComplete={() => handleNavigate('home')} />;
       case 'restore':
-        return <Restore onComplete={() => handleNavigate('home')} />
+        return <Restore onComplete={() => handleNavigate('home')} />;
       case 'history':
-        return <History onNavigate={handleNavigate} />
+        return <History onNavigate={handleNavigate} />;
       case 'guide':
-        return <UserGuide onNavigate={handleNavigate} />
+        return <UserGuide onNavigate={handleNavigate} />;
       case 'faq':
-        return <FAQ onNavigate={handleNavigate} />
+        return <FAQ onNavigate={handleNavigate} />;
       case 'privacy':
-        return <PrivacyPolicy onNavigate={handleNavigate} />
+        return <PrivacyPolicy onNavigate={handleNavigate} />;
       default:
-        return <Home onNavigate={handleNavigate} />
+        return <Home onNavigate={handleNavigate} />;
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-kobo-cream flex flex-col">
@@ -88,9 +73,7 @@ function App() {
       <Header currentPage={currentPage} onNavigate={handleNavigate} />
 
       {/* Main content */}
-      <main className="flex-1">
-        {renderPage()}
-      </main>
+      <main className="flex-1">{renderPage()}</main>
 
       {/* Footer */}
       <Footer onNavigate={handleNavigate} />
@@ -101,7 +84,7 @@ function App() {
       {/* Vercel Analytics - cookieless, privacy-preserving */}
       <Analytics />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

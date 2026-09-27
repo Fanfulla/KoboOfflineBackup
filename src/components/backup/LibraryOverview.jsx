@@ -2,21 +2,17 @@
  * Library overview showing statistics after scan
  */
 
-import { Card } from '../common/Card.jsx';
-import { Button } from '../common/Button.jsx';
-import { Icon } from '../common/Icon.jsx';
-import { formatBytes, formatDuration } from '../../utils/formatters.js';
+import { Card } from '../common/Card.tsx';
+import { Button } from '../common/Button.tsx';
+import { Icon } from '../common/Icon.tsx';
+import { formatBytes, formatDuration } from '../../utils/formatters.ts';
 
 export function LibraryOverview({ books, annotations, stats, estimatedSize, onContinue }) {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-display text-kobo-dark mb-2">
-          Your Library
-        </h2>
-        <p className="text-lg font-body text-kobo-gray">
-          Here's what we found on your Kobo
-        </p>
+        <h2 className="text-3xl font-display text-kobo-dark mb-2">Your Library</h2>
+        <p className="text-lg font-body text-kobo-gray">Here's what we found on your Kobo</p>
       </div>
 
       {/* Statistics Cards */}
@@ -33,44 +29,26 @@ export function LibraryOverview({ books, annotations, stats, estimatedSize, onCo
           label="Annotations"
           color="green"
         />
-        <StatCard
-          icon="storage"
-          value={formatBytes(estimatedSize)}
-          label="Estimated Size"
-          color="purple"
-        />
-        <StatCard
-          icon="chart"
-          value={`${stats?.booksFinished || 0}`}
-          label="Books Finished"
-          color="orange"
-        />
+        <StatCard icon="storage" value={formatBytes(estimatedSize)} label="Estimated Size" color="purple" />
+        <StatCard icon="chart" value={`${stats?.booksFinished || 0}`} label="Books Finished" color="orange" />
       </div>
 
       {/* Reading Stats */}
       {stats && (
         <Card>
-          <h3 className="text-xl font-display text-kobo-dark mb-4">
-            Reading Statistics
-          </h3>
+          <h3 className="text-xl font-display text-kobo-dark mb-4">Reading Statistics</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div>
               <p className="text-sm font-body text-kobo-gray mb-1">Books Started</p>
-              <p className="text-2xl font-display text-kobo-dark">
-                {stats.booksStarted}
-              </p>
+              <p className="text-2xl font-display text-kobo-dark">{stats.booksStarted}</p>
             </div>
             <div>
               <p className="text-sm font-body text-kobo-gray mb-1">Currently Reading</p>
-              <p className="text-2xl font-display text-kobo-dark">
-                {stats.currentlyReading}
-              </p>
+              <p className="text-2xl font-display text-kobo-dark">{stats.currentlyReading}</p>
             </div>
             <div>
               <p className="text-sm font-body text-kobo-gray mb-1">Time Spent Reading</p>
-              <p className="text-2xl font-display text-kobo-dark">
-                {formatDuration(stats.totalMinutesRead)}
-              </p>
+              <p className="text-2xl font-display text-kobo-dark">{formatDuration(stats.totalMinutesRead)}</p>
             </div>
           </div>
         </Card>
@@ -79,9 +57,7 @@ export function LibraryOverview({ books, annotations, stats, estimatedSize, onCo
       {/* Recently Read Books Preview */}
       {books && books.length > 0 && (
         <Card>
-          <h3 className="text-xl font-display text-kobo-dark mb-4">
-            Recently Read Books
-          </h3>
+          <h3 className="text-xl font-display text-kobo-dark mb-4">Recently Read Books</h3>
           <div className="space-y-3">
             {books.slice(0, 5).map((book, index) => (
               <div
@@ -89,17 +65,11 @@ export function LibraryOverview({ books, annotations, stats, estimatedSize, onCo
                 className="flex items-center gap-4 p-3 bg-kobo-cream-dark rounded-lg"
               >
                 <div className="flex-1">
-                  <h4 className="font-semibold font-body text-kobo-dark truncate">
-                    {book.Title}
-                  </h4>
-                  <p className="text-sm font-body text-kobo-gray truncate">
-                    {book.Author}
-                  </p>
+                  <h4 className="font-semibold font-body text-kobo-dark truncate">{book.Title}</h4>
+                  <p className="text-sm font-body text-kobo-gray truncate">{book.Author}</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm font-semibold text-kobo-accent">
-                    {book.Progress}%
-                  </div>
+                  <div className="text-sm font-semibold text-kobo-accent">{book.Progress}%</div>
                 </div>
               </div>
             ))}
@@ -114,12 +84,7 @@ export function LibraryOverview({ books, annotations, stats, estimatedSize, onCo
 
       {/* Action Buttons */}
       <div className="flex gap-4 justify-center">
-        <Button
-          size="lg"
-          variant="primary"
-          onClick={onContinue}
-          className="w-full sm:w-auto"
-        >
+        <Button size="lg" variant="primary" onClick={onContinue} className="w-full sm:w-auto">
           <Icon type="download" size={20} />
           Create Backup Now
         </Button>
@@ -143,12 +108,8 @@ function StatCard({ icon, value, label, color }) {
       <div className={`w-12 h-12 ${colorClass} rounded-full flex items-center justify-center mx-auto mb-3`}>
         <Icon type={icon} size={24} />
       </div>
-      <div className="text-2xl font-display text-kobo-dark mb-1">
-        {value}
-      </div>
-      <div className="text-sm font-body text-kobo-gray">
-        {label}
-      </div>
+      <div className="text-2xl font-display text-kobo-dark mb-1">{value}</div>
+      <div className="text-sm font-body text-kobo-gray">{label}</div>
     </Card>
   );
 }

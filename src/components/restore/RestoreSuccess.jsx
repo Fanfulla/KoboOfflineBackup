@@ -2,9 +2,9 @@
  * Restore success screen
  */
 
-import { Card } from '../common/Card.jsx';
-import { Button } from '../common/Button.jsx';
-import { Icon } from '../common/Icon.jsx';
+import { Card } from '../common/Card.tsx';
+import { Button } from '../common/Button.tsx';
+import { Icon } from '../common/Icon.tsx';
 
 export function RestoreSuccess({ result, onDone }) {
   const failedBooks = result.failedBooks || [];
@@ -16,7 +16,9 @@ export function RestoreSuccess({ result, onDone }) {
     <div className="max-w-3xl mx-auto">
       <Card className="text-center">
         {/* Success / Partial-success Animation */}
-        <div className={`w-24 h-24 ${hasFailures ? 'bg-yellow-100' : 'bg-kobo-success/10'} rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce`}>
+        <div
+          className={`w-24 h-24 ${hasFailures ? 'bg-yellow-100' : 'bg-kobo-success/10'} rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce`}
+        >
           <Icon
             type={hasFailures ? 'warning' : 'check'}
             size={48}
@@ -36,21 +38,13 @@ export function RestoreSuccess({ result, onDone }) {
 
         {/* Summary */}
         <div className="grid grid-cols-3 gap-4 mb-8">
-          <SummaryCard
-            icon="book"
-            value={result.booksRestored || 0}
-            label="Books Restored"
-          />
+          <SummaryCard icon="book" value={result.booksRestored || 0} label="Books Restored" />
           <SummaryCard
             icon="note"
             value={result.metadata?.statistics?.totalAnnotations || 0}
             label="Annotations"
           />
-          <SummaryCard
-            icon="bookmark"
-            value="All"
-            label="Progress"
-          />
+          <SummaryCard icon="bookmark" value="All" label="Progress" />
         </div>
 
         {/* Failed Books Warning */}
@@ -63,7 +57,7 @@ export function RestoreSuccess({ result, onDone }) {
             <ul className="space-y-1 max-h-40 overflow-y-auto">
               {failedBooks.map((b, i) => (
                 <li key={i} className="text-sm font-body text-yellow-700 flex items-start gap-2">
-                  <span className="mt-0.5 flex-shrink-0">•</span>
+                  <span className="mt-0.5 shrink-0">•</span>
                   <span>
                     <span className="font-medium">{b.name}</span>
                     {b.error && <span className="text-yellow-600"> — {b.error}</span>}
@@ -82,9 +76,9 @@ export function RestoreSuccess({ result, onDone }) {
               Database count mismatch
             </h3>
             <p className="text-sm font-body text-orange-700">
-              The restored database contains {verification.dbBooksCount} books but the backup
-              reported {verification.expectedCount}. Some records may not have transferred.
-              Try ejecting the device and reconnecting to trigger a full rescan.
+              The restored database contains {verification.dbBooksCount} books but the backup reported{' '}
+              {verification.expectedCount}. Some records may not have transferred. Try ejecting the device and
+              reconnecting to trigger a full rescan.
             </p>
           </div>
         )}
@@ -97,7 +91,7 @@ export function RestoreSuccess({ result, onDone }) {
           </h3>
           <div className="space-y-4">
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-kobo-accent/10 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 bg-kobo-accent/10 rounded-full flex items-center justify-center shrink-0">
                 <span className="text-kobo-accent font-body font-bold">1</span>
               </div>
               <div>
@@ -109,19 +103,17 @@ export function RestoreSuccess({ result, onDone }) {
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-kobo-accent/10 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 bg-kobo-accent/10 rounded-full flex items-center justify-center shrink-0">
                 <span className="text-kobo-accent font-body font-bold">2</span>
               </div>
               <div>
                 <p className="font-medium font-body text-kobo-dark">Disconnect USB cable</p>
-                <p className="text-sm font-body text-kobo-gray">
-                  Unplug the USB cable from your Kobo device
-                </p>
+                <p className="text-sm font-body text-kobo-gray">Unplug the USB cable from your Kobo device</p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-kobo-accent/10 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 bg-kobo-accent/10 rounded-full flex items-center justify-center shrink-0">
                 <span className="text-kobo-accent font-body font-bold">3</span>
               </div>
               <div>
@@ -135,7 +127,9 @@ export function RestoreSuccess({ result, onDone }) {
         </div>
 
         {/* Success / Partial message */}
-        <div className={`p-4 ${hasFailures ? 'bg-yellow-50 border border-yellow-200' : 'bg-kobo-success/10 border border-kobo-success/20'} rounded-lg mb-8`}>
+        <div
+          className={`p-4 ${hasFailures ? 'bg-yellow-50 border border-yellow-200' : 'bg-kobo-success/10 border border-kobo-success/20'} rounded-lg mb-8`}
+        >
           <p className="font-body text-kobo-dark">
             {hasFailures ? (
               <>
@@ -152,12 +146,7 @@ export function RestoreSuccess({ result, onDone }) {
         </div>
 
         {/* Done Button */}
-        <Button
-          size="lg"
-          variant="primary"
-          onClick={onDone}
-          className="w-full sm:w-auto"
-        >
+        <Button size="lg" variant="primary" onClick={onDone} className="w-full sm:w-auto">
           Done
         </Button>
       </Card>

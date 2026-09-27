@@ -2,11 +2,11 @@
  * Backup configuration - choose what to include
  */
 
-import { Card } from '../common/Card.jsx';
-import { Button } from '../common/Button.jsx';
-import { Checkbox } from '../common/Checkbox.jsx';
-import { Icon } from '../common/Icon.jsx';
-import { formatBytes } from '../../utils/formatters.js';
+import { Card } from '../common/Card.tsx';
+import { Button } from '../common/Button.tsx';
+import { Checkbox } from '../common/Checkbox.tsx';
+import { Icon } from '../common/Icon.tsx';
+import { formatBytes } from '../../utils/formatters.ts';
 
 export function BackupConfiguration({
   options,
@@ -19,9 +19,7 @@ export function BackupConfiguration({
   return (
     <div className="max-w-2xl mx-auto">
       <Card>
-        <h2 className="text-3xl font-display text-kobo-dark mb-2 text-center">
-          Backup Configuration
-        </h2>
+        <h2 className="text-3xl font-display text-kobo-dark mb-2 text-center">Backup Configuration</h2>
         <p className="text-lg font-body text-kobo-gray mb-8 text-center">
           Choose what to include in your backup
         </p>
@@ -59,7 +57,7 @@ export function BackupConfiguration({
         {/* Storage Estimate */}
         <div className="p-4 bg-kobo-info/10 border border-kobo-info/20 rounded-lg mb-8">
           <div className="flex items-center gap-3">
-            <Icon type="info" className="text-kobo-info flex-shrink-0" />
+            <Icon type="info" className="text-kobo-info shrink-0" />
             <div>
               <p className="font-semibold font-body text-kobo-dark">
                 Estimated backup size: {formatBytes(estimatedSize)}
@@ -72,12 +70,7 @@ export function BackupConfiguration({
         </div>
 
         {/* Start Button */}
-        <Button
-          size="lg"
-          variant="primary"
-          onClick={onStartBackup}
-          className="w-full"
-        >
+        <Button size="lg" variant="primary" onClick={onStartBackup} className="w-full">
           <Icon type="download" size={20} />
           Start Backup
         </Button>

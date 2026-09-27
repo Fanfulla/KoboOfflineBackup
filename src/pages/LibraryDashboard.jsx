@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react';
-import { useKoboStore } from '../stores/koboStore.js';
+import { useKoboStore } from '../stores/koboStore.ts';
 import { CoverPreview } from '../components/backup/CoverPreview.jsx';
-import { Container } from '../components/layout/Container.jsx';
-import { Card } from '../components/common/Card.jsx';
-import { Button } from '../components/common/Button.jsx';
-import { formatDuration } from '../utils/formatters.js';
-import { exportToObsidianZip, exportToAnkiCsv } from '../utils/export.js';
+import { Container } from '../components/layout/Container.tsx';
+import { Card } from '../components/common/Card.tsx';
+import { Button } from '../components/common/Button.tsx';
+import { formatDuration } from '../utils/formatters.ts';
+import { exportToObsidianZip, exportToAnkiCsv } from '../utils/export.ts';
 
 export function LibraryDashboard({ onNavigate }) {
   const books = useKoboStore((state) => state.books);
@@ -16,7 +16,7 @@ export function LibraryDashboard({ onNavigate }) {
 
   // Tab state: 'books' | 'annotations' | 'stats'
   const [activeTab, setActiveTab] = useState('books');
-  
+
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // all | reading | finished | unread
@@ -117,11 +117,11 @@ export function LibraryDashboard({ onNavigate }) {
 
   const handleExportBookNotes = (book, bookAnns) => {
     if (!bookAnns || bookAnns.length === 0) return;
-    
+
     let markdown = `# Notes: ${book.Title}\n`;
     markdown += `By ${book.Author}\n\n`;
     markdown += `*Exported from Kobo Backup Manager on ${new Date().toLocaleDateString()}*\n\n---\n\n`;
-    
+
     bookAnns.forEach((ann, idx) => {
       markdown += `### Highlight ${idx + 1}\n`;
       if (ann.HighlightedText) markdown += `> ${ann.HighlightedText}\n\n`;
@@ -147,18 +147,15 @@ export function LibraryDashboard({ onNavigate }) {
         {/* Dashboard Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
-            <h2 className="text-3xl font-display font-bold text-kobo-dark">
-              Library Dashboard
-            </h2>
+            <h2 className="text-3xl font-display font-bold text-kobo-dark">Library Dashboard</h2>
             <p className="text-kobo-gray font-body mt-1">
-              Connected: <span className="font-semibold text-kobo-dark">{device?.model || 'Kobo Device'}</span> (Firmware: {device?.firmwareVersion || 'Unknown'})
+              Connected:{' '}
+              <span className="font-semibold text-kobo-dark">{device?.model || 'Kobo Device'}</span>{' '}
+              (Firmware: {device?.firmwareVersion || 'Unknown'})
             </p>
           </div>
           <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={() => onNavigate('backup')}
-            >
+            <Button variant="outline" onClick={() => onNavigate('backup')}>
               Create Backup
             </Button>
           </div>
@@ -202,14 +199,14 @@ export function LibraryDashboard({ onNavigate }) {
         {activeTab === 'books' && (
           <div className="space-y-6">
             {/* Filters bar */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-between bg-white p-4 rounded-xl shadow-sm">
+            <div className="flex flex-col sm:flex-row gap-4 justify-between bg-white p-4 rounded-xl shadow-xs">
               <div className="flex-1 max-w-md relative">
                 <input
                   type="text"
                   placeholder="Search books or authors..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-kobo-cream-dark rounded-lg focus:ring-2 focus:ring-kobo-accent/50 focus:border-kobo-accent outline-none font-body text-sm"
+                  className="w-full pl-10 pr-4 py-2 border border-kobo-cream-dark rounded-lg focus:ring-2 focus:ring-kobo-accent/50 focus:border-kobo-accent outline-hidden font-body text-sm"
                 />
                 <span className="absolute left-3 top-2.5 text-kobo-gray">🔍</span>
               </div>
@@ -218,7 +215,7 @@ export function LibraryDashboard({ onNavigate }) {
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="border border-kobo-cream-dark rounded-lg px-3 py-2 text-sm font-body bg-white outline-none focus:ring-2 focus:ring-kobo-accent/50"
+                  className="border border-kobo-cream-dark rounded-lg px-3 py-2 text-sm font-body bg-white outline-hidden focus:ring-2 focus:ring-kobo-accent/50"
                 >
                   <option value="all">All Books</option>
                   <option value="reading">Currently Reading</option>
@@ -230,7 +227,7 @@ export function LibraryDashboard({ onNavigate }) {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="border border-kobo-cream-dark rounded-lg px-3 py-2 text-sm font-body bg-white outline-none focus:ring-2 focus:ring-kobo-accent/50"
+                  className="border border-kobo-cream-dark rounded-lg px-3 py-2 text-sm font-body bg-white outline-hidden focus:ring-2 focus:ring-kobo-accent/50"
                 >
                   <option value="recent">Recently Read</option>
                   <option value="title">Alphabetical</option>
@@ -241,7 +238,7 @@ export function LibraryDashboard({ onNavigate }) {
 
             {/* Books Grid */}
             {filteredBooks.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-xl shadow-sm border border-kobo-cream-dark">
+              <div className="text-center py-12 bg-white rounded-xl shadow-xs border border-kobo-cream-dark">
                 <p className="text-kobo-gray font-body text-lg">No books found matching your criteria.</p>
               </div>
             ) : (
@@ -249,10 +246,11 @@ export function LibraryDashboard({ onNavigate }) {
                 {filteredBooks.map((book) => {
                   const bookAnns = annotationsByBook[book.ContentID] || [];
                   return (
-                    <div
+                    <button
+                      type="button"
                       key={book.ContentID}
                       onClick={() => setSelectedBook(book)}
-                      className="group flex flex-col cursor-pointer"
+                      className="group flex flex-col cursor-pointer text-left focus-visible-ring rounded-md"
                     >
                       <CoverPreview
                         deviceHandle={deviceHandle}
@@ -265,11 +263,9 @@ export function LibraryDashboard({ onNavigate }) {
                         <h4 className="font-display font-bold text-kobo-dark text-sm leading-tight line-clamp-2 group-hover:text-kobo-accent transition-colors">
                           {book.Title}
                         </h4>
-                        <p className="text-xs font-body text-kobo-gray truncate mt-1">
-                          {book.Author}
-                        </p>
+                        <p className="text-xs font-body text-kobo-gray truncate mt-1">{book.Author}</p>
                       </div>
-                      
+
                       {/* Reading Progress Indicator */}
                       <div className="mt-2">
                         <div className="w-full bg-kobo-cream-dark rounded-full h-[6px] overflow-hidden">
@@ -289,7 +285,7 @@ export function LibraryDashboard({ onNavigate }) {
                           )}
                         </div>
                       </div>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
@@ -301,7 +297,7 @@ export function LibraryDashboard({ onNavigate }) {
         {activeTab === 'annotations' && (
           <div className="space-y-6">
             {annotations.length > 0 && (
-              <Card className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-gradient-to-br from-kobo-accent/5 to-kobo-accent/15 border border-kobo-accent/25">
+              <Card className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-linear-to-br from-kobo-accent/5 to-kobo-accent/15 border border-kobo-accent/25">
                 <div className="text-left">
                   <h4 className="font-display font-bold text-kobo-dark text-lg">
                     🎒 Advanced Notes Exporter
@@ -332,10 +328,12 @@ export function LibraryDashboard({ onNavigate }) {
             )}
 
             {annotations.length === 0 ? (
-              <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-kobo-cream-dark">
+              <div className="text-center py-16 bg-white rounded-xl shadow-xs border border-kobo-cream-dark">
                 <span className="text-4xl block mb-2">✍️</span>
                 <h3 className="text-xl font-display text-kobo-dark font-semibold">No annotations found</h3>
-                <p className="text-kobo-gray font-body mt-1">Make sure you have highlights or notes in your books.</p>
+                <p className="text-kobo-gray font-body mt-1">
+                  Make sure you have highlights or notes in your books.
+                </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -346,7 +344,7 @@ export function LibraryDashboard({ onNavigate }) {
                     return (
                       <Card key={book.ContentID} className="flex flex-col h-[400px]">
                         <div className="flex gap-4 pb-4 border-b border-kobo-cream-dark">
-                          <div className="w-16 flex-shrink-0">
+                          <div className="w-16 shrink-0">
                             <CoverPreview
                               deviceHandle={deviceHandle}
                               coverId={book.CoverId}
@@ -358,9 +356,7 @@ export function LibraryDashboard({ onNavigate }) {
                             <h4 className="font-display font-bold text-kobo-dark text-base truncate">
                               {book.Title}
                             </h4>
-                            <p className="text-sm font-body text-kobo-gray truncate">
-                              {book.Author}
-                            </p>
+                            <p className="text-sm font-body text-kobo-gray truncate">{book.Author}</p>
                             <span className="inline-block bg-kobo-accent/15 text-kobo-accent text-xs font-semibold px-2 py-0.5 rounded-full mt-2">
                               {bookAnns.length} highlights
                             </span>
@@ -370,18 +366,25 @@ export function LibraryDashboard({ onNavigate }) {
                         {/* Scrolling highlights list */}
                         <div className="flex-1 overflow-y-auto space-y-4 pt-4 pr-1 font-body text-sm text-kobo-dark">
                           {bookAnns.map((ann) => (
-                            <div key={ann.BookmarkID} className="bg-kobo-cream/50 p-3 rounded-lg border border-kobo-cream-dark relative group/ann">
+                            <div
+                              key={ann.BookmarkID}
+                              className="bg-kobo-cream/50 p-3 rounded-lg border border-kobo-cream-dark relative group/ann"
+                            >
                               <p className="italic text-kobo-dark/95 border-l-2 border-kobo-accent pl-3 mb-2 whitespace-pre-line">
                                 {ann.HighlightedText}
                               </p>
                               {ann.Note && (
-                                <div className="mt-2 bg-white/70 p-2 rounded border border-kobo-cream-dark/50">
-                                  <span className="text-[10px] font-bold uppercase tracking-wider text-kobo-accent block mb-1">My Note</span>
+                                <div className="mt-2 bg-white/70 p-2 rounded-sm border border-kobo-cream-dark/50">
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-kobo-accent block mb-1">
+                                    My Note
+                                  </span>
                                   <p className="text-xs">{ann.Note}</p>
                                 </div>
                               )}
                               <div className="flex justify-between items-center text-[10px] text-kobo-gray mt-2">
-                                <span>{ann.DateCreated ? new Date(ann.DateCreated).toLocaleDateString() : ''}</span>
+                                <span>
+                                  {ann.DateCreated ? new Date(ann.DateCreated).toLocaleDateString() : ''}
+                                </span>
                                 <button
                                   onClick={() => handleCopyAnnotation(ann.HighlightedText, ann.BookmarkID)}
                                   className="opacity-0 group-hover/ann:opacity-100 transition-opacity hover:text-kobo-accent font-semibold flex items-center gap-1"
@@ -394,11 +397,7 @@ export function LibraryDashboard({ onNavigate }) {
                         </div>
 
                         <div className="pt-4 border-t border-kobo-cream-dark flex justify-between">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setSelectedBook(book)}
-                          >
+                          <Button variant="outline" size="sm" onClick={() => setSelectedBook(book)}>
                             View Book Details
                           </Button>
                           <Button
@@ -439,7 +438,9 @@ export function LibraryDashboard({ onNavigate }) {
                 <div className="p-4 bg-kobo-cream rounded-xl">
                   <span className="text-3xl block mb-1">✅</span>
                   <span className="text-sm text-kobo-gray font-body block mb-1">Books Finished</span>
-                  <span className="text-2xl font-display font-bold text-kobo-dark">{stats?.booksFinished || 0}</span>
+                  <span className="text-2xl font-display font-bold text-kobo-dark">
+                    {stats?.booksFinished || 0}
+                  </span>
                 </div>
                 <div className="p-4 bg-kobo-cream rounded-xl">
                   <span className="text-3xl block mb-1">✍️</span>
@@ -529,12 +530,15 @@ export function LibraryDashboard({ onNavigate }) {
                     const author = book.Author || 'Unknown';
                     acc[author] = (acc[author] || 0) + 1;
                     return acc;
-                  }, {})
+                  }, {}),
                 )
                   .sort((a, b) => b[1] - a[1])
                   .slice(0, 5)
                   .map(([author, count]) => (
-                    <div key={author} className="flex justify-between items-center bg-kobo-cream/50 p-2.5 rounded-lg border border-kobo-cream-dark/50">
+                    <div
+                      key={author}
+                      className="flex justify-between items-center bg-kobo-cream/50 p-2.5 rounded-lg border border-kobo-cream-dark/50"
+                    >
                       <span className="font-semibold text-kobo-dark text-sm">{author}</span>
                       <span className="bg-kobo-accent text-white text-xs font-semibold px-2 py-0.5 rounded-full">
                         {count} {count === 1 ? 'book' : 'books'}
@@ -549,7 +553,7 @@ export function LibraryDashboard({ onNavigate }) {
 
       {/* Book details Modal */}
       {selectedBook && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden flex flex-col shadow-2xl animate-fade-in">
             {/* Modal Header */}
             <div className="flex justify-between items-center p-5 border-b border-kobo-cream-dark bg-kobo-cream/30">
@@ -577,7 +581,7 @@ export function LibraryDashboard({ onNavigate }) {
                       author={selectedBook.Author}
                     />
                   </div>
-                  
+
                   {/* Progress bar */}
                   <div className="w-full text-center">
                     <span className="text-2xl font-display font-bold text-kobo-accent">
@@ -599,9 +603,7 @@ export function LibraryDashboard({ onNavigate }) {
                     <h2 className="text-2xl font-display font-bold text-kobo-dark leading-tight">
                       {selectedBook.Title}
                     </h2>
-                    <p className="text-lg text-kobo-gray font-medium mt-1">
-                      {selectedBook.Author}
-                    </p>
+                    <p className="text-lg text-kobo-gray font-medium mt-1">{selectedBook.Author}</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 text-sm bg-kobo-cream/30 p-4 rounded-xl border border-kobo-cream-dark/55">
@@ -619,9 +621,7 @@ export function LibraryDashboard({ onNavigate }) {
                     </div>
                     <div>
                       <span className="text-xs text-kobo-gray block">ISBN</span>
-                      <span className="font-semibold text-kobo-dark">
-                        {selectedBook.ISBN || 'N/A'}
-                      </span>
+                      <span className="font-semibold text-kobo-dark">{selectedBook.ISBN || 'N/A'}</span>
                     </div>
                     <div>
                       <span className="text-xs text-kobo-gray block">Publisher</span>
@@ -635,15 +635,12 @@ export function LibraryDashboard({ onNavigate }) {
                   <div className="pt-2">
                     <div className="flex justify-between items-center mb-3">
                       <h4 className="text-base font-display font-semibold text-kobo-dark">
-                        Highlights & Notes ({ (annotationsByBook[selectedBook.ContentID] || []).length })
+                        Highlights & Notes ({(annotationsByBook[selectedBook.ContentID] || []).length})
                       </h4>
                       {(annotationsByBook[selectedBook.ContentID] || []).length > 0 && (
                         <button
                           onClick={() =>
-                            handleExportBookNotes(
-                              selectedBook,
-                              annotationsByBook[selectedBook.ContentID]
-                            )
+                            handleExportBookNotes(selectedBook, annotationsByBook[selectedBook.ContentID])
                           }
                           className="text-xs text-kobo-accent hover:underline font-semibold"
                         >
@@ -667,13 +664,17 @@ export function LibraryDashboard({ onNavigate }) {
                               {ann.HighlightedText}
                             </p>
                             {ann.Note && (
-                              <div className="mt-2 bg-white/70 p-2 rounded border border-kobo-cream-dark/50">
-                                <span className="text-[9px] font-bold uppercase tracking-wider text-kobo-accent block mb-0.5">My Note</span>
+                              <div className="mt-2 bg-white/70 p-2 rounded-sm border border-kobo-cream-dark/50">
+                                <span className="text-[9px] font-bold uppercase tracking-wider text-kobo-accent block mb-0.5">
+                                  My Note
+                                </span>
                                 <p className="text-xs">{ann.Note}</p>
                               </div>
                             )}
                             <div className="flex justify-between items-center text-[9px] text-kobo-gray mt-1.5">
-                              <span>{ann.DateCreated ? new Date(ann.DateCreated).toLocaleDateString() : ''}</span>
+                              <span>
+                                {ann.DateCreated ? new Date(ann.DateCreated).toLocaleDateString() : ''}
+                              </span>
                               <button
                                 onClick={() => handleCopyAnnotation(ann.HighlightedText, ann.BookmarkID)}
                                 className="opacity-0 group-hover/modal-ann:opacity-100 transition-opacity hover:text-kobo-accent font-semibold"
@@ -692,10 +693,7 @@ export function LibraryDashboard({ onNavigate }) {
 
             {/* Modal Footer */}
             <div className="p-4 border-t border-kobo-cream-dark bg-kobo-cream/20 flex justify-end">
-              <Button
-                variant="primary"
-                onClick={() => setSelectedBook(null)}
-              >
+              <Button variant="primary" onClick={() => setSelectedBook(null)}>
                 Close
               </Button>
             </div>

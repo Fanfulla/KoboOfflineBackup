@@ -2,12 +2,12 @@
  * Home page - Landing with value proposition
  */
 
-import { Button } from '../components/common/Button.jsx';
-import { Card } from '../components/common/Card.jsx';
-import { Container } from '../components/layout/Container.jsx';
-import { Icon } from '../components/common/Icon.jsx';
+import { Button } from '../components/common/Button.tsx';
+import { Card } from '../components/common/Card.tsx';
+import { Container } from '../components/layout/Container.tsx';
+import { Icon } from '../components/common/Icon.tsx';
 
-import { useKoboStore } from '../stores/koboStore.js';
+import { useKoboStore } from '../stores/koboStore.ts';
 
 export function Home({ onNavigate }) {
   const books = useKoboStore((state) => state.books);
@@ -21,11 +21,12 @@ export function Home({ onNavigate }) {
           <Container>
             <div className="flex flex-col sm:flex-row justify-center items-center gap-3 text-sm font-body text-kobo-dark">
               <span>
-                📲 Connected to <strong className="font-semibold">{device?.model || 'Kobo Device'}</strong> with <strong className="font-semibold">{books.length} books</strong>.
+                📲 Connected to <strong className="font-semibold">{device?.model || 'Kobo Device'}</strong>{' '}
+                with <strong className="font-semibold">{books.length} books</strong>.
               </span>
               <button
                 onClick={() => onNavigate('dashboard')}
-                className="bg-kobo-accent text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold hover:bg-kobo-accent-dark transition-colors shadow-sm"
+                className="bg-kobo-accent text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold hover:bg-kobo-accent-dark transition-colors shadow-xs"
               >
                 Open Dashboard
               </button>
@@ -35,7 +36,7 @@ export function Home({ onNavigate }) {
       )}
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-kobo-cream to-white py-16 sm:py-24">
+      <section className="bg-linear-to-b from-kobo-cream to-white py-16 sm:py-24">
         <Container>
           <div className="text-center animate-fade-in">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-display font-bold text-kobo-dark mb-6">
@@ -45,8 +46,8 @@ export function Home({ onNavigate }) {
             </h1>
 
             <p className="text-xl sm:text-2xl text-kobo-gray max-w-3xl mx-auto mb-8">
-              Free, secure backup for all your ebooks, annotations, and reading
-              progress. Works 100% in your browser.
+              Free, secure backup for all your ebooks, annotations, and reading progress. Works 100% in your
+              browser.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
@@ -101,12 +102,10 @@ export function Home({ onNavigate }) {
               <div className="w-16 h-16 bg-kobo-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Icon type="device" size={32} className="text-kobo-accent" />
               </div>
-              <h3 className="text-xl font-display font-bold text-kobo-dark mb-3">
-                Complete Protection
-              </h3>
+              <h3 className="text-xl font-display font-bold text-kobo-dark mb-3">Complete Protection</h3>
               <p className="text-kobo-gray">
-                Backup all your sideloaded books, annotations, highlights, and
-                reading progress in one secure archive.
+                Backup all your sideloaded books, annotations, highlights, and reading progress in one secure
+                archive.
               </p>
             </Card>
 
@@ -114,12 +113,10 @@ export function Home({ onNavigate }) {
               <div className="w-16 h-16 bg-kobo-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Icon type="check" size={32} className="text-kobo-success" />
               </div>
-              <h3 className="text-xl font-display font-bold text-kobo-dark mb-3">
-                Privacy First
-              </h3>
+              <h3 className="text-xl font-display font-bold text-kobo-dark mb-3">Privacy First</h3>
               <p className="text-kobo-gray">
-                All processing happens in your browser. Your data never leaves your
-                device - no servers, no tracking, no accounts.
+                All processing happens in your browser. Your data never leaves your device - no servers, no
+                tracking, no accounts.
               </p>
             </Card>
 
@@ -127,12 +124,10 @@ export function Home({ onNavigate }) {
               <div className="w-16 h-16 bg-kobo-info/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Icon type="restore" size={32} className="text-kobo-info" />
               </div>
-              <h3 className="text-xl font-display font-bold text-kobo-dark mb-3">
-                Easy Restore
-              </h3>
+              <h3 className="text-xl font-display font-bold text-kobo-dark mb-3">Easy Restore</h3>
               <p className="text-kobo-gray">
-                Moving to a new Kobo? Restore your entire library with just a few
-                clicks. Pick up right where you left off.
+                Moving to a new Kobo? Restore your entire library with just a few clicks. Pick up right where
+                you left off.
               </p>
             </Card>
           </div>
@@ -148,57 +143,45 @@ export function Home({ onNavigate }) {
 
           <div className="max-w-4xl mx-auto space-y-8">
             <div className="flex gap-6 items-start">
-              <div className="flex-shrink-0 w-12 h-12 bg-kobo-accent text-white rounded-full flex items-center justify-center font-bold text-xl">
+              <div className="shrink-0 w-12 h-12 bg-kobo-accent text-white rounded-full flex items-center justify-center font-bold text-xl">
                 1
               </div>
               <div>
-                <h3 className="text-xl font-display font-bold text-kobo-dark mb-2">
-                  Connect Your Kobo
-                </h3>
+                <h3 className="text-xl font-display font-bold text-kobo-dark mb-2">Connect Your Kobo</h3>
                 <p className="text-kobo-gray">
-                  Plug your Kobo into your computer via USB and unlock it. The device
-                  will appear as a drive.
+                  Plug your Kobo into your computer via USB and unlock it. The device will appear as a drive.
                 </p>
               </div>
             </div>
 
             <div className="flex gap-6 items-start">
-              <div className="flex-shrink-0 w-12 h-12 bg-kobo-accent text-white rounded-full flex items-center justify-center font-bold text-xl">
+              <div className="shrink-0 w-12 h-12 bg-kobo-accent text-white rounded-full flex items-center justify-center font-bold text-xl">
                 2
               </div>
               <div>
-                <h3 className="text-xl font-display font-bold text-kobo-dark mb-2">
-                  Select Your Device
-                </h3>
+                <h3 className="text-xl font-display font-bold text-kobo-dark mb-2">Select Your Device</h3>
                 <p className="text-kobo-gray">
-                  Click the button to select your Kobo drive. The app will
-                  automatically find your books and reading data.
+                  Click the button to select your Kobo drive. The app will automatically find your books and
+                  reading data.
                 </p>
               </div>
             </div>
 
             <div className="flex gap-6 items-start">
-              <div className="flex-shrink-0 w-12 h-12 bg-kobo-accent text-white rounded-full flex items-center justify-center font-bold text-xl">
+              <div className="shrink-0 w-12 h-12 bg-kobo-accent text-white rounded-full flex items-center justify-center font-bold text-xl">
                 3
               </div>
               <div>
-                <h3 className="text-xl font-display font-bold text-kobo-dark mb-2">
-                  Create Backup
-                </h3>
+                <h3 className="text-xl font-display font-bold text-kobo-dark mb-2">Create Backup</h3>
                 <p className="text-kobo-gray">
-                  Everything is packaged into a single ZIP file and saved to your
-                  Downloads folder. That's it!
+                  Everything is packaged into a single ZIP file and saved to your Downloads folder. That's it!
                 </p>
               </div>
             </div>
           </div>
 
           <div className="text-center mt-12">
-            <Button
-              size="lg"
-              variant="primary"
-              onClick={() => onNavigate('backup')}
-            >
+            <Button size="lg" variant="primary" onClick={() => onNavigate('backup')}>
               Get Started Now
             </Button>
           </div>
@@ -214,13 +197,10 @@ export function Home({ onNavigate }) {
 
           <div className="space-y-4">
             <Card>
-              <h3 className="font-display font-bold text-kobo-dark mb-2">
-                Is my data safe?
-              </h3>
+              <h3 className="font-display font-bold text-kobo-dark mb-2">Is my data safe?</h3>
               <p className="text-kobo-gray">
-                Absolutely! All processing happens locally in your browser. Your
-                books and data never leave your computer. We don't have any servers
-                to send data to.
+                Absolutely! All processing happens locally in your browser. Your books and data never leave
+                your computer. We don't have any servers to send data to.
               </p>
             </Card>
 
@@ -229,18 +209,16 @@ export function Home({ onNavigate }) {
                 Does this work with Kobo store books?
               </h3>
               <p className="text-kobo-gray">
-                This tool is designed for sideloaded books (books you added yourself).
-                Kobo store books are already backed up in your Kobo account.
+                This tool is designed for sideloaded books (books you added yourself). Kobo store books are
+                already backed up in your Kobo account.
               </p>
             </Card>
 
             <Card>
-              <h3 className="font-display font-bold text-kobo-dark mb-2">
-                Which browsers are supported?
-              </h3>
+              <h3 className="font-display font-bold text-kobo-dark mb-2">Which browsers are supported?</h3>
               <p className="text-kobo-gray">
-                For the best experience, use Chrome 86+, Edge 86+, or Opera 72+. Other
-                browsers may work with limited functionality.
+                For the best experience, use Chrome 86+, Edge 86+, or Opera 72+. Other browsers may work with
+                limited functionality.
               </p>
             </Card>
           </div>

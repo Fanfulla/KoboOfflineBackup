@@ -2,10 +2,10 @@
  * Backup success screen
  */
 
-import { Card } from '../common/Card.jsx';
-import { Button } from '../common/Button.jsx';
-import { Icon } from '../common/Icon.jsx';
-import { formatBytes, formatDate } from '../../utils/formatters.js';
+import { Card } from '../common/Card.tsx';
+import { Button } from '../common/Button.tsx';
+import { Icon } from '../common/Icon.tsx';
+import { formatBytes } from '../../utils/formatters.ts';
 
 export function BackupSuccess({ result, onCreateAnother, onDone }) {
   return (
@@ -16,9 +16,7 @@ export function BackupSuccess({ result, onCreateAnother, onDone }) {
           <Icon type="check" size={48} className="text-kobo-success" />
         </div>
 
-        <h2 className="text-4xl font-display text-kobo-dark mb-4">
-          Backup Complete!
-        </h2>
+        <h2 className="text-4xl font-display text-kobo-dark mb-4">Backup Complete!</h2>
 
         <p className="text-lg font-body text-kobo-gray mb-8">
           Your Kobo library has been successfully backed up
@@ -26,22 +24,9 @@ export function BackupSuccess({ result, onCreateAnother, onDone }) {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          <SummaryCard
-            icon="file"
-            label="Filename"
-            value={result.filename}
-            truncate
-          />
-          <SummaryCard
-            icon="storage"
-            label="Size"
-            value={formatBytes(result.size)}
-          />
-          <SummaryCard
-            icon="book"
-            label="Books"
-            value={result.metadata?.statistics?.totalBooks || 0}
-          />
+          <SummaryCard icon="file" label="Filename" value={result.filename} truncate />
+          <SummaryCard icon="storage" label="Size" value={formatBytes(result.size)} />
+          <SummaryCard icon="book" label="Books" value={result.metadata?.statistics?.totalBooks || 0} />
           <SummaryCard
             icon="note"
             label="Annotations"
@@ -52,14 +37,12 @@ export function BackupSuccess({ result, onCreateAnother, onDone }) {
         {/* Download Info */}
         <div className="p-4 bg-kobo-success/10 border border-kobo-success/20 rounded-lg mb-8">
           <div className="flex items-start gap-3">
-            <Icon type="download" className="text-kobo-success flex-shrink-0 mt-1" />
+            <Icon type="download" className="text-kobo-success shrink-0 mt-1" />
             <div className="text-left flex-1">
               <p className="font-semibold font-body text-kobo-dark mb-1">
                 Backup saved to your Downloads folder
               </p>
-              <p className="text-sm font-body text-kobo-gray">
-                Look for: {result.filename}
-              </p>
+              <p className="text-sm font-body text-kobo-gray">Look for: {result.filename}</p>
             </div>
           </div>
         </div>
@@ -89,7 +72,9 @@ export function BackupSuccess({ result, onCreateAnother, onDone }) {
               <span className="text-kobo-accent">🔒</span>
               <div>
                 <p className="font-medium font-body text-kobo-dark">Store in multiple locations</p>
-                <p className="text-sm font-body text-kobo-gray">3-2-1 backup rule: 3 copies, 2 different media, 1 offsite</p>
+                <p className="text-sm font-body text-kobo-gray">
+                  3-2-1 backup rule: 3 copies, 2 different media, 1 offsite
+                </p>
               </div>
             </li>
           </ul>
@@ -97,18 +82,10 @@ export function BackupSuccess({ result, onCreateAnother, onDone }) {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button
-            size="lg"
-            variant="secondary"
-            onClick={onCreateAnother}
-          >
+          <Button size="lg" variant="secondary" onClick={onCreateAnother}>
             Create Another Backup
           </Button>
-          <Button
-            size="lg"
-            variant="primary"
-            onClick={onDone}
-          >
+          <Button size="lg" variant="primary" onClick={onDone}>
             Done
           </Button>
         </div>
@@ -122,9 +99,7 @@ function SummaryCard({ icon, label, value, truncate }) {
     <div className="p-4 bg-white rounded-lg border-2 border-kobo-cream-dark">
       <Icon type={icon} size={24} className="text-kobo-accent mx-auto mb-2" />
       <p className="text-xs font-body text-kobo-gray mb-1">{label}</p>
-      <p className={`text-base font-body text-kobo-dark ${truncate ? 'truncate' : ''}`}>
-        {value}
-      </p>
+      <p className={`text-base font-body text-kobo-dark ${truncate ? 'truncate' : ''}`}>{value}</p>
     </div>
   );
 }
