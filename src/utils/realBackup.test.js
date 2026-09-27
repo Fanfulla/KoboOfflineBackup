@@ -2,7 +2,7 @@
  * Integration tests against the user's two REAL Kobo backups + an in-memory
  * File System Access mock so restore.js / fileSystem.js run end-to-end in node.
  *
- * Real fixtures (not committed, ~650 MB each):
+ * Real fixtures (not committed, ~650 MB each) live in ./fixtures or $KOBUP_FIXTURES_DIR:
  *   - kobo_backup_2026-01-11.zip  → OLD flat format  (books/title.kepub.epub)
  *   - kobo_backup_2026-02-23.zip  → NEW nested format (books/Author/title.kepub.epub)
  * If a fixture is missing the corresponding tests skip (CI has no fixtures),
@@ -15,6 +15,7 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { openAsBlob, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import {
   ZipWriter, BlobWriter, TextReader, Uint8ArrayReader,
   ZipReader, BlobReader, TextWriter,
@@ -33,8 +34,9 @@ const { openDatabase } = await import('./koboDatabase.js');
 const { exportToAnkiCsv, exportToObsidianZip, generateObsidianMarkdown } = await import('./export.js');
 const initSqlJs = (await import('sql.js')).default;
 
-const ZIP_OLD = fileURLToPath(new URL('../../kobo_backup_2026-01-11.zip', import.meta.url));
-const ZIP_NEW = fileURLToPath(new URL('../../kobo_backup_2026-02-23.zip', import.meta.url));
+const FIXTURES = process.env.KOBUP_FIXTURES_DIR || fileURLToPath(new URL('../../fixtures/', import.meta.url));
+const ZIP_OLD = join(FIXTURES, 'kobo_backup_2026-01-11.zip');
+const ZIP_NEW = join(FIXTURES, 'kobo_backup_2026-02-23.zip');
 const haveOld = existsSync(ZIP_OLD);
 const haveNew = existsSync(ZIP_NEW);
 

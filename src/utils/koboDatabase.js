@@ -343,37 +343,6 @@ export class KoboDatabase {
   }
 
   /**
-   * Get books in a specific collection
-   * @param {string} collectionId - Collection ID
-   * @returns {Promise<Array<string>>} Array of ContentIDs
-   */
-  async getBooksInCollection(collectionId) {
-    await this.ready;
-
-    try {
-      const query = `
-        SELECT ContentId
-        FROM ShelfContent
-        WHERE ShelfName = ?
-      `;
-
-      const stmt = this.db.prepare(query);
-      stmt.bind([collectionId]);
-
-      const contentIds = [];
-      while (stmt.step()) {
-        const row = stmt.getAsObject();
-        contentIds.push(row.ContentId);
-      }
-      stmt.free();
-
-      return contentIds;
-    } catch (error) {
-      return [];
-    }
-  }
-
-  /**
    * Close the database connection
    */
   close() {

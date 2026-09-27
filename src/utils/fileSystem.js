@@ -3,7 +3,6 @@
  * Wraps browser File System Access API with fallbacks
  */
 
-import { directoryOpen, fileSave } from 'browser-fs-access';
 import { FileSystemError, ERROR_CODES } from './errors.js';
 
 /**
@@ -12,23 +11,18 @@ import { FileSystemError, ERROR_CODES } from './errors.js';
  * @returns {Promise<FileSystemDirectoryHandle>} Directory handle
  */
 export async function selectDirectory(options = {}) {
+  if (!('showDirectoryPicker' in window)) {
+    throw new FileSystemError(
+      'This browser does not support the File System Access API',
+      ERROR_CODES.FS_NOT_SUPPORTED
+    );
+  }
   try {
-    if ('showDirectoryPicker' in window) {
-      // Modern File System Access API
-      const dirHandle = await window.showDirectoryPicker({
-        mode: 'read',
-        startIn: 'desktop',
-        ...options,
-      });
-      return dirHandle;
-    } else {
-      // Fallback using browser-fs-access
-      const dirHandle = await directoryOpen({
-        mode: 'read',
-        ...options,
-      });
-      return dirHandle;
-    }
+    return await window.showDirectoryPicker({
+      mode: 'read',
+      startIn: 'desktop',
+      ...options,
+    });
   } catch (error) {
     if (error.name === 'AbortError') {
       return null; // User cancelled
@@ -65,66 +59,6 @@ export async function readFile(fileHandle) {
   } catch (error) {
     throw new FileSystemError(
       'Failed to read file',
-      ERROR_CODES.FS_READ_ERROR,
-      { filename: fileHandle.name, originalError: error }
-    );
-  }
-}
-
-/**
- * Read a file as text
- * @param {FileSystemFileHandle} fileHandle - File handle to read
- * @returns {Promise<string>} File contents as text
- */
-export async function readFileAsText(fileHandle) {
-  try {
-    const file = await fileHandle.getFile();
-    const text = await file.text();
-    return text;
-  } catch (error) {
-    throw new FileSystemError(
-      'Failed to read file as text',
-      ERROR_CODES.FS_READ_ERROR,
-      { filename: fileHandle.name, originalError: error }
-    );
-  }
-}
-
-/**
- * Read a file as Blob
- * @param {FileSystemFileHandle} fileHandle - File handle to read
- * @returns {Promise<Blob>} File contents as Blob
- */
-export async function readFileAsBlob(fileHandle) {
-  try {
-    const file = await fileHandle.getFile();
-    return file;
-  } catch (error) {
-    throw new FileSystemError(
-      'Failed to read file as blob',
-      ERROR_CODES.FS_READ_ERROR,
-      { filename: fileHandle.name, originalError: error }
-    );
-  }
-}
-
-/**
- * Get file metadata (size, modified date, etc.)
- * @param {FileSystemFileHandle} fileHandle - File handle
- * @returns {Promise<{name: string, size: number, lastModified: Date}>} File metadata
- */
-export async function getFileMetadata(fileHandle) {
-  try {
-    const file = await fileHandle.getFile();
-    return {
-      name: file.name,
-      size: file.size,
-      lastModified: new Date(file.lastModified),
-      type: file.type,
-    };
-  } catch (error) {
-    throw new FileSystemError(
-      'Failed to get file metadata',
       ERROR_CODES.FS_READ_ERROR,
       { filename: fileHandle.name, originalError: error }
     );
@@ -339,12 +273,4 @@ export async function writeFileToPath(rootHandle, filePath, data) {
       { filePath, originalError: error }
     );
   }
-}
-
-/**
- * Check if File System Access API is supported
- * @returns {boolean} True if supported
- */
-export function isFileSystemAccessSupported() {
-  return 'showDirectoryPicker' in window || typeof directoryOpen === 'function';
 }

@@ -422,41 +422,6 @@ export function previewBackup(backupData) {
   };
 }
 
-export async function extractAnnotations(backupData) {
-  let zipReader;
-  try {
-    // Check if annotations folder exists
-    zipReader = new ZipReader(new BlobReader(backupData.file));
-    const entries = await zipReader.getEntries();
-    const annotationsEntry = entries.find(e => e.filename === 'annotations/all-annotations.md');
-
-    if (annotationsEntry) {
-      const markdown = await annotationsEntry.getData(new TextWriter());
-      return {
-        format: 'markdown',
-        content: markdown,
-      };
-    }
-
-    // If no pre-exported annotations, would need to parse database
-    // For now, return empty
-    return {
-      format: 'none',
-      content: '',
-    };
-  } catch (error) {
-    return {
-      format: 'none',
-      content: '',
-      error: error.message,
-    };
-  } finally {
-    if (zipReader) {
-      await zipReader.close();
-    }
-  }
-}
-
 /**
  * Validate restore target device
  * @param {FileSystemDirectoryHandle} deviceHandle - Device directory handle

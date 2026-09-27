@@ -18,15 +18,6 @@ export const useKoboStore = create(
       // Backup history (persisted to localStorage)
       backups: [],
 
-      // User settings
-      settings: {
-        theme: 'light',
-        language: 'en',
-        includeAnnotationsByDefault: true,
-        includeProgressByDefault: true,
-        includeSettingsByDefault: false,
-      },
-
       // UI state
       currentPage: 'home',
 
@@ -57,11 +48,6 @@ export const useKoboStore = create(
           backups: state.backups.filter((b) => b.id !== id),
         })),
 
-      updateSettings: (newSettings) =>
-        set((state) => ({
-          settings: { ...state.settings, ...newSettings },
-        })),
-
       setCurrentPage: (page) => set({ currentPage: page }),
 
       clearDevice: () =>
@@ -85,10 +71,9 @@ export const useKoboStore = create(
     }),
     {
       name: 'kobo-backup-storage',
-      // Only persist backups and settings, not device data
+      // Only persist backups, not device data
       partialize: (state) => ({
         backups: state.backups,
-        settings: state.settings,
       }),
     }
   )
