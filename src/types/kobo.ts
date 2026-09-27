@@ -76,13 +76,13 @@ export interface ExtractedData {
   databaseSize: number;
 }
 
-/** A book file found on the device. */
+/** A file found on the device (book, font, settings...). */
 export interface BookFileEntry {
-  handle: FileSystemFileHandle;
   /** Path relative to the device root, e.g. "Author/Title.kepub.epub". */
   path: string;
   name: string;
   size: number;
+  getFile(): Promise<File>;
 }
 
 /**
@@ -98,6 +98,8 @@ export interface ScanResult {
   collections: KoboCollection[];
   deviceInfo: DeviceInfo;
   bookFiles: BookFileEntry[];
+  /** Settings, custom fonts and screensavers (backed up with "Device settings"). */
+  extraFiles: BookFileEntry[];
   database: ArrayBuffer;
   warnings: ScanWarning[];
 }

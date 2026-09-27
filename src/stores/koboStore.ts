@@ -11,6 +11,7 @@ import type {
   KoboBook,
   ReadingStats,
 } from '../types/kobo.ts';
+import type { KoboSource } from '../utils/deviceSource.ts';
 
 export type Page = 'home' | 'dashboard' | 'backup' | 'restore' | 'history' | 'guide' | 'faq' | 'privacy';
 
@@ -19,7 +20,7 @@ interface KoboState {
   books: KoboBook[];
   annotations: KoboAnnotation[];
   stats: ReadingStats | null;
-  deviceHandle: FileSystemDirectoryHandle | null;
+  source: KoboSource | null;
   backups: BackupHistoryEntry[];
   currentPage: Page;
 
@@ -27,7 +28,7 @@ interface KoboState {
   setBooks: (books: KoboBook[]) => void;
   setAnnotations: (annotations: KoboAnnotation[]) => void;
   setStats: (stats: ReadingStats | null) => void;
-  setDeviceHandle: (deviceHandle: FileSystemDirectoryHandle | null) => void;
+  setSource: (source: KoboSource | null) => void;
   addBackup: (backup: Omit<BackupHistoryEntry, 'id'>) => void;
   removeBackup: (id: string) => void;
   setCurrentPage: (page: Page) => void;
@@ -43,7 +44,7 @@ export const useKoboStore = create<KoboState>()(
       books: [],
       annotations: [],
       stats: null,
-      deviceHandle: null,
+      source: null,
       backups: [],
       currentPage: 'home',
 
@@ -51,7 +52,7 @@ export const useKoboStore = create<KoboState>()(
       setBooks: (books) => set({ books }),
       setAnnotations: (annotations) => set({ annotations }),
       setStats: (stats) => set({ stats }),
-      setDeviceHandle: (deviceHandle) => set({ deviceHandle }),
+      setSource: (source) => set({ source }),
 
       addBackup: (backup) =>
         set((state) => ({
@@ -62,7 +63,7 @@ export const useKoboStore = create<KoboState>()(
 
       setCurrentPage: (page) => set({ currentPage: page }),
 
-      clearDevice: () => set({ device: null, books: [], annotations: [], stats: null, deviceHandle: null }),
+      clearDevice: () => set({ device: null, books: [], annotations: [], stats: null, source: null }),
     }),
     {
       name: 'kobo-backup-storage',

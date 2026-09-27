@@ -15,6 +15,9 @@ import { writeFile, writeFileToPath } from './fileSystem.ts';
 import { RestoreError, ERROR_CODES, errorMessage } from './errors.ts';
 import { validateBackupMetadata } from './validation.ts';
 import { openDatabase } from './koboDatabase.ts';
+import { calculateChecksum, BOOKS_PREFIX, DEVICE_PREFIX } from './backup.ts';
+import { isPersonalisationPath } from './scan.ts';
+import type { MergeOptions, MergeReport } from './merge.ts';
 import type { BackupMetadata, BackupOptions, DeviceInfo, ReadingStats } from '../types/kobo.ts';
 
 export interface RestoreBookFile {
@@ -31,8 +34,12 @@ export interface ParsedBackup {
   database: ArrayBuffer;
   bookFiles: RestoreBookFile[];
   bookPathMap: Map<string, string>;
+  /** Settings, custom fonts and screensavers stored under `device/`. */
+  extraFiles: RestoreBookFile[];
   /** Reading statistics computed from the backup database (null if unreadable). */
   stats: ReadingStats | null;
+  /** Database matches the checksum recorded at backup time (null: not recorded). */
+  checksumOk: boolean | null;
   file: Blob;
   /** True when the archive entries are AES-encrypted. */
   encrypted: boolean;
@@ -60,9 +67,20 @@ export interface RestoreResult {
   databaseRestored: boolean;
   /** A copy of the previous device database was saved (see undoLastRestore). */
   safetySnapshot: boolean;
+  /** How the database was restored ("merge" falls back to "full" on an empty device). */
+  mode: RestoreMode;
+  merge: MergeReport | null;
+  settingsRestored: number;
   metadata: BackupMetadata;
   verification: RestoreVerification | null;
 }
+
+/**
+ * - `full`: replace the device database with the backup (exact copy, including
+ *   the old account and settings).
+ * - `merge`: copy reading data of sideloaded books into the device database.
+ */
+export type RestoreMode = 'full' | 'merge';
 
 export interface RestoreProgress {
   stage: string;
@@ -71,7 +89,11 @@ export interface RestoreProgress {
   totalFiles?: number;
 }
 
-export type RestoreRunOptions = Partial<Pick<BackupOptions, 'includeBooks'>> & {
+export type RestoreRunOptions = Partial<Pick<BackupOptions, 'includeBooks' | 'includeSettings'>> & {
+  /** Default: `full`. */
+  mode?: RestoreMode;
+  /** What to copy in `merge` mode (all by default). */
+  merge?: MergeOptions;
   /**
    * Opt-in: recursively removes top-level book folders before restore. Off by
    * default because it can delete files added to those folders AFTER the backup.
@@ -145,11 +167,11 @@ export async function parseBackupFile(file: Blob, password?: string): Promise<Pa
     const { bookPathMap, stats } = await inspectBackupDatabase(database);
 
     const bookFiles: RestoreBookFile[] = entries
-      .filter((entry) => entry.filename.startsWith('books/'))
+      .filter((entry) => entry.filename.startsWith(BOOKS_PREFIX))
       .map((entry) => {
         // New format: "books/Author/book.epub" (full relative path embedded in the ZIP)
         // Old format: "books/book.epub" (filename only, path recovered via pathMap)
-        const zipRelPath = entry.filename.slice('books/'.length);
+        const zipRelPath = entry.filename.slice(BOOKS_PREFIX.length);
         const name = zipRelPath.split('/').pop()!;
         const originalPath = zipRelPath.includes('/')
           ? zipRelPath
@@ -157,12 +179,28 @@ export async function parseBackupFile(file: Blob, password?: string): Promise<Pa
         return { name, path: entry.filename, originalPath };
       });
 
+    // Only whitelisted personalisation files are ever written back.
+    const extraFiles: RestoreBookFile[] = entries
+      .filter((entry) => entry.filename.startsWith(DEVICE_PREFIX))
+      .map((entry) => {
+        const originalPath = entry.filename.slice(DEVICE_PREFIX.length);
+        return { name: originalPath.split('/').pop()!, path: entry.filename, originalPath };
+      })
+      .filter((f) => isPersonalisationPath(f.originalPath));
+
+    const recorded = (metadata as BackupMetadata).integrity?.databaseChecksum;
+    const checksumOk = recorded?.startsWith('sha256:')
+      ? (await calculateChecksum(database)) === recorded
+      : null;
+
     return {
       metadata: metadata as BackupMetadata,
       database,
       bookFiles,
       bookPathMap,
+      extraFiles,
       stats,
+      checksumOk,
       file,
       encrypted,
       password: encrypted ? password : undefined,
@@ -245,7 +283,13 @@ export async function restoreToDevice(
   backupData: ParsedBackup,
   options: RestoreRunOptions = {},
 ): Promise<RestoreResult> {
-  const { includeBooks = true, cleanExistingBooks = false, safetySnapshot = true, onProgress } = options;
+  const {
+    includeBooks = true,
+    includeSettings = false,
+    cleanExistingBooks = false,
+    safetySnapshot = true,
+    onProgress,
+  } = options;
   const reportProgress = (stage: string, percent: number, details: Partial<RestoreProgress> = {}) =>
     onProgress?.({ stage, percent, ...details });
 
@@ -259,6 +303,21 @@ export async function restoreToDevice(
       throw new RestoreError('Could not find .kobo folder on device', ERROR_CODES.RESTORE_FAILED, {
         reason: 'Invalid Kobo device',
       });
+    }
+
+    // Merging needs a complete device database: with a pending WAL the main
+    // file misses recent changes (e.g. a freshly signed-in account).
+    let mode: RestoreMode = options.mode ?? 'full';
+    const deviceDb = mode === 'merge' ? await readOptionalFile(koboFolder, DB_NAME) : null;
+    if (mode === 'merge') {
+      if (!deviceDb || deviceDb.size === 0) {
+        mode = 'full';
+      } else if (((await readOptionalFile(koboFolder, DB_SIDECARS[0]!))?.size ?? 0) > 0) {
+        throw new RestoreError(
+          'The Kobo database has unsaved changes. Eject the Kobo, wait a few seconds, reconnect it and try again.',
+          ERROR_CODES.RESTORE_DEVICE_BUSY,
+        );
+      }
     }
 
     let snapshotSaved = false;
@@ -286,26 +345,39 @@ export async function restoreToDevice(
       }
     }
 
-    reportProgress('Restoring database...', 15);
+    reportProgress(mode === 'merge' ? 'Merging reading data...' : 'Restoring database...', 15);
+    let mergeReport: MergeReport | null = null;
     try {
+      let dbData: ArrayBuffer | Uint8Array<ArrayBuffer> = backupData.database;
+      if (mode === 'merge') {
+        const target = await openDatabase(await deviceDb!.arrayBuffer());
+        const source = await openDatabase(backupData.database);
+        try {
+          mergeReport = target.mergeReadingDataFrom(source, options.merge);
+          target.sanitize();
+          dbData = target.export();
+        } finally {
+          target.close();
+          source.close();
+        }
+      } else {
+        reportProgress('Sanitizing database...', 18);
+        try {
+          const db = await openDatabase(backupData.database);
+          try {
+            db.sanitize();
+            dbData = db.export();
+          } finally {
+            db.close();
+          }
+        } catch (error) {
+          console.warn('[RESTORE] Database sanitization failed, using original:', error);
+        }
+      }
+
       // CRITICAL: delete WAL/SHM files first. If we overwrite the .sqlite but
       // leave an old WAL behind, SQLite replays the mismatched WAL and corrupts it.
       await removeDatabaseSidecars(koboFolder);
-
-      reportProgress('Sanitizing database...', 18);
-      let dbData: ArrayBuffer | Uint8Array<ArrayBuffer> = backupData.database;
-      try {
-        const db = await openDatabase(backupData.database);
-        try {
-          db.sanitize();
-          dbData = db.export();
-        } finally {
-          db.close();
-        }
-      } catch (error) {
-        console.warn('[RESTORE] Database sanitization failed, using original:', error);
-      }
-
       await writeFile(koboFolder, DB_NAME, dbData);
     } catch (error) {
       throw new RestoreError('Failed to write database to device', ERROR_CODES.RESTORE_FAILED, {
@@ -315,8 +387,11 @@ export async function restoreToDevice(
     reportProgress('Database restored', 20);
 
     const failedBooks: FailedBook[] = [];
-    if (includeBooks && backupData.bookFiles.length > 0) {
-      const totalBooks = backupData.bookFiles.length;
+    let settingsRestored = 0;
+    const booksToWrite = includeBooks ? backupData.bookFiles : [];
+    const extrasToWrite = includeSettings ? backupData.extraFiles : [];
+
+    if (booksToWrite.length + extrasToWrite.length > 0) {
       const zipReader = new ZipReader(
         new BlobReader(backupData.file),
         backupData.password ? { password: backupData.password } : {},
@@ -325,8 +400,9 @@ export async function restoreToDevice(
         const entries = new Map(
           (await zipReader.getEntries()).filter(isFileEntry).map((entry) => [entry.filename, entry]),
         );
+        const totalBooks = booksToWrite.length;
 
-        for (const [i, bookFile] of backupData.bookFiles.entries()) {
+        for (const [i, bookFile] of booksToWrite.entries()) {
           const zipEntry = entries.get(bookFile.path);
           const unsafe = unsafeBookPathReason(bookFile.originalPath);
           if (!zipEntry || unsafe) {
@@ -370,10 +446,26 @@ export async function restoreToDevice(
             totalFiles: totalBooks,
           });
         }
+
+        if (extrasToWrite.length > 0) reportProgress('Restoring device settings...', 86);
+        for (const extra of extrasToWrite) {
+          const zipEntry = entries.get(extra.path);
+          if (!zipEntry || !isPersonalisationPath(extra.originalPath)) continue;
+          try {
+            await writeFileToPath(deviceHandle, extra.originalPath, await zipEntry.getData(new BlobWriter()));
+            settingsRestored++;
+          } catch (error) {
+            failedBooks.push({
+              name: extra.name,
+              originalPath: extra.originalPath,
+              error: errorMessage(error),
+            });
+          }
+        }
       } finally {
         await zipReader.close();
       }
-      reportProgress('Books restored', 85);
+      reportProgress('Files restored', 88);
     }
 
     // Post-restore validation: reopen the database from the device and count books
@@ -398,10 +490,14 @@ export async function restoreToDevice(
 
     return {
       success: true,
-      booksRestored: includeBooks ? backupData.bookFiles.length - failedBooks.length : 0,
+      booksRestored:
+        booksToWrite.length - failedBooks.filter((f) => !isPersonalisationPath(f.originalPath)).length,
       failedBooks,
       databaseRestored: true,
       safetySnapshot: snapshotSaved,
+      mode,
+      merge: mergeReport,
+      settingsRestored,
       metadata: backupData.metadata,
       verification,
     };

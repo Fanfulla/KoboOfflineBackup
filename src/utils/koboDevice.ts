@@ -5,6 +5,7 @@
  *   <serial>,<kernel>,<firmware>,<kernel>,<kernel>,00000000-0000-0000-0000-000000000<model id>
  * The serial number is personal data: it is parsed out and never kept.
  */
+import type { KoboSource } from './deviceSource.ts';
 
 /**
  * Model ids as shipped in Nickel (extracted from libnickel by pgaskin/koboutils
@@ -62,12 +63,7 @@ export function parseKoboVersionFile(text: string): KoboVersionInfo | null {
   return { firmwareVersion, modelId, model: modelNameForId(modelId) };
 }
 
-export async function readDeviceVersion(root: FileSystemDirectoryHandle): Promise<KoboVersionInfo | null> {
-  try {
-    const kobo = await root.getDirectoryHandle('.kobo');
-    const file = await (await kobo.getFileHandle('version')).getFile();
-    return parseKoboVersionFile(await file.text());
-  } catch {
-    return null;
-  }
+export async function readDeviceVersion(source: KoboSource): Promise<KoboVersionInfo | null> {
+  const file = await source.getFile('.kobo/version');
+  return file ? parseKoboVersionFile(await file.text()) : null;
 }

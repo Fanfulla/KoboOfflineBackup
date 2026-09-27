@@ -33,14 +33,8 @@ async function scanResult(): Promise<ScanResult> {
     },
     collections: [],
     deviceInfo: { model: 'Kobo Sage', firmwareVersion: '4.41', databaseVersion: '3', schemaVersion: 176 },
-    bookFiles: [
-      {
-        handle: bookFile as unknown as FileSystemFileHandle,
-        path: 'Author/Book.epub',
-        name: 'Book.epub',
-        size: 12,
-      },
-    ],
+    bookFiles: [{ path: 'Author/Book.epub', name: 'Book.epub', size: 12, getFile: () => bookFile.getFile() }],
+    extraFiles: [],
     database: db.buffer,
     warnings: [],
   };

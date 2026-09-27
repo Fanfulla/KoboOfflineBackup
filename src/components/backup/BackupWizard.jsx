@@ -8,6 +8,7 @@ import { useKoboDevice } from '../../hooks/useKoboDevice.ts';
 import { useBackup } from '../../hooks/useBackup.ts';
 import { useKoboStore } from '../../stores/koboStore.ts';
 import { generateBackupFilename } from '../../utils/backup.ts';
+import { directorySource } from '../../utils/deviceSource.ts';
 import { Container } from '../layout/Container.tsx';
 
 import { DeviceSelector } from './DeviceSelector.jsx';
@@ -36,7 +37,7 @@ export function BackupWizard({ onComplete }) {
   const setBooks = useKoboStore((state) => state.setBooks);
   const setAnnotations = useKoboStore((state) => state.setAnnotations);
   const setStats = useKoboStore((state) => state.setStats);
-  const setDeviceHandle = useKoboStore((state) => state.setDeviceHandle);
+  const setSource = useKoboStore((state) => state.setSource);
 
   const [koboData, setKoboData] = useState(null);
 
@@ -46,7 +47,8 @@ export function BackupWizard({ onComplete }) {
     if (dirHandle) {
       setStep('scanning');
       try {
-        const data = await koboDevice.scanDevice(dirHandle);
+        const source = directorySource(dirHandle);
+        const data = await koboDevice.scanDevice(source);
         setKoboData(data);
 
         // Populate global store
@@ -54,7 +56,7 @@ export function BackupWizard({ onComplete }) {
         setBooks(data.books);
         setAnnotations(data.annotations);
         setStats(data.stats);
-        setDeviceHandle(dirHandle);
+        setSource(source);
 
         setStep('overview');
       } catch (error) {

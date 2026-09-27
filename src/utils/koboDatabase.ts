@@ -6,6 +6,7 @@
 import type { Database, QueryExecResult, SqlJsStatic, SqlValue } from 'sql.js';
 import sqlWasmUrl from 'sql.js/dist/sql-wasm-browser.wasm?url';
 import { DatabaseError, ERROR_CODES } from './errors.ts';
+import { mergeReadingData, type MergeOptions, type MergeReport } from './merge.ts';
 import type {
   DeviceInfo,
   ExtractedData,
@@ -258,6 +259,17 @@ export class KoboDatabase {
       this.db.exec('VACUUM');
     } catch (error) {
       throw new DatabaseError('Failed to sanitize database', ERROR_CODES.DB_WRITE_ERROR, {
+        originalError: error,
+      });
+    }
+  }
+
+  /** Copy reading data of sideloaded books from another (backup) database into this one. */
+  mergeReadingDataFrom(source: KoboDatabase, options?: MergeOptions): MergeReport {
+    try {
+      return mergeReadingData(this.db, source.db, options);
+    } catch (error) {
+      throw new DatabaseError('Failed to merge reading data', ERROR_CODES.DB_WRITE_ERROR, {
         originalError: error,
       });
     }

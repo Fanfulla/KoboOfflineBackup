@@ -1,35 +1,54 @@
 /**
- * Scan a connected Kobo: database, device identity and book files.
+ * Scan a connected Kobo: database, device identity, book files and
+ * personalisation files (settings, custom fonts, screensavers).
  */
 
-import { getFileByPath, readFile, getAllFiles } from './fileSystem.ts';
 import { extractAllData } from './koboDatabase.ts';
-import { readDeviceVersion } from './koboDevice.ts';
-import { isValidBookFile } from './validation.ts';
-import type { BookFileEntry, ScanResult, ScanWarning } from '../types/kobo.ts';
+import { parseKoboVersionFile } from './koboDevice.ts';
+import { isValidBookFile, hasValidExtension } from './validation.ts';
+import { FileSystemError, ERROR_CODES } from './errors.ts';
+import type { KoboSource } from './deviceSource.ts';
+import type { ScanResult, ScanWarning } from '../types/kobo.ts';
 
 export const SCAN_STEPS = 4;
 
-/** Returns true when a non-empty WAL file sits next to the database. */
-async function hasPendingWal(root: FileSystemDirectoryHandle): Promise<boolean> {
-  try {
-    const wal = await getFileByPath(root, '.kobo/KoboReader.sqlite-wal');
-    return (await wal.getFile()).size > 0;
-  } catch {
-    return false;
-  }
+export const DATABASE_PATH = '.kobo/KoboReader.sqlite';
+export const SETTINGS_PATH = '.kobo/Kobo/Kobo eReader.conf';
+
+const FONT_EXTENSIONS = ['.ttf', '.otf'];
+const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp'];
+
+/**
+ * Personalisation files that are safe to back up and put back:
+ *  - `.kobo/Kobo/Kobo eReader.conf` (reading preferences, device settings)
+ *  - `fonts/*.ttf|otf` (sideloaded fonts)
+ *  - `.kobo/screensaver/*` (custom sleep screens)
+ */
+export function isPersonalisationPath(path: string): boolean {
+  if (path.split('/').some((p) => p === '..' || p === '.')) return false;
+  if (path === SETTINGS_PATH) return true;
+  if (path.startsWith('fonts/')) return hasValidExtension(path, FONT_EXTENSIONS);
+  if (path.startsWith('.kobo/screensaver/')) return hasValidExtension(path, IMAGE_EXTENSIONS);
+  return false;
 }
 
 export async function scanKoboDevice(
-  root: FileSystemDirectoryHandle,
+  source: KoboSource,
   onStep: (step: number) => void = () => {},
 ): Promise<ScanResult> {
   onStep(1);
-  const [database, version, walPending] = await Promise.all([
-    getFileByPath(root, '.kobo/KoboReader.sqlite').then(readFile),
-    readDeviceVersion(root),
-    hasPendingWal(root),
+  const [dbFile, versionFile, walFile] = await Promise.all([
+    source.getFile(DATABASE_PATH),
+    source.getFile('.kobo/version'),
+    source.getFile(`${DATABASE_PATH}-wal`),
   ]);
+  if (!dbFile) {
+    throw new FileSystemError(`File not found: ${DATABASE_PATH}`, ERROR_CODES.FS_NOT_FOUND, {
+      path: DATABASE_PATH,
+    });
+  }
+  const database = await dbFile.arrayBuffer();
+  const version = versionFile ? parseKoboVersionFile(await versionFile.text()) : null;
 
   onStep(2);
   const extracted = await extractAllData(database);
@@ -43,20 +62,25 @@ export async function scanKoboDevice(
     : extracted.deviceInfo;
 
   onStep(3);
-  const candidates = (await getAllFiles(root)).filter((file) => isValidBookFile(file.name));
-  // File size only (metadata, no content read) so the size estimate is accurate.
-  const bookFiles: BookFileEntry[] = await Promise.all(
-    candidates.map(async (file) => {
-      try {
-        return { ...file, size: (await file.handle.getFile()).size };
-      } catch {
-        return { ...file, size: 0 };
-      }
-    }),
-  );
+  const [visible, fonts, screensavers, settings] = await Promise.all([
+    source.listFiles(),
+    source.listFiles({ under: 'fonts' }),
+    source.listFiles({ under: '.kobo/screensaver', includeHidden: true }),
+    source.getFile(SETTINGS_PATH),
+  ]);
+  const bookFiles = visible.filter((f) => isValidBookFile(f.name));
+  const extraFiles = [...fonts, ...screensavers].filter((f) => isPersonalisationPath(f.path));
+  if (settings) {
+    extraFiles.unshift({
+      path: SETTINGS_PATH,
+      name: settings.name,
+      size: settings.size,
+      getFile: async () => settings,
+    });
+  }
 
   onStep(4);
-  const warnings: ScanWarning[] = walPending ? ['wal-pending'] : [];
+  const warnings: ScanWarning[] = walFile && walFile.size > 0 ? ['wal-pending'] : [];
   return {
     books: extracted.books,
     annotations: extracted.annotations,
@@ -64,6 +88,7 @@ export async function scanKoboDevice(
     collections: extracted.collections,
     deviceInfo,
     bookFiles,
+    extraFiles,
     database,
     warnings,
   };

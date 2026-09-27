@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseKoboVersionFile, readDeviceVersion, modelNameForId } from './koboDevice.ts';
+import { directorySource } from './deviceSource.ts';
 import { MemDirHandle, freshDevice } from '../test/memoryFs.ts';
 
 describe('koboDevice — .kobo/version parsing', () => {
@@ -26,13 +27,13 @@ describe('koboDevice — .kobo/version parsing', () => {
       '.kobo/version',
       'SN,4.1.15,4.41.23145,4.1.15,4.1.15,00000000-0000-0000-0000-000000000388',
     );
-    expect(await readDeviceVersion(dev.handle)).toMatchObject({
+    expect(await readDeviceVersion(directorySource(dev.handle))).toMatchObject({
       model: 'Kobo Libra 2',
       firmwareVersion: '4.41.23145',
     });
   });
 
   it('returns null when the version file is missing', async () => {
-    expect(await readDeviceVersion(new MemDirHandle().handle)).toBeNull();
+    expect(await readDeviceVersion(directorySource(new MemDirHandle().handle))).toBeNull();
   });
 });

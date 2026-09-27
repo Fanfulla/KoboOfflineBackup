@@ -12,7 +12,7 @@ export function LibraryDashboard({ onNavigate }) {
   const annotations = useKoboStore((state) => state.annotations);
   const stats = useKoboStore((state) => state.stats);
   const device = useKoboStore((state) => state.device);
-  const deviceHandle = useKoboStore((state) => state.deviceHandle);
+  const source = useKoboStore((state) => state.source);
 
   // Tab state: 'books' | 'annotations' | 'stats'
   const [activeTab, setActiveTab] = useState('books');
@@ -253,7 +253,7 @@ export function LibraryDashboard({ onNavigate }) {
                       className="group flex flex-col cursor-pointer text-left focus-visible-ring rounded-md"
                     >
                       <CoverPreview
-                        deviceHandle={deviceHandle}
+                        source={source}
                         coverId={book.CoverId}
                         title={book.Title}
                         author={book.Author}
@@ -346,7 +346,7 @@ export function LibraryDashboard({ onNavigate }) {
                         <div className="flex gap-4 pb-4 border-b border-kobo-cream-dark">
                           <div className="w-16 shrink-0">
                             <CoverPreview
-                              deviceHandle={deviceHandle}
+                              source={source}
                               coverId={book.CoverId}
                               title={book.Title}
                               author={book.Author}
@@ -575,7 +575,7 @@ export function LibraryDashboard({ onNavigate }) {
                 <div className="w-full md:w-1/3 flex flex-col items-center">
                   <div className="w-40 mb-4">
                     <CoverPreview
-                      deviceHandle={deviceHandle}
+                      source={source}
                       coverId={selectedBook.CoverId}
                       title={selectedBook.Title}
                       author={selectedBook.Author}

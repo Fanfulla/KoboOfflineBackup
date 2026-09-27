@@ -20,13 +20,7 @@ function getBookColors(title = '') {
   };
 }
 
-export function CoverPreview({
-  deviceHandle,
-  coverId,
-  title = 'Untitled',
-  author = 'Unknown',
-  className = '',
-}) {
+export function CoverPreview({ source, coverId, title = 'Untitled', author = 'Unknown', className = '' }) {
   const [coverUrl, setCoverUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const colors = getBookColors(title);
@@ -36,13 +30,13 @@ export function CoverPreview({
     let url = null;
 
     async function loadCover() {
-      if (!deviceHandle || !coverId) {
+      if (!source || !coverId) {
         setLoading(false);
         return;
       }
 
       try {
-        url = await getCoverUrl(deviceHandle, coverId);
+        url = await getCoverUrl(source, coverId);
         if (active) {
           setCoverUrl(url);
         } else if (url) {
@@ -66,7 +60,7 @@ export function CoverPreview({
         URL.revokeObjectURL(url);
       }
     };
-  }, [deviceHandle, coverId]);
+  }, [source, coverId]);
 
   const wrapperClass = `relative aspect-3/4 rounded-md shadow-md overflow-hidden transition-all duration-300 group-hover:shadow-lg group-hover:scale-[1.03] select-none ${className}`;
 

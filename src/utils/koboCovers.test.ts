@@ -1,41 +1,57 @@
-import { describe, it, expect, vi } from 'vitest';
-import { getCoverFile } from './koboCovers.ts';
-import { getDirectoryByPath } from './fileSystem.ts';
+import { describe, it, expect } from 'vitest';
+import { coverCandidatePaths, getCoverFile, qhash } from './koboCovers.ts';
+import { directorySource, fileListSource } from './deviceSource.ts';
+import { freshDevice } from '../test/memoryFs.ts';
 
-vi.mock('./fileSystem.ts', () => ({ getDirectoryByPath: vi.fn() }));
-
-const asDir = (value: unknown) => value as FileSystemDirectoryHandle;
-
-describe('koboCovers.ts - Cover Extractor', () => {
-  it('returns null if deviceHandle or coverId is missing', async () => {
-    expect(await getCoverFile(null, 'test-id')).toBeNull();
-    expect(await getCoverFile(asDir({}), null)).toBeNull();
+describe('qhash (Nickel .kobo-images sharding)', () => {
+  // Known device paths reported on MobileRead for real books.
+  it.each([
+    ['file____mnt_onboard_Imports_Brandon_Sanderson_Shadows_Of_Self_-_Brandon_Sanderson_epub', 50, 121],
+    ['ff0a942a-2f28-4aa2-ba97-318fce090264', 20, 244],
+  ])('%s → %i/%i', (imageId, dir1, dir2) => {
+    const h = qhash(imageId);
+    expect(h & 0xff).toBe(dir1);
+    expect((h & 0xff00) >> 8).toBe(dir2);
   });
 
-  it('looks up the cover with suffixes and returns the file if found', async () => {
-    const mockFile = new File(['mock-content'], 'cover.parsed', { type: 'image/jpeg' });
-    const mockImagesDir = {
-      getFileHandle: vi.fn((filename: string) =>
-        filename === 'my-cover-id - N3_LIBRARY_GRID.parsed'
-          ? Promise.resolve({ getFile: () => Promise.resolve(mockFile) })
-          : Promise.reject(new Error('File not found')),
-      ),
-    };
-    vi.mocked(getDirectoryByPath).mockResolvedValue(asDir(mockImagesDir));
+  it('builds modern and legacy candidate paths, smallest thumbnail first', () => {
+    const paths = coverCandidatePaths('ff0a942a-2f28-4aa2-ba97-318fce090264');
+    expect(paths[0]).toBe(
+      '.kobo-images/20/244/ff0a942a-2f28-4aa2-ba97-318fce090264 - N3_LIBRARY_GRID.parsed',
+    );
+    expect(paths).toContain('.kobo-images/20/244/ff0a942a-2f28-4aa2-ba97-318fce090264 - N3_FULL.parsed');
+    expect(paths.some((p) => p.startsWith('.kobo/images/'))).toBe(true);
+  });
+});
 
-    const device = asDir({});
-    const resultFile = await getCoverFile(device, 'my-cover-id');
+describe('getCoverFile', () => {
+  const id = 'ff0a942a-2f28-4aa2-ba97-318fce090264';
 
-    expect(getDirectoryByPath).toHaveBeenCalledWith(device, '.kobo/images');
-    expect(mockImagesDir.getFileHandle).toHaveBeenCalledWith('my-cover-id - N3_LIBRARY_GRID.parsed');
-    expect(resultFile).toBe(mockFile);
+  it('finds a cover in the modern .kobo-images tree', async () => {
+    const dev = await freshDevice();
+    await dev.writeText(`.kobo-images/20/244/${id} - N3_LIBRARY_FULL.parsed`, 'JPEG');
+    const file = await getCoverFile(directorySource(dev.handle), id);
+    expect(await file?.text()).toBe('JPEG');
   });
 
-  it('returns null if the cover file does not exist under any suffix', async () => {
-    const mockImagesDir = { getFileHandle: vi.fn().mockRejectedValue(new Error('File not found')) };
-    vi.mocked(getDirectoryByPath).mockResolvedValue(asDir(mockImagesDir));
+  it('falls back to the legacy .kobo/images folder', async () => {
+    const dev = await freshDevice();
+    await dev.writeText(`.kobo/images/${id} - N3_LIBRARY_GRID.parsed`, 'OLD');
+    expect(await (await getCoverFile(directorySource(dev.handle), id))?.text()).toBe('OLD');
+  });
 
-    expect(await getCoverFile(asDir({}), 'invalid-cover-id')).toBeNull();
-    expect(mockImagesDir.getFileHandle).toHaveBeenCalledTimes(5);
+  it('works with a plain file list (webkitdirectory fallback)', async () => {
+    const f = new File(['FL'], `${id} - N3_FULL.parsed`);
+    Object.defineProperty(f, 'webkitRelativePath', {
+      value: `KOBOeReader/.kobo-images/20/244/${id} - N3_FULL.parsed`,
+    });
+    expect(await (await getCoverFile(fileListSource([f]), id))?.text()).toBe('FL');
+  });
+
+  it('returns null when missing or without an id', async () => {
+    const dev = await freshDevice();
+    expect(await getCoverFile(directorySource(dev.handle), id)).toBeNull();
+    expect(await getCoverFile(directorySource(dev.handle), null)).toBeNull();
+    expect(await getCoverFile(null, id)).toBeNull();
   });
 });

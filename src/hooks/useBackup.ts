@@ -65,13 +65,9 @@ export function useBackup() {
           },
         );
       } else {
-        const blobResult = await createBackupBlob(koboData, { ...backupOptions, onProgress });
-        saveBackup(blobResult.blob, blobResult.filename);
-        backupResult = {
-          filename: blobResult.filename,
-          size: blobResult.size,
-          metadata: blobResult.metadata,
-        };
+        const { blob, ...blobResult } = await createBackupBlob(koboData, { ...backupOptions, onProgress });
+        saveBackup(blob, blobResult.filename);
+        backupResult = blobResult;
       }
 
       const finalResult = { ...backupResult, duration: Date.now() - startTime };

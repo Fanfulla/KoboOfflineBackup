@@ -11,12 +11,13 @@
  */
 
 import { downloadZip } from 'client-zip';
-import { BlobReader, BlobWriter, TextReader, ZipWriter, configure } from '@zip.js/zip.js';
+import { BlobReader, BlobWriter, TextReader, ZipReader, ZipWriter, configure } from '@zip.js/zip.js';
 import { downloadBlob } from './fileSystem.ts';
 import { BackupError, ERROR_CODES } from './errors.ts';
 import type {
   BackupMetadata,
   BackupOptions,
+  BookFileEntry,
   KoboAnnotation,
   ProgressCallback,
   ScanResult,
@@ -24,10 +25,79 @@ import type {
 
 export const APP_VERSION = __APP_VERSION__;
 
+/** ZIP layout: book files keep their device-relative path under these prefixes. */
+export const BOOKS_PREFIX = 'books/';
+export const DEVICE_PREFIX = 'device/';
+
+export interface BackupVerification {
+  ok: boolean;
+  /** Number of entries found in the written archive. */
+  entries: number;
+  /** Entries that were written but cannot be found when reading it back. */
+  missing: string[];
+  /** Database inside the archive matches the checksum taken before writing. */
+  databaseChecksumOk: boolean | null;
+  error?: string;
+}
+
 export interface BackupResult {
   filename: string;
   size: number;
   metadata: BackupMetadata;
+  /** Read-back check of the saved archive (null if it could not be performed). */
+  verification: BackupVerification | null;
+}
+
+/**
+ * Read an archive back and check it: every expected entry is present and the
+ * database matches the recorded checksum. Only the database is decompressed,
+ * so this is fast even for multi-GB libraries.
+ */
+export async function verifyBackupArchive(
+  archive: Blob,
+  {
+    expectedEntries = [],
+    databaseChecksum,
+    password,
+  }: { expectedEntries?: string[]; databaseChecksum?: string; password?: string },
+): Promise<BackupVerification> {
+  const reader = new ZipReader(new BlobReader(archive), password ? { password } : {});
+  try {
+    const entries = await reader.getEntries();
+    const names = new Set(entries.map((e) => e.filename));
+    const missing = [...new Set(['KoboReader.sqlite', 'backup-metadata.json', ...expectedEntries])].filter(
+      (name) => !names.has(name),
+    );
+
+    let databaseChecksumOk: boolean | null = null;
+    const db = entries.find((e) => e.filename === 'KoboReader.sqlite');
+    if (databaseChecksum?.startsWith('sha256:') && db && !db.directory) {
+      databaseChecksumOk = (await calculateChecksum(await db.arrayBuffer())) === databaseChecksum;
+    }
+    return {
+      ok: missing.length === 0 && databaseChecksumOk !== false,
+      entries: entries.length,
+      missing,
+      databaseChecksumOk,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      entries: 0,
+      missing: [],
+      databaseChecksumOk: null,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  } finally {
+    await reader.close().catch(() => {});
+  }
+}
+
+async function* recordNames(entries: AsyncIterable<ZipEntry>, names: string[]): AsyncGenerator<ZipEntry> {
+  for await (const entry of entries) {
+    names.push(entry.name);
+    yield entry;
+  }
 }
 
 export type BackupRunOptions = Partial<BackupOptions> & {
@@ -120,7 +190,7 @@ async function* generateZipEntries(
   onProgress: ProgressCallback,
   metadata: BackupMetadata,
 ): AsyncGenerator<ZipEntry> {
-  const { includeBooks = true, includeAnnotations = true } = options;
+  const { includeBooks = true, includeAnnotations = true, includeSettings = false } = options;
 
   // 1. SQLite database (small, safe to buffer)
   onProgress('Preparing backup...', 0);
@@ -130,29 +200,40 @@ async function* generateZipEntries(
     size: koboData.database.byteLength,
   };
 
-  // 2. Book files - ONE at a time. handle.getFile() returns a lazy File;
-  //    client-zip streams it to disk before requesting the next one.
-  if (includeBooks && koboData.bookFiles?.length > 0) {
-    const total = koboData.bookFiles.length;
-    for (let i = 0; i < total; i++) {
-      const bf = koboData.bookFiles[i]!;
+  // 2. Book files - ONE at a time. getFile() returns a lazy File; the ZIP
+  //    writer streams it to disk before requesting the next one.
+  async function* files(list: BookFileEntry[], prefix: string, onEach?: (i: number) => void) {
+    for (const [i, bf] of list.entries()) {
       try {
-        const file = await bf.handle.getFile();
+        const file = await bf.getFile();
         yield {
-          name: `books/${bf.path || bf.name}`,
+          name: `${prefix}${bf.path || bf.name}`,
           input: file,
           size: file.size,
           lastModified: new Date(file.lastModified),
         };
       } catch (err) {
-        console.warn('[BACKUP] Skipping unreadable file:', bf.name, err);
+        console.warn('[BACKUP] Skipping unreadable file:', bf.path, err);
         metadata.integrity?.errors.push({
-          file: bf.name,
+          file: bf.path,
           error: err instanceof Error ? err.message : String(err),
         });
       }
-      onProgress(`Adding books (${i + 1}/${total})...`, 10 + ((i + 1) / total) * 72, i + 1);
+      onEach?.(i);
     }
+  }
+
+  if (includeBooks && koboData.bookFiles?.length > 0) {
+    const total = koboData.bookFiles.length;
+    yield* files(koboData.bookFiles, BOOKS_PREFIX, (i) =>
+      onProgress(`Adding books (${i + 1}/${total})...`, 10 + ((i + 1) / total) * 72, i + 1),
+    );
+  }
+
+  // 2b. Settings, custom fonts, screensavers (stored with their device path)
+  if (includeSettings && koboData.extraFiles?.length > 0) {
+    onProgress('Adding device settings...', 83);
+    yield* files(koboData.extraFiles, DEVICE_PREFIX);
   }
 
   // 3. Annotations (human-readable export)
@@ -189,8 +270,10 @@ export async function streamBackupToDisk(
 ): Promise<BackupResult> {
   const { onProgress = () => {}, password } = options;
   try {
-    const metadata = buildMetadata(koboData, options, await calculateChecksum(koboData.database), []);
-    const entries = generateZipEntries(koboData, options, onProgress, metadata);
+    const databaseChecksum = await calculateChecksum(koboData.database);
+    const metadata = buildMetadata(koboData, options, databaseChecksum, []);
+    const written: string[] = [];
+    const entries = recordNames(generateZipEntries(koboData, options, onProgress, metadata), written);
 
     const writable = await fileHandle.createWritable();
     try {
@@ -202,9 +285,15 @@ export async function streamBackupToDisk(
       throw err;
     }
 
-    onProgress('Backup complete', 100);
+    onProgress('Verifying backup...', 98);
     const savedFile = await fileHandle.getFile();
-    return { filename, size: savedFile.size, metadata };
+    const verification = await verifyBackupArchive(savedFile, {
+      expectedEntries: written,
+      databaseChecksum,
+      password,
+    });
+    onProgress('Backup complete', 100);
+    return { filename, size: savedFile.size, metadata, verification };
   } catch (error) {
     console.error('[BACKUP] Streaming failed:', error);
     throw new BackupError('Failed to create backup', ERROR_CODES.BACKUP_FAILED, { originalError: error });
@@ -221,13 +310,20 @@ export async function createBackupBlob(
 ): Promise<BackupResult & { blob: Blob }> {
   const { onProgress = () => {}, password } = options;
   try {
-    const metadata = buildMetadata(koboData, options, await calculateChecksum(koboData.database), []);
-    const entries = generateZipEntries(koboData, options, onProgress, metadata);
+    const databaseChecksum = await calculateChecksum(koboData.database);
+    const metadata = buildMetadata(koboData, options, databaseChecksum, []);
+    const written: string[] = [];
+    const entries = recordNames(generateZipEntries(koboData, options, onProgress, metadata), written);
     const blob = password
       ? await writeEncryptedZip<Blob>(entries, new BlobWriter('application/zip'), password)
       : await downloadZip(entries).blob();
+    const verification = await verifyBackupArchive(blob, {
+      expectedEntries: written,
+      databaseChecksum,
+      password,
+    });
     onProgress('Backup complete', 100);
-    return { blob, filename: generateBackupFilename(), size: blob.size, metadata };
+    return { blob, filename: generateBackupFilename(), size: blob.size, metadata, verification };
   } catch (error) {
     console.error('[BACKUP] Blob creation failed:', error);
     throw new BackupError('Failed to create backup', ERROR_CODES.BACKUP_FAILED, { originalError: error });
@@ -310,6 +406,7 @@ function generateReadme(m: BackupMetadata): string {
     '--------',
     '- KoboReader.sqlite: Your Kobo database with all reading data',
     '- books/: All your ebook files',
+    '- device/: Settings, custom fonts and screensavers (if selected)',
     '- annotations/: Human-readable export of your highlights and notes',
     '- backup-metadata.json: Technical metadata about this backup',
     '',

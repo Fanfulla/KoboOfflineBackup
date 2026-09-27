@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { scanKoboDevice, SCAN_STEPS } from '../utils/scan.ts';
 import { errorCode, errorMessage } from '../utils/errors.ts';
 import type { ScanResult, UiError } from '../types/kobo.ts';
+import type { KoboSource } from '../utils/deviceSource.ts';
 
 export interface ScanProgress {
   /** 1 = reading database, 2 = analyzing books, 3 = finding files, 4 = done. */
@@ -17,11 +18,11 @@ export function useKoboDevice() {
   const [scanProgress, setScanProgress] = useState<ScanProgress>(IDLE);
   const [error, setError] = useState<UiError | null>(null);
 
-  const scanDevice = useCallback(async (dirHandle: FileSystemDirectoryHandle): Promise<ScanResult> => {
+  const scanDevice = useCallback(async (source: KoboSource): Promise<ScanResult> => {
     setIsScanning(true);
     setError(null);
     try {
-      return await scanKoboDevice(dirHandle, (current) => setScanProgress({ current, total: SCAN_STEPS }));
+      return await scanKoboDevice(source, (current) => setScanProgress({ current, total: SCAN_STEPS }));
     } catch (err) {
       setError({
         title: 'Scan Failed',
