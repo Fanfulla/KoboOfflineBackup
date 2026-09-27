@@ -224,15 +224,18 @@ export class KoboDatabase {
     }
   }
 
+  /** User collections (shelves) with the ContentIDs they contain. */
   getCollections(): KoboCollection[] {
+    const notDeleted = `(_IsDeleted IS NULL OR LOWER(_IsDeleted) != 'true')`;
     try {
+      const members = new Map<string, string[]>();
+      for (const row of this.rows(`SELECT ShelfName, ContentId FROM ShelfContent WHERE ${notDeleted}`)) {
+        const name = String(row.ShelfName);
+        members.set(name, [...(members.get(name) ?? []), String(row.ContentId)]);
+      }
       return this.rows(
-        `
-        SELECT Id, Name, InternalName, Type, CreationDate, LastModified
-        FROM Shelf
-        WHERE Type != 'SystemTag'
-        ORDER BY Name
-      `,
+        `SELECT Id, Name, InternalName, Type, CreationDate, LastModified FROM Shelf
+         WHERE (Type IS NULL OR Type != 'SystemTag') AND ${notDeleted} ORDER BY Name`,
       ).map((row) => ({
         Id: String(row.Id),
         Name: String(row.Name),
@@ -240,6 +243,7 @@ export class KoboDatabase {
         Type: str(row.Type),
         CreationDate: toDate(row.CreationDate),
         LastModified: toDate(row.LastModified),
+        ContentIds: members.get(String(row.Name)) ?? [],
       }));
     } catch {
       return [];

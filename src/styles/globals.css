@@ -5,6 +5,8 @@
   --color-kobo-cream-dark: #e8e3d8;
   --color-kobo-accent: #d4a574;
   --color-kobo-accent-dark: #b8895e;
+  /* Accent for text: 5.9:1 on white (WCAG AA), unlike the decorative accent. */
+  --color-kobo-accent-ink: #8a5a2b;
   --color-kobo-dark: #2c2416;
   --color-kobo-gray: #6b675e;
   --color-kobo-gray-light: #a8a49a;

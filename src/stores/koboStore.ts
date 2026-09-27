@@ -1,73 +1,52 @@
 /**
- * Global state (Zustand). Only the backup history is persisted.
+ * Global state (Zustand).
+ *  - session: the connected device and its scan (shared by Backup and Library)
+ *  - history: past backups, persisted to localStorage
  */
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type {
-  BackupHistoryEntry,
-  DeviceInfo,
-  KoboAnnotation,
-  KoboBook,
-  ReadingStats,
-} from '../types/kobo.ts';
+import type { BackupHistoryEntry, ScanResult } from '../types/kobo.ts';
 import type { KoboSource } from '../utils/deviceSource.ts';
 
-export type Page = 'home' | 'dashboard' | 'backup' | 'restore' | 'history' | 'guide' | 'faq' | 'privacy';
-
 interface KoboState {
-  device: DeviceInfo | null;
-  books: KoboBook[];
-  annotations: KoboAnnotation[];
-  stats: ReadingStats | null;
   source: KoboSource | null;
+  scan: ScanResult | null;
   backups: BackupHistoryEntry[];
-  currentPage: Page;
+  /** A backup file handed from History to the Restore page. */
+  pendingRestore: File | null;
 
-  setDevice: (device: DeviceInfo | null) => void;
-  setBooks: (books: KoboBook[]) => void;
-  setAnnotations: (annotations: KoboAnnotation[]) => void;
-  setStats: (stats: ReadingStats | null) => void;
-  setSource: (source: KoboSource | null) => void;
-  addBackup: (backup: Omit<BackupHistoryEntry, 'id'>) => void;
-  removeBackup: (id: string) => void;
-  setCurrentPage: (page: Page) => void;
+  setDevice: (source: KoboSource, scan: ScanResult) => void;
+  setPendingRestore: (file: File | null) => void;
   clearDevice: () => void;
+  addBackup: (backup: BackupHistoryEntry) => void;
+  removeBackup: (id: string) => void;
 }
 
 const MAX_HISTORY = 20;
 
+export const newBackupId = () => `backup_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
 export const useKoboStore = create<KoboState>()(
   persist(
     (set) => ({
-      device: null,
-      books: [],
-      annotations: [],
-      stats: null,
       source: null,
+      scan: null,
       backups: [],
-      currentPage: 'home',
+      pendingRestore: null,
 
-      setDevice: (device) => set({ device }),
-      setBooks: (books) => set({ books }),
-      setAnnotations: (annotations) => set({ annotations }),
-      setStats: (stats) => set({ stats }),
-      setSource: (source) => set({ source }),
+      setDevice: (source, scan) => set({ source, scan }),
+      setPendingRestore: (pendingRestore) => set({ pendingRestore }),
+      clearDevice: () => set({ source: null, scan: null }),
 
-      addBackup: (backup) =>
-        set((state) => ({
-          backups: [{ id: `backup_${Date.now()}`, ...backup }, ...state.backups].slice(0, MAX_HISTORY),
-        })),
-
+      addBackup: (backup) => set((state) => ({ backups: [backup, ...state.backups].slice(0, MAX_HISTORY) })),
       removeBackup: (id) => set((state) => ({ backups: state.backups.filter((b) => b.id !== id) })),
-
-      setCurrentPage: (page) => set({ currentPage: page }),
-
-      clearDevice: () => set({ device: null, books: [], annotations: [], stats: null, source: null }),
     }),
     {
       name: 'kobo-backup-storage',
       partialize: (state) => ({ backups: state.backups }),
+      // Rehydrated on the client after mount (see App) so prerendered HTML matches.
+      skipHydration: true,
     },
   ),
 );

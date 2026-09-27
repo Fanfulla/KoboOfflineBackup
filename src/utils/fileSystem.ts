@@ -37,8 +37,14 @@ export async function selectDirectory(
   }
 }
 
-export function selectKoboDirectory(): Promise<FileSystemDirectoryHandle | null> {
-  return selectDirectory({ id: 'kobo-device' });
+/**
+ * Pick the Kobo drive. Restores ask for "readwrite" up front so the browser
+ * shows a single permission prompt instead of failing midway.
+ */
+export function selectKoboDirectory(
+  mode: FileSystemPermissionMode = 'read',
+): Promise<FileSystemDirectoryHandle | null> {
+  return selectDirectory({ id: 'kobo-device', mode });
 }
 
 /** Read a file handle fully into memory. */

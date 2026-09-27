@@ -19,10 +19,8 @@ export default defineConfig({
     rolldownOptions: {
       output: {
         codeSplitting: {
-          groups: [
-            { name: 'vendor', test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/ },
-            { name: 'zip', test: /node_modules[\\/](client-zip|@zip\.js)[\\/]/ },
-          ],
+          // ZIP/SQLite code is split automatically into lazy chunks (dynamic imports).
+          groups: [{ name: 'vendor', test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/ }],
         },
       },
     },

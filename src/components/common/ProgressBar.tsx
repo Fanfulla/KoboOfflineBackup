@@ -1,5 +1,3 @@
-import { formatProgress } from '../../utils/formatters.ts';
-
 export interface ProgressBarProps {
   percent?: number;
   label?: string;
@@ -15,7 +13,7 @@ export function ProgressBar({ percent = 0, label, showLabel = false, className =
       {(showLabel || label) && (
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm text-kobo-gray">{label}</span>
-          <span className="text-sm font-semibold text-kobo-dark">{formatProgress(value)}</span>
+          <span className="text-sm font-semibold text-kobo-dark">{Math.round(value)}%</span>
         </div>
       )}
       <div

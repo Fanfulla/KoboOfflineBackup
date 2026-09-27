@@ -65,6 +65,7 @@ export interface KoboCollection {
   Type: string | null;
   CreationDate: Date | null;
   LastModified: Date | null;
+  ContentIds: string[];
 }
 
 export interface ExtractedData {
@@ -147,7 +148,10 @@ export interface ProgressState {
   totalFiles: number;
 }
 
-export type ProgressCallback = (stage: string, percent: number, filesProcessed?: number) => void;
+export type BackupStage =
+  'preparing' | 'books' | 'settings' | 'annotations' | 'metadata' | 'finalizing' | 'verifying' | 'complete';
+
+export type ProgressCallback = (stage: BackupStage, percent: number, filesProcessed?: number) => void;
 
 export interface UiError {
   title: string;
@@ -163,4 +167,9 @@ export interface BackupHistoryEntry {
   deviceModel: string;
   bookCount: number;
   annotationCount: number;
+  encrypted?: boolean;
+  /** The saved file's handle is stored in IndexedDB (verify/restore in one click). */
+  hasHandle?: boolean;
+  /** Result of the read-back verification right after writing. */
+  verified?: boolean;
 }

@@ -8,9 +8,11 @@ export interface BrowserFeatures {
   hasModernFeatures: boolean;
 }
 
+// Optimistic during prerender/hydration (most visitors use Chromium); the real
+// values are applied right after hydration.
 const SERVER_FEATURES: BrowserFeatures = {
-  fileSystemAccess: false,
-  saveFilePicker: false,
+  fileSystemAccess: true,
+  saveFilePicker: true,
   webAssembly: true,
   isSupported: true,
   hasModernFeatures: true,

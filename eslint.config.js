@@ -24,10 +24,12 @@ export default defineConfig([
     },
     rules: {
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', caughtErrors: 'none' }],
+      // Labels wrapping an input plus a title/description span nest text 3 levels deep.
+      'jsx-a11y-x/label-has-associated-control': ['error', { depth: 3 }],
     },
   },
   {
-    files: ['**/*.test.{js,jsx,ts,tsx}', 'scripts/**', '*.config.{js,ts}'],
+    files: ['**/*.test.{js,jsx,ts,tsx}', 'src/test/**', 'scripts/**', '*.config.{js,ts}'],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
     rules: { 'react-refresh/only-export-components': 'off' },
   },

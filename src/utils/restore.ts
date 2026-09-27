@@ -15,9 +15,12 @@ import { writeFile, writeFileToPath } from './fileSystem.ts';
 import { RestoreError, ERROR_CODES, errorMessage } from './errors.ts';
 import { validateBackupMetadata } from './validation.ts';
 import { openDatabase } from './koboDatabase.ts';
-import { calculateChecksum, BOOKS_PREFIX, DEVICE_PREFIX } from './backup.ts';
+import { calculateChecksum } from './checksum.ts';
+import { BOOKS_PREFIX, DEVICE_PREFIX } from './backupInfo.ts';
 import { isPersonalisationPath } from './scan.ts';
 import type { MergeOptions, MergeReport } from './merge.ts';
+import { directorySource } from './deviceSource.ts';
+import { readDeviceVersion } from './koboDevice.ts';
 import type { BackupMetadata, BackupOptions, DeviceInfo, ReadingStats } from '../types/kobo.ts';
 
 export interface RestoreBookFile {
@@ -82,8 +85,19 @@ export interface RestoreResult {
  */
 export type RestoreMode = 'full' | 'merge';
 
+export type RestoreStage =
+  | 'preparing'
+  | 'snapshot'
+  | 'cleaning'
+  | 'merging'
+  | 'database'
+  | 'books'
+  | 'settings'
+  | 'verifying'
+  | 'complete';
+
 export interface RestoreProgress {
-  stage: string;
+  stage: RestoreStage;
   percent: number;
   filesProcessed?: number;
   totalFiles?: number;
@@ -290,11 +304,11 @@ export async function restoreToDevice(
     safetySnapshot = true,
     onProgress,
   } = options;
-  const reportProgress = (stage: string, percent: number, details: Partial<RestoreProgress> = {}) =>
+  const reportProgress = (stage: RestoreStage, percent: number, details: Partial<RestoreProgress> = {}) =>
     onProgress?.({ stage, percent, ...details });
 
   try {
-    reportProgress('Preparing device...', 0);
+    reportProgress('preparing', 0);
 
     let koboFolder: FileSystemDirectoryHandle;
     try {
@@ -322,7 +336,7 @@ export async function restoreToDevice(
 
     let snapshotSaved = false;
     if (safetySnapshot) {
-      reportProgress('Saving a copy of the current database...', 3);
+      reportProgress('snapshot', 3);
       try {
         snapshotSaved = await snapshotDeviceDatabase(koboFolder);
       } catch (error) {
@@ -337,7 +351,7 @@ export async function restoreToDevice(
     }
 
     if (includeBooks && cleanExistingBooks && backupData.bookFiles.length > 0) {
-      reportProgress('Removing existing books...', 5);
+      reportProgress('cleaning', 5);
       try {
         await cleanExistingBooksFromDevice(deviceHandle, backupData.bookPathMap);
       } catch (error) {
@@ -345,7 +359,7 @@ export async function restoreToDevice(
       }
     }
 
-    reportProgress(mode === 'merge' ? 'Merging reading data...' : 'Restoring database...', 15);
+    reportProgress(mode === 'merge' ? 'merging' : 'database', 15);
     let mergeReport: MergeReport | null = null;
     try {
       let dbData: ArrayBuffer | Uint8Array<ArrayBuffer> = backupData.database;
@@ -361,7 +375,7 @@ export async function restoreToDevice(
           source.close();
         }
       } else {
-        reportProgress('Sanitizing database...', 18);
+        reportProgress('database', 18);
         try {
           const db = await openDatabase(backupData.database);
           try {
@@ -384,7 +398,7 @@ export async function restoreToDevice(
         originalError: error,
       });
     }
-    reportProgress('Database restored', 20);
+    reportProgress('database', 20);
 
     const failedBooks: FailedBook[] = [];
     let settingsRestored = 0;
@@ -441,13 +455,13 @@ export async function restoreToDevice(
             });
           }
 
-          reportProgress(`Restoring books (${i + 1}/${totalBooks})...`, 20 + ((i + 1) / totalBooks) * 65, {
+          reportProgress('books', 20 + ((i + 1) / totalBooks) * 65, {
             filesProcessed: i + 1,
             totalFiles: totalBooks,
           });
         }
 
-        if (extrasToWrite.length > 0) reportProgress('Restoring device settings...', 86);
+        if (extrasToWrite.length > 0) reportProgress('settings', 86);
         for (const extra of extrasToWrite) {
           const zipEntry = entries.get(extra.path);
           if (!zipEntry || !isPersonalisationPath(extra.originalPath)) continue;
@@ -465,11 +479,11 @@ export async function restoreToDevice(
       } finally {
         await zipReader.close();
       }
-      reportProgress('Files restored', 88);
+      reportProgress('books', 88);
     }
 
     // Post-restore validation: reopen the database from the device and count books
-    reportProgress('Verifying restore...', 90);
+    reportProgress('verifying', 90);
     let verification: RestoreVerification | null = null;
     try {
       const restored = await (await (await koboFolder.getFileHandle(DB_NAME)).getFile()).arrayBuffer();
@@ -486,7 +500,7 @@ export async function restoreToDevice(
       console.warn('[RESTORE] Post-restore verification failed:', verifyError);
     }
 
-    reportProgress('Restore complete', 100);
+    reportProgress('complete', 100);
 
     return {
       success: true,
@@ -725,4 +739,47 @@ async function cleanExistingBooksFromDevice(
   for (const dirName of dirsToClean) await remove(dirName, true);
   for (const filename of filesToClean) await remove(filename, false);
   return cleanedCount;
+}
+
+export interface RestoreTargetInfo {
+  device: DeviceInfo;
+  /** The device already has a database (merge is possible). */
+  hasDatabase: boolean;
+  /** A pre-restore safety copy exists (undo is possible). */
+  hasSnapshot: boolean;
+}
+
+/** Identify the Kobo that will receive the backup (for compatibility checks). */
+export async function inspectRestoreTarget(
+  deviceHandle: FileSystemDirectoryHandle,
+): Promise<RestoreTargetInfo> {
+  const source = directorySource(deviceHandle);
+  const [version, dbFile, hasSnapshot] = await Promise.all([
+    readDeviceVersion(source),
+    source.getFile(`.kobo/${DB_NAME}`),
+    hasSafetySnapshot(deviceHandle),
+  ]);
+  let schemaVersion = 0;
+  let databaseVersion = 'Unknown';
+  if (dbFile && dbFile.size > 0) {
+    try {
+      const db = await openDatabase(await dbFile.arrayBuffer());
+      schemaVersion = db.getSchemaVersion();
+      databaseVersion = db.getDatabaseVersion();
+      db.close();
+    } catch (error) {
+      console.warn('[RESTORE] Could not read the target database:', error);
+    }
+  }
+  return {
+    device: {
+      model: version?.model ?? 'Unknown',
+      modelId: version?.modelId,
+      firmwareVersion: version?.firmwareVersion ?? 'Unknown',
+      databaseVersion,
+      schemaVersion,
+    },
+    hasDatabase: !!dbFile && dbFile.size > 0,
+    hasSnapshot,
+  };
 }

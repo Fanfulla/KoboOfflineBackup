@@ -1,99 +1,82 @@
 /**
- * Backup orchestration (streaming-first).
+ * Backup orchestration (streaming-first). The ZIP code is loaded on demand.
  *
- *  - Chrome/Edge: BackupWizard calls showSaveFilePicker() first (user gesture)
- *    and passes the handle here -> streamBackupToDisk() -> no OOM.
- *  - Otherwise: createBackupBlob() + saveBackup() (may OOM on huge libraries).
+ *  - Chrome/Edge: the wizard calls showSaveFilePicker() first (user gesture)
+ *    and passes the handle here → streamed to disk, no memory limit.
+ *  - Otherwise: the archive is built in memory and downloaded.
  */
-
-import { useState, useCallback } from 'react';
-import {
-  streamBackupToDisk,
-  createBackupBlob,
-  saveBackup,
-  estimateBackupSize,
-  type BackupResult,
-} from '../utils/backup.ts';
+import { useCallback, useState } from 'react';
+import type { BackupResult } from '../utils/backup.ts';
 import { errorCode, errorMessage } from '../utils/errors.ts';
-import type { BackupOptions, ProgressState, ScanResult, UiError } from '../types/kobo.ts';
+import type { BackupOptions, BackupStage, ScanResult, UiError } from '../types/kobo.ts';
 
 export interface CreateBackupOptions extends Partial<BackupOptions> {
-  /** From showSaveFilePicker (streaming path). */
   writableFileHandle?: FileSystemFileHandle | null;
-  suggestedFilename?: string;
-  /** AES-256 encrypt the archive with this password. */
+  suggestedFilename: string;
   password?: string;
 }
 
-export type BackupOutcome = BackupResult & { duration: number };
+export type BackupOutcome = BackupResult & { duration: number; streamed: boolean };
 
-const IDLE: ProgressState = { stage: '', percent: 0, filesProcessed: 0, totalFiles: 0 };
+export interface BackupProgressState {
+  stage: BackupStage;
+  percent: number;
+  filesProcessed: number;
+  totalFiles: number;
+}
+
+const IDLE: BackupProgressState = { stage: 'preparing', percent: 0, filesProcessed: 0, totalFiles: 0 };
 
 export function useBackup() {
-  const [isCreating, setIsCreating] = useState(false);
-  const [progress, setProgress] = useState<ProgressState>(IDLE);
+  const [progress, setProgress] = useState<BackupProgressState>(IDLE);
   const [result, setResult] = useState<BackupOutcome | null>(null);
   const [error, setError] = useState<UiError | null>(null);
+  const [running, setRunning] = useState(false);
 
-  const create = useCallback(async (koboData: ScanResult, options: CreateBackupOptions = {}) => {
-    setIsCreating(true);
+  const create = useCallback(async (scan: ScanResult, options: CreateBackupOptions) => {
+    setRunning(true);
     setError(null);
     setResult(null);
-
     const startTime = Date.now();
-    const totalFiles = koboData.bookFiles?.length || 0;
-    const { writableFileHandle, suggestedFilename, ...backupOptions } = options;
-
-    const onProgress = (stage: string, percent: number, filesProcessed?: number) =>
-      setProgress({
+    const { writableFileHandle, suggestedFilename, ...runOptions } = options;
+    const totalFiles = runOptions.includeBooks === false ? 0 : scan.bookFiles.length;
+    const onProgress = (stage: BackupStage, percent: number, filesProcessed?: number) =>
+      setProgress((prev) => ({
         stage,
         percent: Math.min(Math.round(percent || 0), 100),
-        filesProcessed: filesProcessed ?? 0,
+        filesProcessed: filesProcessed ?? prev.filesProcessed,
         totalFiles,
-      });
+      }));
 
     try {
-      let backupResult: BackupResult;
+      const backup = await import('../utils/backup.ts');
+      let outcome: BackupResult;
       if (writableFileHandle) {
-        backupResult = await streamBackupToDisk(
-          koboData,
-          writableFileHandle,
-          suggestedFilename ?? 'backup.zip',
-          {
-            ...backupOptions,
-            onProgress,
-          },
-        );
+        outcome = await backup.streamBackupToDisk(scan, writableFileHandle, suggestedFilename, {
+          ...runOptions,
+          onProgress,
+        });
       } else {
-        const { blob, ...blobResult } = await createBackupBlob(koboData, { ...backupOptions, onProgress });
-        saveBackup(blob, blobResult.filename);
-        backupResult = blobResult;
+        const { blob, ...rest } = await backup.createBackupBlob(scan, { ...runOptions, onProgress });
+        backup.saveBackup(blob, suggestedFilename);
+        outcome = { ...rest, filename: suggestedFilename };
       }
-
-      const finalResult = { ...backupResult, duration: Date.now() - startTime };
-      setResult(finalResult);
-      setProgress({ stage: 'Backup complete', percent: 100, filesProcessed: totalFiles, totalFiles });
-      return finalResult;
+      const final = { ...outcome, duration: Date.now() - startTime, streamed: !!writableFileHandle };
+      setResult(final);
+      return final;
     } catch (err) {
-      setError({
-        title: 'Backup Failed',
-        message: errorMessage(err, 'Failed to create backup'),
-        code: errorCode(err, 'BACKUP_FAILED'),
-      });
-      throw err;
+      setError({ title: 'Backup Failed', message: errorMessage(err), code: errorCode(err, 'BACKUP_FAILED') });
+      return null;
     } finally {
-      setIsCreating(false);
+      setRunning(false);
     }
   }, []);
 
-  const estimateSize = useCallback((koboData: ScanResult) => estimateBackupSize(koboData), []);
-
   const reset = useCallback(() => {
-    setIsCreating(false);
     setProgress(IDLE);
     setResult(null);
     setError(null);
   }, []);
 
-  return { isCreating, progress, result, error, create, estimateSize, reset, isComplete: result !== null };
+  return { progress, result, error, running, create, reset };
 }

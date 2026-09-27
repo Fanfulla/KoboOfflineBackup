@@ -1,115 +1,136 @@
-import { useState, useCallback } from 'react';
-import {
-  parseBackupFile,
-  restoreToDevice,
-  checkCompatibility,
-  previewBackup,
-  validateRestoreTarget,
-  type BackupPreviewData,
-  type CompatibilityResult,
-  type ParsedBackup,
-  type RestoreResult,
-  type RestoreRunOptions,
+/**
+ * Restore orchestration: parse → inspect target → restore → (undo).
+ * The ZIP/SQLite code is loaded on demand.
+ */
+import { useCallback, useState } from 'react';
+import type {
+  BackupPreviewData,
+  CompatibilityResult,
+  ParsedBackup,
+  RestoreResult,
+  RestoreRunOptions,
+  RestoreStage,
+  RestoreTargetInfo,
 } from '../utils/restore.ts';
 import { errorCode, errorMessage } from '../utils/errors.ts';
-import type { DeviceInfo, ProgressState, UiError } from '../types/kobo.ts';
+import type { UiError } from '../types/kobo.ts';
 
-export type RestoreOutcome = RestoreResult & { duration: number };
+const loadRestore = () => import('../utils/restore.ts');
 
-const IDLE: ProgressState = { stage: '', percent: 0, filesProcessed: 0, totalFiles: 0 };
+export interface RestoreProgressState {
+  stage: RestoreStage;
+  percent: number;
+  filesProcessed: number;
+  totalFiles: number;
+}
 
-/** Restore orchestration: parse → preview → restore. */
+const IDLE: RestoreProgressState = { stage: 'preparing', percent: 0, filesProcessed: 0, totalFiles: 0 };
+
+const toUiError = (title: string, err: unknown, fallback: string): UiError => ({
+  title,
+  message: errorMessage(err),
+  code: errorCode(err, fallback),
+});
+
 export function useRestore() {
-  const [isParsing, setIsParsing] = useState(false);
-  const [isRestoring, setIsRestoring] = useState(false);
-  const [backupData, setBackupData] = useState<ParsedBackup | null>(null);
+  const [backup, setBackup] = useState<ParsedBackup | null>(null);
   const [preview, setPreview] = useState<BackupPreviewData | null>(null);
+  const [target, setTarget] = useState<{ handle: FileSystemDirectoryHandle; info: RestoreTargetInfo } | null>(
+    null,
+  );
   const [compatibility, setCompatibility] = useState<CompatibilityResult | null>(null);
-  const [progress, setProgress] = useState<ProgressState>(IDLE);
-  const [result, setResult] = useState<RestoreOutcome | null>(null);
+  const [progress, setProgress] = useState<RestoreProgressState>(IDLE);
+  const [result, setResult] = useState<RestoreResult | null>(null);
   const [error, setError] = useState<UiError | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  const parse = useCallback(async (file: File, password?: string) => {
-    setIsParsing(true);
+  const parse = useCallback(async (file: Blob, password?: string) => {
+    setBusy(true);
     setError(null);
     try {
+      const { parseBackupFile, previewBackup } = await loadRestore();
       const parsed = await parseBackupFile(file, password);
-      setBackupData(parsed);
+      setBackup(parsed);
       setPreview(previewBackup(parsed));
       return parsed;
     } catch (err) {
-      setError({
-        title: 'Invalid Backup File',
-        message: errorMessage(err, 'Failed to parse backup file'),
-        code: errorCode(err, 'PARSE_FAILED'),
-      });
-      throw err;
+      setError(toUiError('Invalid Backup File', err, 'RESTORE_INVALID_FILE'));
+      return null;
     } finally {
-      setIsParsing(false);
+      setBusy(false);
     }
   }, []);
 
-  const checkDeviceCompatibility = useCallback(
-    (deviceInfo: Partial<DeviceInfo> | null) => {
-      if (!backupData) throw new Error('No backup loaded');
-      const compat = checkCompatibility(backupData.metadata, deviceInfo);
-      setCompatibility(compat);
-      return compat;
+  const selectTarget = useCallback(
+    async (handle: FileSystemDirectoryHandle) => {
+      setBusy(true);
+      setError(null);
+      try {
+        const { inspectRestoreTarget, validateRestoreTarget, checkCompatibility } = await loadRestore();
+        const validation = await validateRestoreTarget(handle);
+        if (!validation.valid) {
+          setError({ title: 'Invalid target', message: validation.error, code: 'INVALID_DEVICE' });
+          return null;
+        }
+        const info = await inspectRestoreTarget(handle);
+        setTarget({ handle, info });
+        if (backup) setCompatibility(checkCompatibility(backup.metadata, info.device));
+        return info;
+      } catch (err) {
+        setError(toUiError('Invalid target', err, 'FS_PERMISSION_DENIED'));
+        return null;
+      } finally {
+        setBusy(false);
+      }
     },
-    [backupData],
+    [backup],
   );
 
   const restore = useCallback(
-    async (deviceHandle: FileSystemDirectoryHandle, options: RestoreRunOptions = {}) => {
-      if (!backupData) throw new Error('No backup loaded');
-
-      setIsRestoring(true);
+    async (options: Omit<RestoreRunOptions, 'onProgress'>) => {
+      if (!backup || !target) return null;
+      setBusy(true);
       setError(null);
       setResult(null);
-      const startTime = Date.now();
-      const totalBooks = backupData.bookFiles.length;
-
       try {
-        const validation = await validateRestoreTarget(deviceHandle);
-        if (!validation.valid) throw new Error(validation.error);
-
-        const restoreResult = await restoreToDevice(deviceHandle, backupData, {
+        const { restoreToDevice } = await loadRestore();
+        const res = await restoreToDevice(target.handle, backup, {
           ...options,
           onProgress: (p) =>
             setProgress({
               stage: p.stage,
-              percent: p.percent,
-              filesProcessed: p.filesProcessed || 0,
-              totalFiles: p.totalFiles || totalBooks,
+              percent: Math.round(p.percent),
+              filesProcessed: p.filesProcessed ?? 0,
+              totalFiles: p.totalFiles ?? 0,
             }),
         });
-
-        const finalResult = { ...restoreResult, duration: Date.now() - startTime };
-        setResult(finalResult);
-        setProgress({
-          stage: 'Restore complete',
-          percent: 100,
-          filesProcessed: totalBooks,
-          totalFiles: totalBooks,
-        });
-        return finalResult;
+        setResult(res);
+        return res;
       } catch (err) {
-        setError({
-          title: 'Restore Failed',
-          message: errorMessage(err, 'Failed to restore backup'),
-          code: errorCode(err, 'RESTORE_FAILED'),
-        });
-        throw err;
+        setError(toUiError('Restore Failed', err, 'RESTORE_FAILED'));
+        return null;
       } finally {
-        setIsRestoring(false);
+        setBusy(false);
       }
     },
-    [backupData],
+    [backup, target],
   );
 
-  const clear = useCallback(() => {
-    setBackupData(null);
+  const undo = useCallback(async () => {
+    if (!target) return false;
+    try {
+      const { undoLastRestore } = await loadRestore();
+      return await undoLastRestore(target.handle);
+    } catch (err) {
+      setError(toUiError('Undo failed', err, 'RESTORE_FAILED'));
+      return false;
+    }
+  }, [target]);
+
+  const reset = useCallback(() => {
+    setBackup(null);
     setPreview(null);
+    setTarget(null);
     setCompatibility(null);
     setProgress(IDLE);
     setResult(null);
@@ -117,19 +138,19 @@ export function useRestore() {
   }, []);
 
   return {
-    isParsing,
-    isRestoring,
-    backupData,
+    backup,
     preview,
+    target,
     compatibility,
     progress,
     result,
     error,
+    busy,
     parse,
-    checkDeviceCompatibility,
+    selectTarget,
     restore,
-    clear,
-    hasBackup: backupData !== null,
-    isComplete: result !== null,
+    undo,
+    reset,
+    clearError: () => setError(null),
   };
 }
