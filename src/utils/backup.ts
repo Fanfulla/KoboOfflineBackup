@@ -4,9 +4,14 @@
  * WHY: JSZip buffers ALL files simultaneously. For a 4 GB library this peaks
  * at ~10 GB and throws "RangeError: Array buffer allocation failed".
  * client-zip streams one file at a time to disk, so peak RAM = 1 book file.
+ *
+ * Password-protected backups use zip.js (AES-256, also streaming): the
+ * database contains Kobo account tokens, so encryption matters when the
+ * archive is stored in the cloud.
  */
 
 import { downloadZip } from 'client-zip';
+import { BlobReader, BlobWriter, TextReader, ZipWriter, configure } from '@zip.js/zip.js';
 import { downloadBlob } from './fileSystem.ts';
 import { BackupError, ERROR_CODES } from './errors.ts';
 import type {
@@ -25,7 +30,29 @@ export interface BackupResult {
   metadata: BackupMetadata;
 }
 
-export type BackupRunOptions = Partial<BackupOptions> & { onProgress?: ProgressCallback };
+export type BackupRunOptions = Partial<BackupOptions> & {
+  onProgress?: ProgressCallback;
+  /** When set, every entry is encrypted with AES-256. */
+  password?: string;
+};
+
+// Book files are already compressed (EPUB/PDF/CBZ): store them, and keep all
+// work on the main thread so no blob: workers are needed under the CSP.
+configure({ useWebWorkers: false });
+
+async function writeEncryptedZip<T>(
+  entries: AsyncIterable<ZipEntry>,
+  target: BlobWriter | WritableStream<Uint8Array>,
+  password: string,
+): Promise<T> {
+  const writer = new ZipWriter<T>(target as never, { password, encryptionStrength: 3, level: 0 });
+  for await (const entry of entries) {
+    const reader =
+      typeof entry.input === 'string' ? new TextReader(entry.input) : new BlobReader(entry.input);
+    await writer.add(entry.name, reader, { lastModDate: entry.lastModified });
+  }
+  return writer.close();
+}
 
 type IntegrityErrors = NonNullable<BackupMetadata['integrity']>['errors'];
 
@@ -38,7 +65,7 @@ export interface ZipEntry {
 
 function buildMetadata(
   koboData: ScanResult,
-  options: Partial<BackupOptions>,
+  options: BackupRunOptions,
   databaseChecksum: string,
   errors: IntegrityErrors,
 ): BackupMetadata {
@@ -66,7 +93,13 @@ function buildMetadata(
       booksFinished: koboData.stats?.booksFinished || 0,
       totalReadingTime: koboData.stats?.totalMinutesRead || 0,
     },
-    options: { includeBooks, includeAnnotations, includeProgress, includeSettings },
+    options: {
+      includeBooks,
+      includeAnnotations,
+      includeProgress,
+      includeSettings,
+      encrypted: !!options.password,
+    },
     integrity: {
       databaseChecksum,
       filesChecked: koboData.bookFiles?.length || 0,
@@ -154,15 +187,17 @@ export async function streamBackupToDisk(
   filename: string,
   options: BackupRunOptions = {},
 ): Promise<BackupResult> {
-  const { onProgress = () => {} } = options;
+  const { onProgress = () => {}, password } = options;
   try {
     const metadata = buildMetadata(koboData, options, await calculateChecksum(koboData.database), []);
-    const zipResponse = downloadZip(generateZipEntries(koboData, options, onProgress, metadata));
+    const entries = generateZipEntries(koboData, options, onProgress, metadata);
 
     const writable = await fileHandle.createWritable();
     try {
-      await zipResponse.body!.pipeTo(writable);
+      if (password) await writeEncryptedZip(entries, writable, password);
+      else await downloadZip(entries).body!.pipeTo(writable);
     } catch (err) {
+      // Uncommitted FileSystemWritableFileStream data is discarded on abort/GC.
       await writable.abort().catch(() => {});
       throw err;
     }
@@ -184,10 +219,13 @@ export async function createBackupBlob(
   koboData: ScanResult,
   options: BackupRunOptions = {},
 ): Promise<BackupResult & { blob: Blob }> {
-  const { onProgress = () => {} } = options;
+  const { onProgress = () => {}, password } = options;
   try {
     const metadata = buildMetadata(koboData, options, await calculateChecksum(koboData.database), []);
-    const blob = await downloadZip(generateZipEntries(koboData, options, onProgress, metadata)).blob();
+    const entries = generateZipEntries(koboData, options, onProgress, metadata);
+    const blob = password
+      ? await writeEncryptedZip<Blob>(entries, new BlobWriter('application/zip'), password)
+      : await downloadZip(entries).blob();
     onProgress('Backup complete', 100);
     return { blob, filename: generateBackupFilename(), size: blob.size, metadata };
   } catch (error) {

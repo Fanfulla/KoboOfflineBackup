@@ -126,7 +126,7 @@ export interface BackupMetadata {
     booksFinished?: number;
     totalReadingTime?: number;
   };
-  options?: Partial<BackupOptions>;
+  options?: Partial<BackupOptions> & { encrypted?: boolean };
   integrity?: {
     databaseChecksum: string;
     filesChecked: number;

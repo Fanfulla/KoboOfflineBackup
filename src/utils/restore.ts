@@ -2,7 +2,15 @@
  * Restore utilities: parse backup ZIPs and write them back to a Kobo device.
  */
 
-import { ZipReader, BlobReader, BlobWriter, TextWriter, type Entry, type FileEntry } from '@zip.js/zip.js';
+import {
+  ZipReader,
+  BlobReader,
+  BlobWriter,
+  TextWriter,
+  ERR_INVALID_PASSWORD,
+  type Entry,
+  type FileEntry,
+} from '@zip.js/zip.js';
 import { writeFile, writeFileToPath } from './fileSystem.ts';
 import { RestoreError, ERROR_CODES, errorMessage } from './errors.ts';
 import { validateBackupMetadata } from './validation.ts';
@@ -26,6 +34,10 @@ export interface ParsedBackup {
   /** Reading statistics computed from the backup database (null if unreadable). */
   stats: ReadingStats | null;
   file: Blob;
+  /** True when the archive entries are AES-encrypted. */
+  encrypted: boolean;
+  /** Kept in memory only, needed to extract books during the restore. */
+  password?: string;
   valid: true;
 }
 
@@ -46,6 +58,8 @@ export interface RestoreResult {
   booksRestored: number;
   failedBooks: FailedBook[];
   databaseRestored: boolean;
+  /** A copy of the previous device database was saved (see undoLastRestore). */
+  safetySnapshot: boolean;
   metadata: BackupMetadata;
   verification: RestoreVerification | null;
 }
@@ -57,27 +71,38 @@ export interface RestoreProgress {
   totalFiles?: number;
 }
 
-export type RestoreRunOptions = Partial<
-  Pick<BackupOptions, 'includeBooks' | 'includeAnnotations' | 'includeProgress'>
-> & {
+export type RestoreRunOptions = Partial<Pick<BackupOptions, 'includeBooks'>> & {
   /**
    * Opt-in: recursively removes top-level book folders before restore. Off by
    * default because it can delete files added to those folders AFTER the backup.
    */
   cleanExistingBooks?: boolean;
+  /** Save the current device database before overwriting it (default: true). */
+  safetySnapshot?: boolean;
   onProgress?: (progress: RestoreProgress) => void;
 };
 
-const isFileEntry = (entry: Entry): entry is FileEntry => !entry.directory;
+/** Name of the pre-restore copy of the device database, inside `.kobo/`. */
+export const SAFETY_SNAPSHOT_NAME = 'KoboReader.sqlite.before-restore';
+const DB_NAME = 'KoboReader.sqlite';
+const DB_SIDECARS = ['KoboReader.sqlite-wal', 'KoboReader.sqlite-shm'];
 
-/** Parse and validate a backup ZIP file. */
-export async function parseBackupFile(file: Blob): Promise<ParsedBackup> {
-  const zipReader = new ZipReader(new BlobReader(file));
+const isFileEntry = (entry: Entry): entry is FileEntry => !entry.directory;
+const isInvalidPassword = (error: unknown) =>
+  error instanceof Error && error.message === ERR_INVALID_PASSWORD;
+
+/** Parse and validate a backup ZIP file (optionally password-protected). */
+export async function parseBackupFile(file: Blob, password?: string): Promise<ParsedBackup> {
+  const zipReader = new ZipReader(new BlobReader(file), password ? { password } : {});
   try {
     const entries = (await zipReader.getEntries()).filter(isFileEntry);
+    const encrypted = entries.some((e) => e.encrypted);
+    if (encrypted && !password) {
+      throw new RestoreError('This backup is password-protected', ERROR_CODES.RESTORE_PASSWORD_REQUIRED);
+    }
 
     const metadataEntry = entries.find((e) => e.filename === 'backup-metadata.json');
-    const dbEntry = entries.find((e) => e.filename === 'KoboReader.sqlite');
+    const dbEntry = entries.find((e) => e.filename === DB_NAME);
 
     if (!metadataEntry) {
       throw new RestoreError(
@@ -90,11 +115,21 @@ export async function parseBackupFile(file: Blob): Promise<ParsedBackup> {
     }
     if (!dbEntry) {
       throw new RestoreError('Invalid backup: missing KoboReader.sqlite', ERROR_CODES.RESTORE_INVALID_FILE, {
-        missingFile: 'KoboReader.sqlite',
+        missingFile: DB_NAME,
       });
     }
 
-    const metadata: unknown = JSON.parse(await metadataEntry.getData(new TextWriter()));
+    let metadataText: string;
+    try {
+      metadataText = await metadataEntry.getData(new TextWriter());
+    } catch (error) {
+      if (isInvalidPassword(error)) {
+        throw new RestoreError('Wrong password for this backup', ERROR_CODES.RESTORE_WRONG_PASSWORD);
+      }
+      throw error;
+    }
+
+    const metadata: unknown = JSON.parse(metadataText);
     const validation = validateBackupMetadata(metadata);
     if (!validation.valid) {
       throw new RestoreError(
@@ -129,6 +164,8 @@ export async function parseBackupFile(file: Blob): Promise<ParsedBackup> {
       bookPathMap,
       stats,
       file,
+      encrypted,
+      password: encrypted ? password : undefined,
       valid: true,
     };
   } catch (error) {
@@ -141,13 +178,74 @@ export async function parseBackupFile(file: Blob): Promise<ParsedBackup> {
   }
 }
 
+/**
+ * Why a restore path is refused, or null if it is a safe book destination.
+ * Books never live in hidden/system folders (backups skip them), so writing
+ * there can only come from a crafted archive, e.g. "books/.kobo/KoboReader.sqlite".
+ */
+function unsafeBookPathReason(path: string): string | null {
+  const parts = path.replace(/\\/g, '/').split('/').filter(Boolean);
+  if (parts.length === 0 || parts.some((p) => p === '..' || p === '.'))
+    return 'Unsafe path rejected (path traversal)';
+  if (parts.some((p) => p.startsWith('.')) || parts[0] === 'System Volume Information') {
+    return 'Unsafe path rejected (hidden or system folder)';
+  }
+  return null;
+}
+
+async function removeDatabaseSidecars(koboFolder: FileSystemDirectoryHandle): Promise<void> {
+  for (const name of DB_SIDECARS) await koboFolder.removeEntry(name).catch(() => {});
+}
+
+async function readOptionalFile(dir: FileSystemDirectoryHandle, name: string): Promise<File | null> {
+  try {
+    return await (await dir.getFileHandle(name)).getFile();
+  } catch {
+    return null;
+  }
+}
+
+/** Copy the current device database (and a pending WAL) aside before a restore. */
+async function snapshotDeviceDatabase(koboFolder: FileSystemDirectoryHandle): Promise<boolean> {
+  const current = await readOptionalFile(koboFolder, DB_NAME);
+  if (!current || current.size === 0) return false;
+  await writeFile(koboFolder, SAFETY_SNAPSHOT_NAME, current);
+  const wal = await readOptionalFile(koboFolder, DB_SIDECARS[0]!);
+  if (wal && wal.size > 0) await writeFile(koboFolder, `${SAFETY_SNAPSHOT_NAME}-wal`, wal);
+  else await koboFolder.removeEntry(`${SAFETY_SNAPSHOT_NAME}-wal`).catch(() => {});
+  return true;
+}
+
+/** Whether a pre-restore snapshot exists on the device. */
+export async function hasSafetySnapshot(deviceHandle: FileSystemDirectoryHandle): Promise<boolean> {
+  try {
+    const koboFolder = await deviceHandle.getDirectoryHandle('.kobo');
+    return ((await readOptionalFile(koboFolder, SAFETY_SNAPSHOT_NAME))?.size ?? 0) > 0;
+  } catch {
+    return false;
+  }
+}
+
+/** Put back the database saved by the last restore. Returns false if none exists. */
+export async function undoLastRestore(deviceHandle: FileSystemDirectoryHandle): Promise<boolean> {
+  const koboFolder = await deviceHandle.getDirectoryHandle('.kobo');
+  const snapshot = await readOptionalFile(koboFolder, SAFETY_SNAPSHOT_NAME);
+  if (!snapshot || snapshot.size === 0) return false;
+
+  const snapshotWal = await readOptionalFile(koboFolder, `${SAFETY_SNAPSHOT_NAME}-wal`);
+  await removeDatabaseSidecars(koboFolder);
+  await writeFile(koboFolder, DB_NAME, snapshot);
+  if (snapshotWal && snapshotWal.size > 0) await writeFile(koboFolder, DB_SIDECARS[0]!, snapshotWal);
+  return true;
+}
+
 /** Restore a parsed backup to a Kobo device. */
 export async function restoreToDevice(
   deviceHandle: FileSystemDirectoryHandle,
   backupData: ParsedBackup,
   options: RestoreRunOptions = {},
 ): Promise<RestoreResult> {
-  const { includeBooks = true, cleanExistingBooks = false, onProgress } = options;
+  const { includeBooks = true, cleanExistingBooks = false, safetySnapshot = true, onProgress } = options;
   const reportProgress = (stage: string, percent: number, details: Partial<RestoreProgress> = {}) =>
     onProgress?.({ stage, percent, ...details });
 
@@ -163,6 +261,22 @@ export async function restoreToDevice(
       });
     }
 
+    let snapshotSaved = false;
+    if (safetySnapshot) {
+      reportProgress('Saving a copy of the current database...', 3);
+      try {
+        snapshotSaved = await snapshotDeviceDatabase(koboFolder);
+      } catch (error) {
+        throw new RestoreError(
+          'Could not save a safety copy of the current database',
+          ERROR_CODES.RESTORE_FAILED,
+          {
+            originalError: error,
+          },
+        );
+      }
+    }
+
     if (includeBooks && cleanExistingBooks && backupData.bookFiles.length > 0) {
       reportProgress('Removing existing books...', 5);
       try {
@@ -176,9 +290,7 @@ export async function restoreToDevice(
     try {
       // CRITICAL: delete WAL/SHM files first. If we overwrite the .sqlite but
       // leave an old WAL behind, SQLite replays the mismatched WAL and corrupts it.
-      for (const name of ['KoboReader.sqlite-wal', 'KoboReader.sqlite-shm']) {
-        await koboFolder.removeEntry(name).catch(() => {});
-      }
+      await removeDatabaseSidecars(koboFolder);
 
       reportProgress('Sanitizing database...', 18);
       let dbData: ArrayBuffer | Uint8Array<ArrayBuffer> = backupData.database;
@@ -194,7 +306,7 @@ export async function restoreToDevice(
         console.warn('[RESTORE] Database sanitization failed, using original:', error);
       }
 
-      await writeFile(koboFolder, 'KoboReader.sqlite', dbData);
+      await writeFile(koboFolder, DB_NAME, dbData);
     } catch (error) {
       throw new RestoreError('Failed to write database to device', ERROR_CODES.RESTORE_FAILED, {
         originalError: error,
@@ -205,7 +317,10 @@ export async function restoreToDevice(
     const failedBooks: FailedBook[] = [];
     if (includeBooks && backupData.bookFiles.length > 0) {
       const totalBooks = backupData.bookFiles.length;
-      const zipReader = new ZipReader(new BlobReader(backupData.file));
+      const zipReader = new ZipReader(
+        new BlobReader(backupData.file),
+        backupData.password ? { password: backupData.password } : {},
+      );
       try {
         const entries = new Map(
           (await zipReader.getEntries()).filter(isFileEntry).map((entry) => [entry.filename, entry]),
@@ -213,11 +328,12 @@ export async function restoreToDevice(
 
         for (const [i, bookFile] of backupData.bookFiles.entries()) {
           const zipEntry = entries.get(bookFile.path);
-          if (!zipEntry) {
+          const unsafe = unsafeBookPathReason(bookFile.originalPath);
+          if (!zipEntry || unsafe) {
             failedBooks.push({
               name: bookFile.name,
               originalPath: bookFile.originalPath,
-              error: 'File not found in ZIP archive',
+              error: unsafe ?? 'File not found in ZIP archive',
             });
             continue;
           }
@@ -264,13 +380,11 @@ export async function restoreToDevice(
     reportProgress('Verifying restore...', 90);
     let verification: RestoreVerification | null = null;
     try {
-      const restored = await (
-        await (await koboFolder.getFileHandle('KoboReader.sqlite')).getFile()
-      ).arrayBuffer();
+      const restored = await (await (await koboFolder.getFileHandle(DB_NAME)).getFile()).arrayBuffer();
       const verifyDb = await openDatabase(restored);
       const dbBooksCount = verifyDb.getBooks().length;
       verifyDb.close();
-      const expectedCount = backupData.metadata?.statistics?.totalBooks || 0;
+      const expectedCount = backupData.stats?.totalBooks ?? backupData.metadata?.statistics?.totalBooks ?? 0;
       verification = {
         dbBooksCount,
         expectedCount,
@@ -287,6 +401,7 @@ export async function restoreToDevice(
       booksRestored: includeBooks ? backupData.bookFiles.length - failedBooks.length : 0,
       failedBooks,
       databaseRestored: true,
+      safetySnapshot: snapshotSaved,
       metadata: backupData.metadata,
       verification,
     };

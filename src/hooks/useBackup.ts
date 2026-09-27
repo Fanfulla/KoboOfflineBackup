@@ -21,6 +21,8 @@ export interface CreateBackupOptions extends Partial<BackupOptions> {
   /** From showSaveFilePicker (streaming path). */
   writableFileHandle?: FileSystemFileHandle | null;
   suggestedFilename?: string;
+  /** AES-256 encrypt the archive with this password. */
+  password?: string;
 }
 
 export type BackupOutcome = BackupResult & { duration: number };

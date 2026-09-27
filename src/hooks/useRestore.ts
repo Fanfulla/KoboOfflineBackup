@@ -29,11 +29,11 @@ export function useRestore() {
   const [result, setResult] = useState<RestoreOutcome | null>(null);
   const [error, setError] = useState<UiError | null>(null);
 
-  const parse = useCallback(async (file: File) => {
+  const parse = useCallback(async (file: File, password?: string) => {
     setIsParsing(true);
     setError(null);
     try {
-      const parsed = await parseBackupFile(file);
+      const parsed = await parseBackupFile(file, password);
       setBackupData(parsed);
       setPreview(previewBackup(parsed));
       return parsed;
