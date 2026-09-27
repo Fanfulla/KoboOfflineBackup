@@ -1,0 +1,7 @@
+dist
+dist-ssr
+coverage
+fixtures
+node_modules
+package-lock.json
+public

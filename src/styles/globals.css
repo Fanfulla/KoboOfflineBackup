@@ -1,140 +1,155 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-:root {
-  /* Primary Colors */
-  --kobo-cream: #F5F1E8;
-  --kobo-cream-dark: #E8E3D8;
-  --kobo-accent: #D4A574;
-  --kobo-accent-dark: #B8895E;
+@theme {
+  --color-kobo-cream: #f5f1e8;
+  --color-kobo-cream-dark: #e8e3d8;
+  --color-kobo-accent: #d4a574;
+  --color-kobo-accent-dark: #b8895e;
+  /* Accent for text: 5.9:1 on white (WCAG AA), unlike the decorative accent. */
+  --color-kobo-accent-ink: #8a5a2b;
+  --color-kobo-dark: #2c2416;
+  --color-kobo-gray: #6b675e;
+  --color-kobo-gray-light: #a8a49a;
+  --color-kobo-success: #7fb069;
+  --color-kobo-warning: #f4a261;
+  --color-kobo-error: #e63946;
+  --color-kobo-info: #457b9d;
+  --color-kobo-overlay: rgba(44, 36, 22, 0.4);
+  --color-kobo-glass: rgba(245, 241, 232, 0.8);
 
-  /* Neutrals */
-  --kobo-dark: #2C2416;
-  --kobo-gray: #6B675E;
-  --kobo-gray-light: #A8A49A;
+  --font-display: Oswald, system-ui, sans-serif;
+  --font-body: Poppins, system-ui, sans-serif;
 
-  /* Status Colors */
-  --kobo-success: #7FB069;
-  --kobo-warning: #F4A261;
-  --kobo-error: #E63946;
-  --kobo-info: #457B9D;
+  --text-6xl: 4rem;
+  --text-6xl--line-height: 1;
+  --text-5xl: 3rem;
+  --text-5xl--line-height: 1;
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 1.1;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 1.2;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 1.3;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.4;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.5;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.5;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.5;
 
-  /* Overlays */
-  --kobo-overlay: rgba(44, 36, 22, 0.4);
-  --kobo-glass: rgba(245, 241, 232, 0.8);
+  --animate-fade-in: fade-in 0.5s ease-out;
+  --animate-slide-down: slide-down 0.3s ease-out;
+  --animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-bounce: bounce 1s ease-in-out 3;
 
-  /* Spacing (8px grid) */
-  --space-1: 0.5rem;   /* 8px */
-  --space-2: 1rem;     /* 16px */
-  --space-3: 1.5rem;   /* 24px */
-  --space-4: 2rem;     /* 32px */
-  --space-5: 3rem;     /* 48px */
-  --space-6: 4rem;     /* 64px */
-  --space-7: 6rem;     /* 96px */
-  --space-8: 8rem;     /* 128px */
+  --shadow-elevated: 0 8px 30px rgb(0 0 0 / 0.06);
+  --shadow-elevated-hover: 0 12px 40px rgb(0 0 0 / 0.08);
 
-  /* Font families */
-  --font-display: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes slide-down {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+  @keyframes bounce {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
 }
 
 @layer base {
-  * {
-    @apply border-kobo-gray-light;
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-kobo-gray-light);
   }
 
   body {
     @apply bg-kobo-cream text-kobo-dark font-body antialiased;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-display font-bold;
   }
 
   h1 {
     @apply text-6xl;
   }
-
   h2 {
     @apply text-5xl;
   }
-
   h3 {
     @apply text-4xl;
   }
-
   h4 {
     @apply text-3xl;
   }
-
   h5 {
     @apply text-2xl;
   }
-
   h6 {
     @apply text-xl;
   }
-}
 
-@layer utilities {
-  .focus-visible-ring {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kobo-accent focus-visible:ring-offset-2;
-  }
-
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border-width: 0;
-  }
-
-  /* Scrollbar styling */
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-track {
-    @apply bg-kobo-cream-dark rounded-full;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-kobo-gray-light rounded-full;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-kobo-gray;
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
-/* Glassmorphism effect */
-.glass {
-  backdrop-filter: blur(12px);
-  background: var(--kobo-glass);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+@utility focus-visible-ring {
+  @apply focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-kobo-accent focus-visible:ring-offset-2;
 }
 
-/* Card elevation */
-.card-elevated {
-  box-shadow: 0 8px 30px rgb(0 0 0 / 0.06);
-  transition: box-shadow 0.3s ease;
+@utility transition-all-smooth {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.card-elevated:hover {
-  box-shadow: 0 12px 40px rgb(0 0 0 / 0.08);
-}
-
-/* Gradient overlays */
-.gradient-overlay::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom right, var(--kobo-cream) / 40%, transparent);
-  pointer-events: none;
+@utility spinner {
+  border: 3px solid var(--color-kobo-cream-dark);
+  border-top: 3px solid var(--color-kobo-accent);
+  border-radius: 50%;
+  animation: var(--animate-spin);
 }

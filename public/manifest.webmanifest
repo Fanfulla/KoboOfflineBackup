@@ -1,0 +1,19 @@
+{
+  "id": "/",
+  "name": "KoBup — Kobo Backup & Restore",
+  "short_name": "KoBup",
+  "description": "Back up and restore your Kobo e-reader: books, highlights and reading progress. Runs locally, works offline.",
+  "lang": "en",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f5f1e8",
+  "theme_color": "#d4a574",
+  "categories": ["books", "utilities", "productivity"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
