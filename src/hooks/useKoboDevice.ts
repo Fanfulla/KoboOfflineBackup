@@ -1,17 +1,15 @@
 import { useState, useCallback } from 'react';
-import { getFileByPath, readFile, getAllFiles } from '../utils/fileSystem.ts';
-import { extractAllData } from '../utils/koboDatabase.ts';
-import { isValidBookFile } from '../utils/validation.ts';
+import { scanKoboDevice, SCAN_STEPS } from '../utils/scan.ts';
 import { errorCode, errorMessage } from '../utils/errors.ts';
-import type { BookFileEntry, ScanResult, UiError } from '../types/kobo.ts';
+import type { ScanResult, UiError } from '../types/kobo.ts';
 
 export interface ScanProgress {
-  stage: string;
+  /** 1 = reading database, 2 = analyzing books, 3 = finding files, 4 = done. */
   current: number;
   total: number;
 }
 
-const IDLE: ScanProgress = { stage: '', current: 0, total: 0 };
+const IDLE: ScanProgress = { current: 0, total: SCAN_STEPS };
 
 /** Scan a Kobo device: database + book files. */
 export function useKoboDevice() {
@@ -22,37 +20,8 @@ export function useKoboDevice() {
   const scanDevice = useCallback(async (dirHandle: FileSystemDirectoryHandle): Promise<ScanResult> => {
     setIsScanning(true);
     setError(null);
-    const step = (current: number, stage: string) => setScanProgress({ stage, current, total: 4 });
-
     try {
-      step(1, 'Reading database...');
-      const database = await readFile(await getFileByPath(dirHandle, '.kobo/KoboReader.sqlite'));
-
-      step(2, 'Analyzing books...');
-      const extracted = await extractAllData(database);
-
-      step(3, 'Finding book files...');
-      const candidates = (await getAllFiles(dirHandle)).filter((file) => isValidBookFile(file.name));
-      // File size only (metadata, no content read) so the size estimate is accurate.
-      const bookFiles: BookFileEntry[] = await Promise.all(
-        candidates.map(async (file) => {
-          try {
-            return { ...file, size: (await file.handle.getFile()).size };
-          } catch {
-            return { ...file, size: 0 };
-          }
-        }),
-      );
-
-      step(4, 'Scan complete');
-      return {
-        books: extracted.books,
-        annotations: extracted.annotations,
-        stats: extracted.stats,
-        deviceInfo: extracted.deviceInfo,
-        bookFiles,
-        database,
-      };
+      return await scanKoboDevice(dirHandle, (current) => setScanProgress({ current, total: SCAN_STEPS }));
     } catch (err) {
       setError({
         title: 'Scan Failed',

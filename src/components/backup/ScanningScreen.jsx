@@ -7,7 +7,14 @@ import { ProgressBar } from '../common/ProgressBar.tsx';
 import { Icon } from '../common/Icon.tsx';
 
 export function ScanningScreen({ scanProgress }) {
-  const { stage, current, total } = scanProgress;
+  const { current, total } = scanProgress;
+  const stage = [
+    'Preparing...',
+    'Reading database...',
+    'Analyzing books...',
+    'Finding book files...',
+    'Scan complete',
+  ][current];
 
   const percent = total > 0 ? (current / total) * 100 : 0;
 

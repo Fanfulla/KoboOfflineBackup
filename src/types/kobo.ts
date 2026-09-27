@@ -50,8 +50,11 @@ export interface ReadingStats {
 
 export interface DeviceInfo {
   model: string;
+  /** Numeric Kobo model id from `.kobo/version` (e.g. "388"). */
+  modelId?: string;
   firmwareVersion: string;
   databaseVersion: string;
+  /** Kobo DbVersion (schema) number. */
   schemaVersion: number;
 }
 
@@ -82,13 +85,21 @@ export interface BookFileEntry {
   size: number;
 }
 
+/**
+ * - `wal-pending`: a non-empty KoboReader.sqlite-wal exists, i.e. the most
+ *   recent changes are not yet in the main database file.
+ */
+export type ScanWarning = 'wal-pending';
+
 export interface ScanResult {
   books: KoboBook[];
   annotations: KoboAnnotation[];
   stats: ReadingStats;
+  collections: KoboCollection[];
   deviceInfo: DeviceInfo;
   bookFiles: BookFileEntry[];
   database: ArrayBuffer;
+  warnings: ScanWarning[];
 }
 
 export interface BackupOptions {
@@ -121,6 +132,8 @@ export interface BackupMetadata {
     filesChecked: number;
     fileChecksums: Record<string, string>;
     errors: { file: string; error: string }[];
+    /** Conditions detected while scanning the device (see ScanWarning). */
+    warnings?: ScanWarning[];
   };
   compatibility?: { minAppVersion: string; supportedDevices: string[] };
 }

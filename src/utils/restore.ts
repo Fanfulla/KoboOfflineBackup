@@ -7,7 +7,7 @@ import { writeFile, writeFileToPath } from './fileSystem.ts';
 import { RestoreError, ERROR_CODES, errorMessage } from './errors.ts';
 import { validateBackupMetadata } from './validation.ts';
 import { openDatabase } from './koboDatabase.ts';
-import type { BackupMetadata, BackupOptions, DeviceInfo } from '../types/kobo.ts';
+import type { BackupMetadata, BackupOptions, DeviceInfo, ReadingStats } from '../types/kobo.ts';
 
 export interface RestoreBookFile {
   /** Display name (filename only). */
@@ -23,6 +23,8 @@ export interface ParsedBackup {
   database: ArrayBuffer;
   bookFiles: RestoreBookFile[];
   bookPathMap: Map<string, string>;
+  /** Reading statistics computed from the backup database (null if unreadable). */
+  stats: ReadingStats | null;
   file: Blob;
   valid: true;
 }
@@ -105,7 +107,7 @@ export async function parseBackupFile(file: Blob): Promise<ParsedBackup> {
     }
 
     const database = await (await dbEntry.getData(new BlobWriter())).arrayBuffer();
-    const bookPathMap = await extractBookPathsFromDatabase(database);
+    const { bookPathMap, stats } = await inspectBackupDatabase(database);
 
     const bookFiles: RestoreBookFile[] = entries
       .filter((entry) => entry.filename.startsWith('books/'))
@@ -120,7 +122,15 @@ export async function parseBackupFile(file: Blob): Promise<ParsedBackup> {
         return { name, path: entry.filename, originalPath };
       });
 
-    return { metadata: metadata as BackupMetadata, database, bookFiles, bookPathMap, file, valid: true };
+    return {
+      metadata: metadata as BackupMetadata,
+      database,
+      bookFiles,
+      bookPathMap,
+      stats,
+      file,
+      valid: true,
+    };
   } catch (error) {
     if (error instanceof RestoreError) throw error;
     throw new RestoreError('Failed to parse backup file', ERROR_CODES.RESTORE_CORRUPTED, {
@@ -288,40 +298,72 @@ export async function restoreToDevice(
   }
 }
 
+export type CompatibilityCode = 'model' | 'firmware' | 'schema-newer' | 'old-backup';
+
+export interface CompatibilityWarning {
+  code: CompatibilityCode;
+  /** Values for the localized message (e.g. { from, to } or { days }). */
+  params: Record<string, string | number>;
+  /** English fallback message. */
+  message: string;
+}
+
 export interface CompatibilityResult {
   compatible: boolean;
-  warnings: string[];
+  warnings: CompatibilityWarning[];
 }
+
+const UNKNOWN = new Set(['', 'Unknown', 'Unknown Kobo Device', 'Kobo Device']);
+const known = (value: string | undefined): value is string => !!value && !UNKNOWN.has(value);
 
 /** Compare backup metadata with the target device. */
 export function checkCompatibility(
   backupMetadata: BackupMetadata,
   deviceInfo: Partial<DeviceInfo> | null,
 ): CompatibilityResult {
-  const warnings: string[] = [];
+  const warnings: CompatibilityWarning[] = [];
+  const add = (code: CompatibilityCode, params: CompatibilityWarning['params'], message: string) =>
+    warnings.push({ code, params, message });
+
   const backupModel = backupMetadata.device?.model;
   const backupFw = backupMetadata.device?.firmwareVersion;
+  const backupSchema = backupMetadata.device?.schemaVersion ?? 0;
+  const targetSchema = deviceInfo?.schemaVersion ?? 0;
 
-  if (backupModel && deviceInfo?.model && backupModel !== deviceInfo.model) {
-    warnings.push(
+  if (known(backupModel) && known(deviceInfo?.model) && backupModel !== deviceInfo.model) {
+    add(
+      'model',
+      { from: backupModel, to: deviceInfo.model },
       `Backup is from a different device model (${backupModel} → ${deviceInfo.model}). Settings may not transfer correctly.`,
     );
   }
-  if (backupFw && deviceInfo?.firmwareVersion && backupFw !== deviceInfo.firmwareVersion) {
-    warnings.push(
+  if (known(backupFw) && known(deviceInfo?.firmwareVersion) && backupFw !== deviceInfo.firmwareVersion) {
+    add(
+      'firmware',
+      { from: backupFw, to: deviceInfo.firmwareVersion },
       `Different firmware versions (${backupFw} → ${deviceInfo.firmwareVersion}). This should work but may have minor issues.`,
     );
   }
+  // Nickel upgrades older schemas on boot, but cannot read a NEWER one.
+  if (backupSchema > 0 && targetSchema > 0 && backupSchema > targetSchema) {
+    add(
+      'schema-newer',
+      { from: backupSchema, to: targetSchema },
+      `The backup database (schema ${backupSchema}) is newer than this device's firmware supports (schema ${targetSchema}). Update the Kobo firmware before restoring.`,
+    );
+  }
   if (backupMetadata.created) {
-    const days = (Date.now() - new Date(backupMetadata.created).getTime()) / 86_400_000;
+    const days = Math.floor((Date.now() - new Date(backupMetadata.created).getTime()) / 86_400_000);
     if (days > 180) {
-      warnings.push(
-        `This backup is ${Math.floor(days)} days old. Your Kobo may have received firmware updates since then.`,
+      add(
+        'old-backup',
+        { days },
+        `This backup is ${days} days old. Your Kobo may have received firmware updates since then.`,
       );
     }
   }
 
-  return { compatible: true, warnings };
+  return { compatible: !warnings.some((w) => w.code === 'schema-newer'), warnings };
 }
 
 export interface BackupPreviewData {
@@ -347,18 +389,21 @@ export interface BackupPreviewData {
 export function previewBackup({
   metadata,
   bookFiles,
-}: Pick<ParsedBackup, 'metadata' | 'bookFiles'>): BackupPreviewData {
+  stats,
+}: Pick<ParsedBackup, 'metadata' | 'bookFiles'> & Partial<Pick<ParsedBackup, 'stats'>>): BackupPreviewData {
   const s = metadata.statistics;
   return {
     created: metadata.created,
     deviceModel: metadata.device?.model || 'Unknown',
     firmwareVersion: metadata.device?.firmwareVersion || 'Unknown',
+    // Prefer values computed from the database itself: metadata written by
+    // older versions stored reading time in seconds while labelling it minutes.
     statistics: {
-      totalBooks: s?.totalBooks || 0,
+      totalBooks: stats?.totalBooks ?? s?.totalBooks ?? 0,
       totalAnnotations: s?.totalAnnotations || 0,
-      booksStarted: s?.booksStarted || 0,
-      booksFinished: s?.booksFinished || 0,
-      totalReadingTime: s?.totalReadingTime || 0,
+      booksStarted: stats?.booksStarted ?? s?.booksStarted ?? 0,
+      booksFinished: stats?.booksFinished ?? s?.booksFinished ?? 0,
+      totalReadingTime: stats?.totalMinutesRead ?? s?.totalReadingTime ?? 0,
     },
     contents: {
       databaseIncluded: true,
@@ -402,24 +447,31 @@ export function contentIdToRelativePath(contentId: string): string {
   return path;
 }
 
-/** Map filename → original relative path, read from the backup database. */
-async function extractBookPathsFromDatabase(databaseBuffer: ArrayBuffer): Promise<Map<string, string>> {
-  const pathMap = new Map<string, string>();
+/**
+ * Read the backup database once: filename → original relative path (for old
+ * flat-format backups) and reading statistics.
+ */
+async function inspectBackupDatabase(
+  databaseBuffer: ArrayBuffer,
+): Promise<{ bookPathMap: Map<string, string>; stats: ReadingStats | null }> {
+  const bookPathMap = new Map<string, string>();
   try {
     const db = await openDatabase(databaseBuffer);
-    const books = db.getBooks();
-    db.close();
-
-    for (const book of books) {
-      const originalPath = contentIdToRelativePath(book.ContentID);
-      const filename = originalPath.split('/').pop();
-      // First occurrence wins for duplicate filenames in different folders.
-      if (filename && !pathMap.has(filename)) pathMap.set(filename, originalPath);
+    try {
+      for (const book of db.getBooks()) {
+        const originalPath = contentIdToRelativePath(book.ContentID);
+        const filename = originalPath.split('/').pop();
+        // First occurrence wins for duplicate filenames in different folders.
+        if (filename && !bookPathMap.has(filename)) bookPathMap.set(filename, originalPath);
+      }
+      return { bookPathMap, stats: db.getReadingStats() };
+    } finally {
+      db.close();
     }
   } catch (error) {
-    console.error('[RESTORE] Failed to extract book paths from database:', error);
+    console.error('[RESTORE] Failed to read backup database:', error);
+    return { bookPathMap, stats: null };
   }
-  return pathMap;
 }
 
 /** Never recursively delete these top-level entries. */

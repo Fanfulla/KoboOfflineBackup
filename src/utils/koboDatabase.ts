@@ -39,6 +39,16 @@ function toDate(value: SqlValue): Date | null {
 const str = (value: SqlValue): string | null =>
   value === null || value === undefined ? null : String(value);
 const num = (value: SqlValue): number => (typeof value === 'number' ? value : Number(value) || 0);
+/** Kobo stores TimeSpentReading in SECONDS; the app works in minutes. */
+const secondsToMinutes = (value: SqlValue): number => Math.round(num(value) / 60);
+
+/** Sideloaded books: downloaded, top-level (not chapters), stored on the device (file://). */
+const SIDELOADED_BOOKS_WHERE = `
+  ContentType = 6
+  AND LOWER(IsDownloaded) = 'true'
+  AND (BookTitle IS NULL OR BookTitle = '')
+  AND ContentID LIKE 'file://%'
+`;
 
 export class KoboDatabase {
   private readonly db: Database;
@@ -86,10 +96,7 @@ export class KoboDatabase {
           ISBN, Language, ___PercentRead AS Progress, ReadStatus, DateCreated, DateLastRead,
           ContentID AS FilePath, ImageId AS CoverId, TimeSpentReading, MimeType
         FROM content
-        WHERE ContentType = 6
-          AND LOWER(IsDownloaded) = 'true'
-          AND (BookTitle IS NULL OR BookTitle = '')
-          AND ContentID LIKE 'file://%'
+        WHERE ${SIDELOADED_BOOKS_WHERE}
         ORDER BY DateLastRead DESC
       `,
       ).map((row) => ({
@@ -108,7 +115,7 @@ export class KoboDatabase {
         DateLastRead: toDate(row.DateLastRead),
         FilePath: row.FilePath ? safeDecode(String(row.FilePath).replace('file://', '')) : null,
         CoverId: str(row.CoverId),
-        TimeSpentReading: num(row.TimeSpentReading),
+        TimeSpentReading: secondsToMinutes(row.TimeSpentReading),
         MimeType: str(row.MimeType),
       })),
     );
@@ -155,14 +162,11 @@ export class KoboDatabase {
             SUM(CASE WHEN ___PercentRead > 0 THEN 1 ELSE 0 END) AS BooksStarted,
             SUM(CASE WHEN ___PercentRead >= 100 THEN 1 ELSE 0 END) AS BooksFinished,
             SUM(CASE WHEN ReadStatus = 1 THEN 1 ELSE 0 END) AS CurrentlyReading,
-            SUM(TimeSpentReading) AS TotalMinutesRead,
+            SUM(TimeSpentReading) AS TotalSecondsRead,
             AVG(___PercentRead) AS AverageProgress,
             COUNT(DISTINCT Attribution) AS UniqueAuthors
           FROM content
-          WHERE ContentType = 6
-            AND BookTitle IS NULL
-            AND IsDownloaded = 'true'
-            AND ContentID LIKE 'file://%'
+          WHERE ${SIDELOADED_BOOKS_WHERE}
         `)[0] ?? {};
 
       return {
@@ -170,7 +174,7 @@ export class KoboDatabase {
         booksStarted: num(stats.BooksStarted ?? 0),
         booksFinished: num(stats.BooksFinished ?? 0),
         currentlyReading: num(stats.CurrentlyReading ?? 0),
-        totalMinutesRead: num(stats.TotalMinutesRead ?? 0),
+        totalMinutesRead: secondsToMinutes(stats.TotalSecondsRead ?? 0),
         averageProgress: stats.AverageProgress ? Math.round(num(stats.AverageProgress)) : 0,
         uniqueAuthors: num(stats.UniqueAuthors ?? 0),
       };
@@ -201,7 +205,17 @@ export class KoboDatabase {
     }
   }
 
+  /**
+   * Kobo schema version. Nickel keeps it in the DbVersion table (PRAGMA
+   * user_version is always 0 on Kobo databases).
+   */
   getSchemaVersion(): number {
+    try {
+      const version = this.rows('SELECT version FROM DbVersion LIMIT 1')[0]?.version;
+      if (version !== undefined && version !== null) return num(version);
+    } catch {
+      // Older/synthetic databases without DbVersion
+    }
     try {
       return num(this.rows('PRAGMA user_version')[0]?.user_version ?? 0);
     } catch {
@@ -239,7 +253,8 @@ export class KoboDatabase {
     try {
       const integrity = this.db.exec('PRAGMA integrity_check');
       console.log('[DB] Integrity check result:', integrity[0]?.values[0]?.[0]);
-      this.db.exec('PRAGMA journaling_mode = DELETE');
+      // Rollback journal (not WAL): the file is self-contained once written to the device.
+      this.db.exec('PRAGMA journal_mode = DELETE');
       this.db.exec('VACUUM');
     } catch (error) {
       throw new DatabaseError('Failed to sanitize database', ERROR_CODES.DB_WRITE_ERROR, {

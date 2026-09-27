@@ -75,6 +75,7 @@ function buildMetadata(
       // Shared mutable array filled by the generator; JSON.stringify captures
       // the final state when the metadata entry is yielded (after all books).
       errors,
+      warnings: koboData.warnings ?? [],
     },
     compatibility: { minAppVersion: '1.0.0', supportedDevices: ['all'] },
   };

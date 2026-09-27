@@ -65,7 +65,7 @@ export function BackupPreview({ preview, compatibility, onRestore, onCancel }) {
                   >
                     <div className="flex items-start gap-2">
                       <Icon type="alert" size={16} className="text-kobo-warning shrink-0 mt-0.5" />
-                      <span>{warning}</span>
+                      <span>{warning.message}</span>
                     </div>
                   </div>
                 ))}
