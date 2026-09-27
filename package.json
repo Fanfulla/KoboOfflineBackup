@@ -9,8 +9,9 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/postbuild.ts",
     "preview": "vite preview",
+    "icons": "node scripts/make-icons.ts",
     "typecheck": "tsc -b",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",

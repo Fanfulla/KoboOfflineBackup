@@ -3,11 +3,13 @@
  *
  *  - Chrome/Edge: the wizard calls showSaveFilePicker() first (user gesture)
  *    and passes the handle here → streamed to disk, no memory limit.
+ *  - Firefox/Safari with the service worker active: streamed as a download.
  *  - Otherwise: the archive is built in memory and downloaded.
  */
 import { useCallback, useState } from 'react';
 import type { BackupResult } from '../utils/backup.ts';
 import { errorCode, errorMessage } from '../utils/errors.ts';
+import { canStreamDownload, streamDownload } from '../sw/protocol.ts';
 import type { BackupOptions, BackupStage, ScanResult, UiError } from '../types/kobo.ts';
 
 export interface CreateBackupOptions extends Partial<BackupOptions> {
@@ -51,17 +53,26 @@ export function useBackup() {
     try {
       const backup = await import('../utils/backup.ts');
       let outcome: BackupResult;
+      const streamed = !!writableFileHandle;
       if (writableFileHandle) {
         outcome = await backup.streamBackupToDisk(scan, writableFileHandle, suggestedFilename, {
           ...runOptions,
           onProgress,
         });
+      } else if (canStreamDownload()) {
+        // Firefox/Safari: stream through the service worker, no memory limit.
+        const { stream, metadata, getSize } = await backup.createBackupStream(scan, {
+          ...runOptions,
+          onProgress,
+        });
+        await streamDownload(stream, suggestedFilename);
+        outcome = { filename: suggestedFilename, size: getSize(), metadata, verification: null };
       } else {
         const { blob, ...rest } = await backup.createBackupBlob(scan, { ...runOptions, onProgress });
         backup.saveBackup(blob, suggestedFilename);
         outcome = { ...rest, filename: suggestedFilename };
       }
-      const final = { ...outcome, duration: Date.now() - startTime, streamed: !!writableFileHandle };
+      const final = { ...outcome, duration: Date.now() - startTime, streamed };
       setResult(final);
       return final;
     } catch (err) {

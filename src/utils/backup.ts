@@ -332,6 +332,48 @@ export async function createBackupBlob(
   }
 }
 
+/**
+ * STREAM PATH (Firefox/Safari): the archive as a ReadableStream, handed to the
+ * service worker as a download. Nothing is buffered; `getSize()` is final once
+ * the stream has been fully read.
+ */
+export async function createBackupStream(
+  koboData: ScanResult,
+  options: BackupRunOptions = {},
+): Promise<{ stream: ReadableStream<Uint8Array>; metadata: BackupMetadata; getSize: () => number }> {
+  const { onProgress = () => {}, password } = options;
+  const metadata = buildMetadata(koboData, options, await calculateChecksum(koboData.database), []);
+  const entries = generateZipEntries(koboData, options, onProgress, metadata);
+
+  let source: ReadableStream<Uint8Array>;
+  if (password) {
+    const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
+    const writer = writable.getWriter();
+    // Our own sink so a failure can abort the stream even while zip.js holds its lock.
+    const sink = new WritableStream<Uint8Array>({
+      write: (chunk) => writer.write(chunk),
+      close: () => writer.close(),
+      abort: (reason) => writer.abort(reason),
+    });
+    writeEncryptedZip(entries, sink, password).catch((err) => writer.abort(err).catch(() => {}));
+    source = readable;
+  } else {
+    source = downloadZip(entries).body!;
+  }
+
+  let size = 0;
+  const counted = source.pipeThrough(
+    new TransformStream<Uint8Array, Uint8Array>({
+      transform(chunk, controller) {
+        size += chunk.byteLength;
+        controller.enqueue(chunk);
+      },
+      flush: () => onProgress('complete', 100),
+    }),
+  );
+  return { stream: counted, metadata, getSize: () => size };
+}
+
 export function saveBackup(blob: Blob, filename: string): { filename: string; size: number } {
   try {
     return downloadBlob(blob, filename);

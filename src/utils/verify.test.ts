@@ -7,7 +7,8 @@ vi.mock('sql.js', async (importOriginal) =>
   (await import('../test/sqlJsNode.ts')).sqlJsNodeMock(importOriginal as never),
 );
 
-const { createBackupBlob, verifyBackupArchive, calculateChecksum } = await import('./backup.ts');
+const { createBackupBlob, createBackupStream, verifyBackupArchive, calculateChecksum } =
+  await import('./backup.ts');
 const { parseBackupFile } = await import('./restore.ts');
 
 async function scan(): Promise<ScanResult> {
@@ -71,6 +72,33 @@ describe('backup verification', () => {
     expect(result.ok).toBe(false);
     expect(result.missing).toEqual(['books/A/b.epub']);
     expect(result.databaseChecksumOk).toBe(false);
+  });
+});
+
+describe('streamed backups (service-worker download path)', () => {
+  it.each([undefined, 'hunter22'])('produce a valid archive (password: %s)', async (password) => {
+    let lastStage = '';
+    const { stream, metadata, getSize } = await createBackupStream(await scan(), {
+      includeSettings: true,
+      password,
+      onProgress: (stage) => (lastStage = stage),
+    });
+    const blob = await new Response(stream).blob();
+    expect(getSize()).toBe(blob.size);
+    expect(lastStage).toBe('complete');
+    expect(metadata.options?.encrypted).toBe(!!password);
+    const parsed = await parseBackupFile(blob, password);
+    expect(parsed.bookFiles.map((f) => f.originalPath)).toEqual(['A/b.epub']);
+    expect(parsed.extraFiles.map((f) => f.originalPath)).toEqual(['.kobo/Kobo/Kobo eReader.conf']);
+    expect(parsed.checksumOk).toBe(true);
+  });
+
+  it('records unreadable files instead of failing (encrypted stream)', async () => {
+    const data = await scan();
+    data.bookFiles[0]!.getFile = () => Promise.reject(new Error('unplugged'));
+    const { stream, metadata } = await createBackupStream(data, { password: 'hunter22' });
+    await new Response(stream).blob();
+    expect(metadata.integrity?.errors).toEqual([{ file: 'A/b.epub', error: 'unplugged' }]);
   });
 });
 
